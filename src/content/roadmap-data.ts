@@ -31,6 +31,23 @@ export interface Level {
   section?: string;
 }
 
+/** Optional warm-up module offered before a track starts. */
+export interface Primer {
+  title: string;
+  why: string;
+  lessons: string[];
+  minutes: number;
+}
+
+/** The "before you start" briefing shown on a track's intro page. */
+export interface TrackOverview {
+  tagline: string;
+  forWho: string;
+  outcomes: string[];
+  advice: string[];
+  primer?: Primer;
+}
+
 export interface RoadmapTrack {
   id: string;
   title: string;
@@ -39,6 +56,7 @@ export interface RoadmapTrack {
   color: string;
   glow: string;
   icon: string;
+  overview: TrackOverview;
   levels: Level[];
 }
 
@@ -135,6 +153,38 @@ export const tracks: RoadmapTrack[] = [
     color: "#22d3ee",
     glow: "34,211,238",
     icon: "Bot",
+    overview: {
+      tagline: "Make a real robot see, think and move -- in a simulator on your own computer.",
+      forWho:
+        "For anyone curious about robots. No experience needed: you only need a computer and patience.",
+      outcomes: [
+        "How a robot senses the world with cameras and sensors, and how it moves with motors",
+        "The control loop every robot runs on: sense, think, act, repeat",
+        "How to make a four-legged robot stand, walk, turn and keep its balance",
+        "How a robot recognises objects by colour and shape from its own camera",
+        "How to control a robotic arm and grip an object without dropping it",
+        "How to combine all of it into one mission the robot completes by itself",
+      ],
+      advice: [
+        "Run every example yourself. Watching code is not learning code -- breaking it and fixing it is.",
+        "When something fails, read the error slowly. In robotics the error message is usually the answer.",
+        "Change one number at a time and watch what happens. That is how you build real intuition.",
+        "Keep a small notebook of what you tried. Your own notes will save you hours later.",
+        "Do a little every day rather than everything on Sunday -- your streak is on the map for a reason.",
+      ],
+      primer: {
+        title: "New to programming? Start with Python (optional)",
+        why:
+          "This track uses a little Python to talk to the robot. If you have never written code, take these four short lessons first -- about an hour in total. Already comfortable with Python? Skip straight to the robot.",
+        minutes: 60,
+        lessons: [
+          "Your first line of code: print and comments",
+          "Variables, numbers and text",
+          "Making decisions: if, else and loops",
+          "Functions and lists",
+        ],
+      },
+    },
     levels: physicalLevels,
   },
   {
@@ -145,6 +195,23 @@ export const tracks: RoadmapTrack[] = [
     color: "#a78bfa",
     glow: "167,139,250",
     icon: "Brain",
+    overview: {
+      tagline: "From your very first line of code to a model that makes real predictions.",
+      forWho: "For complete beginners. If you can use a browser, you can start here.",
+      outcomes: [
+        "Write Python confidently: variables, conditions, loops, functions and data",
+        "Handle real data with NumPy and pandas instead of toy examples",
+        "Understand what it actually means for a machine to learn from examples",
+        "Train, test and judge your own model -- and know when it is fooling you",
+        "Finish by building an AI model end to end, from raw data to prediction",
+      ],
+      advice: [
+        "Type the code out instead of copying it. Your fingers learn the syntax too.",
+        "Every time something works, change it on purpose to see what breaks.",
+        "Do not rush to machine learning -- strong basics make the AI part easy.",
+        "Explain what you learned to someone else. If you cannot, you are not done yet.",
+      ],
+    },
     levels: pythonLevels,
   },
   {
@@ -155,6 +222,23 @@ export const tracks: RoadmapTrack[] = [
     color: "#f472b6",
     glow: "244,114,182",
     icon: "Gamepad2",
+    overview: {
+      tagline: "Build a real game you can play, then put it online for your friends.",
+      forWho: "Made for younger learners. Fun first -- the serious skills sneak in along the way.",
+      outcomes: [
+        "How games are actually built: scenes, sprites, and the game loop",
+        "Bring a character to life and control it with the keyboard",
+        "Add points, obstacles, enemies, sound and effects",
+        "Design levels that are fun and fair instead of frustrating",
+        "Publish your finished game on the web and share the link",
+      ],
+      advice: [
+        "Make the smallest playable thing first, then make it better. Finished beats perfect.",
+        "Let a friend play it and just watch -- you will learn more in two minutes than in an hour of guessing.",
+        "Save your work often, and keep a copy before big changes.",
+        "Steal ideas from games you love, then make them yours.",
+      ],
+    },
     levels: gameLevels,
   },
 ];

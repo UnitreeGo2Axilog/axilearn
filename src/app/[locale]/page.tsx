@@ -112,7 +112,7 @@ export default async function HomePage({
               {card}
             </div>
           ) : (
-            <Link key={track.id} href={`/${locale}/roadmap`} className="h-full">
+            <Link key={track.id} href={`/${locale}/track/${track.id}`} className="h-full">
               {card}
             </Link>
           );
