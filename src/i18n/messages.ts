@@ -73,6 +73,14 @@ export const messages = {
     "auth.haveAccount": "Already have an account?",
     "auth.notConfigured":
       "Firebase is not configured yet — you can still browse the lessons.",
+    "auth.forgot": "Forgot your password?",
+    "auth.resetTitle": "Reset your password",
+    "auth.resetBody":
+      "Type the email you signed up with and we will send you a link to choose a new password.",
+    "auth.sendReset": "Send the reset link",
+    "auth.resetSent":
+      "Check your inbox — we sent you a link to choose a new password. It can take a minute to arrive.",
+    "auth.backToSignIn": "Back to sign in",
 
     "profile.title": "Your profile",
     "profile.role": "Role",
@@ -85,6 +93,19 @@ export const messages = {
     "profile.badges": "Badges earned",
     "profile.noBadges": "No badges yet — finish a chapter to earn your first.",
     "profile.tracks": "Tracks",
+    "profile.student": "Student",
+    "profile.adminRole": "Administrator",
+    "profile.adminNote":
+      "This is an admin account. You manage the platform's content — you are not enrolled as a learner, so there is no XP or streak here.",
+    "profile.contentOverview": "Content you manage",
+    "profile.cTracks": "Tracks",
+    "profile.cChapters": "Chapters",
+    "profile.cLessons": "Lessons",
+    "profile.cProjects": "Projects",
+    "profile.openAdmin": "Open the content dashboard",
+    "profile.adminAccount": "Account",
+    "home.adminHello": "Admin dashboard",
+    "home.adminHint": "You manage the content of these tracks.",
 
     "admin.title": "Content admin",
     "admin.soon":
@@ -151,6 +172,14 @@ export const messages = {
     "auth.haveAccount": "Tu as déjà un compte ?",
     "auth.notConfigured":
       "Firebase n'est pas encore configuré — tu peux quand même parcourir les leçons.",
+    "auth.forgot": "Mot de passe oublié ?",
+    "auth.resetTitle": "Réinitialiser ton mot de passe",
+    "auth.resetBody":
+      "Saisis l'email de ton compte et nous t'enverrons un lien pour choisir un nouveau mot de passe.",
+    "auth.sendReset": "Envoyer le lien",
+    "auth.resetSent":
+      "Regarde ta boîte mail — nous t'avons envoyé un lien pour choisir un nouveau mot de passe. Cela peut prendre une minute.",
+    "auth.backToSignIn": "Retour à la connexion",
 
     "profile.title": "Ton profil",
     "profile.role": "Rôle",
@@ -163,6 +192,19 @@ export const messages = {
     "profile.badges": "Badges obtenus",
     "profile.noBadges": "Pas encore de badge — termine un chapitre pour gagner le premier.",
     "profile.tracks": "Parcours",
+    "profile.student": "Élève",
+    "profile.adminRole": "Administrateur",
+    "profile.adminNote":
+      "Ceci est un compte admin. Tu gères le contenu de la plateforme — tu n'es pas inscrit comme apprenant, donc il n'y a ni XP ni série ici.",
+    "profile.contentOverview": "Contenu que tu gères",
+    "profile.cTracks": "Parcours",
+    "profile.cChapters": "Chapitres",
+    "profile.cLessons": "Leçons",
+    "profile.cProjects": "Projets",
+    "profile.openAdmin": "Ouvrir le tableau de bord",
+    "profile.adminAccount": "Compte",
+    "home.adminHello": "Tableau de bord admin",
+    "home.adminHint": "Tu gères le contenu de ces parcours.",
 
     "admin.title": "Administration du contenu",
     "admin.soon":

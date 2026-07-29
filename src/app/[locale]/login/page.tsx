@@ -20,9 +20,10 @@ export default function LoginPage() {
   const t = useT();
   const locale = useLocale();
   const router = useRouter();
-  const { signIn, signUp, signInWithGoogle, configured } = useAuth();
+  const { signIn, signUp, signInWithGoogle, resetPassword, configured } = useAuth();
 
-  const [mode, setMode] = useState<"in" | "up">("in");
+  const [mode, setMode] = useState<"in" | "up" | "reset">("in");
+  const [sent, setSent] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,12 +34,13 @@ export default function LoginPage() {
 
   const valid = useMemo(() => {
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (mode === "reset") return emailOk;
     const passOk = password.length >= 6;
     const nameOk = mode === "in" || name.trim().length > 1;
     return emailOk && passOk && nameOk;
   }, [email, password, name, mode]);
 
-  const mood: RobotMood = done
+  const mood: RobotMood = done || sent
     ? "celebrate"
     : error
       ? "error"
@@ -48,19 +50,28 @@ export default function LoginPage() {
           ? "thinking"
           : "idle";
 
-  const screen = done
-    ? locale === "fr" ? "BRAVO" : "WELCOME"
-    : error
-      ? locale === "fr" ? "OUPS" : "OOPS"
-      : mode === "in"
-        ? locale === "fr" ? "CONNEXION" : "LOG IN"
-        : locale === "fr" ? "INSCRIPTION" : "SIGN UP";
+  const screen = sent
+    ? locale === "fr" ? "ENVOYE" : "SENT"
+    : done
+      ? locale === "fr" ? "BRAVO" : "WELCOME"
+      : error
+        ? locale === "fr" ? "OUPS" : "OOPS"
+        : mode === "reset"
+          ? locale === "fr" ? "RESET" : "RESET"
+          : mode === "in"
+            ? locale === "fr" ? "CONNEXION" : "LOG IN"
+            : locale === "fr" ? "INSCRIPTION" : "SIGN UP";
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setBusy(true);
     try {
+      if (mode === "reset") {
+        await resetPassword(email);
+        setSent(true);
+        return;
+      }
       if (mode === "up") await signUp(name, email, password);
       else await signIn(email, password);
       setDone(true);
@@ -89,7 +100,9 @@ export default function LoginPage() {
       <div className="order-1 flex flex-col items-center md:order-none">
         <RobotMascot mood={mood} screenText={screen} className="h-64 w-64 sm:h-72 sm:w-72" />
         <p className="mt-3 h-6 text-center font-semibold" style={{ color: "var(--neon)" }}>
-          {done
+          {sent
+            ? t("auth.resetSent")
+            : done
             ? locale === "fr" ? "C'est parti !" : "Let's go!"
             : error
               ? error
@@ -102,9 +115,15 @@ export default function LoginPage() {
       {/* the form */}
       <div className="order-2 md:order-none">
         <h1 className="mb-1 text-3xl font-extrabold text-strong">
-          {mode === "in" ? t("auth.signIn") : t("auth.signUp")}
+          {mode === "reset"
+            ? t("auth.resetTitle")
+            : mode === "in"
+              ? t("auth.signIn")
+              : t("auth.signUp")}
         </h1>
-        <p className="mb-5 text-muted">{t("app.tagline")}</p>
+        <p className="mb-5 text-muted">
+          {mode === "reset" ? t("auth.resetBody") : t("app.tagline")}
+        </p>
 
         {!configured && (
           <p className="mb-4 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3 text-sm font-medium text-amber-200">
@@ -134,6 +153,7 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
+          {mode !== "reset" && (
           <input
             type="password"
             className="field w-full rounded-xl px-4 py-3 text-base"
@@ -143,15 +163,21 @@ export default function LoginPage() {
             minLength={6}
             required
           />
+          )}
 
           <button
             type="submit"
             disabled={busy}
             className="btn-neon w-full rounded-xl py-3.5 text-lg font-black uppercase tracking-wide transition hover:brightness-110 disabled:opacity-50"
           >
-            {mode === "in" ? t("auth.signIn") : t("auth.signUp")}
+            {mode === "reset"
+              ? t("auth.sendReset")
+              : mode === "in"
+                ? t("auth.signIn")
+                : t("auth.signUp")}
           </button>
 
+          {mode !== "reset" && (
           <button
             type="button"
             onClick={google}
@@ -161,8 +187,51 @@ export default function LoginPage() {
           >
             {t("auth.google")}
           </button>
+          )}
+
+          {mode === "in" && (
+            <button
+              type="button"
+              onClick={() => {
+                setMode("reset");
+                setError(null);
+                setSent(false);
+              }}
+              className="w-full pt-1 text-center text-sm font-semibold text-faint transition hover:opacity-80"
+            >
+              {t("auth.forgot")}
+            </button>
+          )}
+
+          {sent && (
+            <p
+              className="rounded-xl border p-3 text-sm leading-relaxed"
+              style={{
+                borderColor: "color-mix(in srgb, var(--cleared) 40%, transparent)",
+                background: "color-mix(in srgb, var(--cleared) 10%, transparent)",
+                color: "var(--cleared)",
+              }}
+            >
+              {t("auth.resetSent")}
+            </p>
+          )}
         </form>
 
+        {mode === "reset" ? (
+          <p className="mt-4 text-center">
+            <button
+              onClick={() => {
+                setMode("in");
+                setError(null);
+                setSent(false);
+              }}
+              className="font-extrabold underline decoration-2 underline-offset-2"
+              style={{ color: "var(--neon)" }}
+            >
+              {t("auth.backToSignIn")}
+            </button>
+          </p>
+        ) : (
         <p className="mt-4 text-center text-muted">
           {mode === "in" ? t("auth.noAccount") : t("auth.haveAccount")}{" "}
           <button
@@ -175,6 +244,7 @@ export default function LoginPage() {
             {mode === "in" ? t("auth.signUp") : t("auth.signIn")}
           </button>
         </p>
+        )}
 
         <p className="mt-6 text-center">
           <Link href={`/${locale}`} className="text-sm text-faint hover:opacity-80">

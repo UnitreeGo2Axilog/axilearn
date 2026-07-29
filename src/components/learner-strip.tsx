@@ -7,16 +7,51 @@
  * the learner chooses what to do next -- the page that holds the tracks --
  * rather than buried inside one track's map.
  */
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Coins, Flame, Trophy } from "lucide-react";
+import { ArrowRight, Coins, Flame, LayoutDashboard, ShieldCheck, Trophy } from "lucide-react";
 import { learner, mainTracks, trackProgress } from "@/content/roadmap-data";
 import { useAuth } from "@/lib/auth-context";
-import { useT } from "@/i18n/use-t";
+import { useLocale, useT } from "@/i18n/use-t";
 
 export function LearnerStrip() {
   const { user, profile } = useAuth();
+  const locale = useLocale();
   const t = useT();
   if (!user) return null;
+
+  // An admin has no XP, streak or coins -- show them the way into the
+  // dashboard instead of a learner bar that would always read "Level 1".
+  if (profile?.role === "admin") {
+    return (
+      <section className="panel panel-glow mb-8 flex flex-wrap items-center gap-4 rounded-2xl p-4">
+        <div
+          className="grid h-12 w-12 shrink-0 place-items-center rounded-xl"
+          style={{
+            background: "linear-gradient(135deg, var(--advanced), var(--neon))",
+            color: "var(--surface-solid)",
+          }}
+        >
+          <ShieldCheck className="h-6 w-6" />
+        </div>
+        <div className="min-w-[180px] flex-1">
+          <p className="text-sm font-bold text-strong">
+            {t("home.adminHello")} · {profile.displayName}
+          </p>
+          <p className="mt-0.5 text-[11px] text-faint">{t("home.adminHint")}</p>
+        </div>
+        <Link
+          href={`/${locale}/admin`}
+          className="inline-flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black"
+          style={{ background: "var(--advanced)", color: "var(--surface-solid)" }}
+        >
+          <LayoutDashboard className="h-4 w-4" />
+          {t("profile.openAdmin")}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </section>
+    );
+  }
 
   const pct = Math.min(100, Math.round((learner.currentXp / learner.nextLevelXp) * 100));
   const name = profile?.displayName ?? learner.name;

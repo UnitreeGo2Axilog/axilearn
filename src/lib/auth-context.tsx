@@ -17,6 +17,7 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -46,6 +47,7 @@ interface AuthValue {
   signUp: (name: string, email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -124,6 +126,11 @@ export function AuthProvider({
       },
       async signInWithGoogle() {
         await signInWithPopup(getFirebaseAuth(), new GoogleAuthProvider());
+      },
+      async resetPassword(email) {
+        // Firebase sends the email and hosts the reset page itself, so there
+        // is no token handling or reset route for us to get wrong.
+        await sendPasswordResetEmail(getFirebaseAuth(), email);
       },
       async logout() {
         await signOut(getFirebaseAuth());

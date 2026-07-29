@@ -45,6 +45,10 @@ const MAP: Record<string, { en: string; fr: string }> = {
     en: "The Google window was closed before finishing.",
     fr: "La fenêtre Google a été fermée avant la fin.",
   },
+  "auth/missing-email": {
+    en: "Type your email address first.",
+    fr: "Saisis d'abord ton adresse email.",
+  },
   "auth/network-request-failed": {
     en: "No internet connection.",
     fr: "Pas de connexion internet.",
