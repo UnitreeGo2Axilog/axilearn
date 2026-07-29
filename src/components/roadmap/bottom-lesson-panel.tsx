@@ -7,9 +7,11 @@
  * action, and runs a light sweep across its top edge so it reads as "live"
  * rather than a static box.
  */
+import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Clock, Lock, Play, RotateCcw, Sparkles, Zap } from "lucide-react";
 import type { Level } from "@/content/roadmap-data";
+import { useLocale } from "@/i18n/use-t";
 
 interface Props {
   level: Level | null;
@@ -40,6 +42,7 @@ function cta(level: Level) {
 }
 
 export function BottomLessonPanel({ level, trackTitle, accent }: Props) {
+  const locale = useLocale();
   const reduce = useReducedMotion();
 
   return (
@@ -113,15 +116,19 @@ export function BottomLessonPanel({ level, trackTitle, accent }: Props) {
               {(() => {
                 const c = cta(level);
                 const CtaIcon = c.icon;
-                return (
-                  <button
-                    disabled={c.disabled}
-                    style={c.inline}
-                    className={`mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-black uppercase tracking-wide transition active:translate-y-0.5 disabled:cursor-not-allowed ${c.classes}`}
-                  >
+                const shape = `mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-black uppercase tracking-wide transition active:translate-y-0.5 disabled:cursor-not-allowed ${c.classes}`;
+                // A locked mission stays a dead button; an open one opens the
+                // lesson, which is what makes the map navigable at all.
+                return c.disabled ? (
+                  <button disabled style={c.inline} className={shape}>
                     <CtaIcon className="h-4 w-4" />
                     {c.label}
                   </button>
+                ) : (
+                  <Link href={`/${locale}/lesson/${level.id}`} style={c.inline} className={shape}>
+                    <CtaIcon className="h-4 w-4" />
+                    {c.label}
+                  </Link>
                 );
               })()}
             </div>

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, Lock } from "lucide-react";
 import { getT, isLocale } from "@/i18n/messages";
-import { mainTracks, trackProgress } from "@/content/roadmap-data";
+import { trackProgress } from "@/content/roadmap-data";
+import { getMainTracks } from "@/content/store";
 import type { Locale } from "@/content/types";
 import { RobotMascot } from "@/components/robot-mascot";
 import { LearnerStrip } from "@/components/learner-strip";
@@ -13,8 +14,6 @@ import { LearnerStrip } from "@/components/learner-strip";
  * product. Each track is a glowing "mission select" card that says in one
  * word what it is -- ROBOTICS / AI / GAMES -- before any reading happens.
  */
-const COMING_SOON = new Set(["ml-ai", "game-dev"]);
-
 export default async function HomePage({
   params,
 }: {
@@ -23,6 +22,7 @@ export default async function HomePage({
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getT(locale);
+  const trackList = await getMainTracks(locale);
 
   return (
     <div className="relative z-10 mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-7xl flex-col justify-center px-4 py-10">
@@ -45,12 +45,13 @@ export default async function HomePage({
         />
       </section>
 
-      <LearnerStrip />
+      <LearnerStrip tracks={trackList} />
 
       {/* mission select */}
       <section className="grid gap-5 md:grid-cols-3">
-        {mainTracks.map((track) => {
-          const locked = COMING_SOON.has(track.id);
+        {trackList.map((track) => {
+          // "coming soon" is a content decision now, editable in the CMS.
+          const locked = track.comingSoon === true || track.levels.length === 0;
           const pct = trackProgress(track);
 
           const card = (

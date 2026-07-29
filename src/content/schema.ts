@@ -1,0 +1,232 @@
+/**
+ * How content is stored in Firestore, and how it becomes the shapes the pages
+ * already render.
+ *
+ * Two decisions worth knowing:
+ *
+ * 1. ONE DOCUMENT PER TRACK, with its lessons as an ordered array. A document
+ *    per lesson would read cleaner, but a single map screen would then cost
+ *    1 + n reads; the free tier allows 50k a day and there is no paid plan
+ *    here. A track doc costs one read no matter how many lessons it holds.
+ *    Long lesson text would eventually threaten Firestore's 1 MiB document
+ *    limit, so the BODY of each lesson lives in its own
+ *    `tracks/{id}/bodies/{lessonId}` document, fetched only when a learner
+ *    actually opens that lesson.
+ *
+ * 2. NO MAP COORDINATES ARE STORED. A lesson knows its order; where its
+ *    hexagon sits on the map is computed by `layout()`. Nobody editing the
+ *    curriculum should have to think in percentages, and reordering a lesson
+ *    cannot leave two nodes on top of each other.
+ *
+ * English is required on every string, French is optional and falls back to
+ * English, so the supervisor can publish a lesson before it is translated.
+ */
+import {
+  layout,
+  type Difficulty,
+  type Level,
+  type LevelState,
+  type LevelType,
+  type RoadmapTrack,
+} from "./roadmap-data";
+import type { Locale } from "./types";
+
+/** A string that must exist in English and may exist in French. */
+export interface L10n {
+  en: string;
+  fr?: string;
+}
+
+export type PublishStatus = "draft" | "published";
+
+/** Read a localized string, falling back to English when untranslated. */
+export function pick(value: L10n | undefined, locale: Locale): string {
+  if (!value) return "";
+  const hit = locale === "en" ? value.en : value.fr;
+  return (hit && hit.trim()) || value.en || "";
+}
+
+export function l10n(en: string, fr?: string): L10n {
+  return fr ? { en, fr } : { en };
+}
+
+/** One lesson as stored inside its track document. */
+export interface LessonEntry {
+  id: string;
+  order: number;
+  status: PublishStatus;
+  type: LevelType;
+  difficulty: Difficulty;
+  xpReward: number;
+  durationMinutes: number;
+  skills: string[];
+  title: L10n;
+  shortDescription: L10n;
+  badge?: string;
+  section?: string;
+  /** YouTube video ID only -- we embed, we never host video files. */
+  videoId?: string;
+}
+
+export interface PrimerDoc {
+  title: L10n;
+  why: L10n;
+  minutes: number;
+  lessons: L10n[];
+  /** The track holding the primer's own map. */
+  trackId?: string;
+}
+
+/** One track document. */
+export interface TrackDoc {
+  id: string;
+  order: number;
+  status: PublishStatus;
+  hidden?: boolean;
+  /** Visible on the home page but not enterable yet. */
+  comingSoon?: boolean;
+  short: string;
+  color: string;
+  glow: string;
+  icon: string;
+  title: L10n;
+  description: L10n;
+  overview: {
+    tagline: L10n;
+    forWho: L10n;
+    outcomes: L10n[];
+    advice: L10n[];
+    primer?: PrimerDoc;
+  };
+  lessons: LessonEntry[];
+}
+
+/**
+ * Work out which nodes are open.
+ *
+ * Content does not store progress -- that belongs to the learner. Given the
+ * set of lessons they have finished, everything cleared is `completed`, the
+ * first unfinished one is `current`, and the rest stay `locked`. With no
+ * progress at all that means lesson one is open and nothing else, which is
+ * exactly right for someone who just arrived.
+ */
+export function deriveStates(count: number, completed: Set<string>, ids: string[]): LevelState[] {
+  let currentTaken = false;
+  return ids.slice(0, count).map((id) => {
+    if (completed.has(id)) return "completed" as LevelState;
+    if (!currentTaken) {
+      currentTaken = true;
+      return "current" as LevelState;
+    }
+    return "locked" as LevelState;
+  });
+}
+
+/** Turn a stored track into the shape every page already renders. */
+export function toRoadmapTrack(
+  doc: TrackDoc,
+  locale: Locale,
+  opts: { includeDrafts?: boolean; completed?: Set<string> } = {},
+): RoadmapTrack {
+  const completed = opts.completed ?? new Set<string>();
+
+  const entries = [...doc.lessons]
+    .filter((l) => opts.includeDrafts || l.status === "published")
+    .sort((a, b) => a.order - b.order);
+
+  const positions = layout(entries);
+  const states = deriveStates(entries.length, completed, entries.map((l) => l.id));
+
+  const levels: Level[] = entries.map((l, i) => ({
+    id: l.id,
+    title: pick(l.title, locale),
+    shortDescription: pick(l.shortDescription, locale),
+    type: l.type,
+    state: states[i],
+    xpReward: l.xpReward,
+    durationMinutes: l.durationMinutes,
+    difficulty: l.difficulty,
+    position: positions[i],
+    skills: l.skills ?? [],
+    ...(l.badge ? { badge: l.badge } : {}),
+    ...(l.section ? { section: l.section } : {}),
+    ...(l.videoId ? { videoId: l.videoId } : {}),
+  }));
+
+  return {
+    id: doc.id,
+    title: pick(doc.title, locale),
+    short: doc.short,
+    description: pick(doc.description, locale),
+    color: doc.color,
+    glow: doc.glow,
+    icon: doc.icon,
+    ...(doc.hidden ? { hidden: true } : {}),
+    ...(doc.comingSoon ? { comingSoon: true } : {}),
+    overview: {
+      tagline: pick(doc.overview.tagline, locale),
+      forWho: pick(doc.overview.forWho, locale),
+      outcomes: (doc.overview.outcomes ?? []).map((o) => pick(o, locale)),
+      advice: (doc.overview.advice ?? []).map((a) => pick(a, locale)),
+      ...(doc.overview.primer
+        ? {
+            primer: {
+              title: pick(doc.overview.primer.title, locale),
+              why: pick(doc.overview.primer.why, locale),
+              minutes: doc.overview.primer.minutes,
+              lessons: (doc.overview.primer.lessons ?? []).map((l) => pick(l, locale)),
+            },
+          }
+        : {}),
+    },
+    levels,
+  };
+}
+
+/** Blank track, used by the "new track" form. */
+export function emptyTrackDoc(id: string, order: number): TrackDoc {
+  return {
+    id,
+    order,
+    status: "draft",
+    comingSoon: false,
+    short: id.slice(0, 8).toUpperCase(),
+    color: "#22d3ee",
+    glow: "34,211,238",
+    icon: "Bot",
+    title: { en: "" },
+    description: { en: "" },
+    overview: { tagline: { en: "" }, forWho: { en: "" }, outcomes: [], advice: [] },
+    lessons: [],
+  };
+}
+
+/** Blank lesson, used by the "new lesson" form. */
+export function emptyLessonEntry(id: string, order: number): LessonEntry {
+  return {
+    id,
+    order,
+    status: "draft",
+    type: "lesson",
+    difficulty: "easy",
+    xpReward: 50,
+    durationMinutes: 20,
+    skills: [],
+    title: { en: "" },
+    shortDescription: { en: "" },
+  };
+}
+
+/**
+ * Pull a YouTube ID out of whatever the admin pasted.
+ *
+ * Accepts a bare ID, a watch URL, a short youtu.be link or an embed URL --
+ * because "paste the link" is the instruction people actually follow.
+ */
+export function youTubeId(input: string): string | null {
+  const s = input.trim();
+  if (!s) return null;
+  if (/^[\w-]{11}$/.test(s)) return s;
+  const m = s.match(/(?:youtu\.be\/|v=|\/embed\/|\/shorts\/)([\w-]{11})/);
+  return m ? m[1] : null;
+}

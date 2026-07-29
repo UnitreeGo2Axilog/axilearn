@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AxiLearn
 
-## Getting Started
+A step-by-step learning platform for teenagers and beginners, in English and
+French. Three tracks — **Physical AI** (robotics), **AI & Machine Learning**,
+**Game Development** — presented as a game-style mission map rather than a list
+of chapters.
 
-First, run the development server:
+Built with Next.js (App Router) + TypeScript + Tailwind, on Firebase Auth and
+Firestore, entirely on free tiers.
+
+## Running it
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open http://localhost:3000 — you land on `/en` or `/fr` depending on your
+browser's language.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Firebase config goes in `.env.local` (copy `.env.example`). Without it the site
+still runs: content falls back to the curriculum bundled in the repo, and
+sign-in is disabled rather than broken.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How content works
 
-## Learn More
+Content lives in Firestore, one document per track with its lessons inside it,
+and is edited from `/admin` in the browser. No lesson text lives in the code.
 
-To learn more about Next.js, take a look at the following resources:
+- **Published vs draft.** Only published tracks and lessons reach learners; a
+  draft is visible to admins alone. This is enforced by `firestore.rules`, not
+  by the app.
+- **The map lays itself out.** A lesson's position on the mission map is derived
+  from its order in the track. There are no coordinates to edit — reorder a
+  lesson and its node moves.
+- **English is required, French is optional.** Anything untranslated shows the
+  English text, so a lesson can go live the day it is written.
+- **Videos are embedded, never uploaded.** A lesson stores a YouTube ID; free
+  hosting has no room for video files.
+- **Reads are cached for 60 seconds**, which is what keeps the platform inside
+  Firestore's free 50k reads a day. Edits therefore appear on the public site
+  within about a minute.
+- **If Firestore is empty or unreachable**, the repo curriculum
+  (`src/content/repo-content.ts`) is served instead, so the site is never blank.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Setting up the CMS on a fresh project
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Three steps, in order:
 
-## Deploy on Vercel
+1. **Deploy the rules.** Copy `firestore.rules` into the Firebase console
+   (Firestore Database → Rules → Publish). Nothing else protects drafts or
+   stops a learner writing content.
+2. **Make yourself an admin.** In the console: Firestore → `users` → your
+   document → set `role` to `admin`. This cannot be done from the app on
+   purpose — the rules forbid a browser from changing its own role, which is
+   what stops anyone promoting themselves.
+3. **Press "Import starter content"** on `/admin`. It copies the bundled
+   curriculum into Firestore as the starting point. Running it again skips
+   tracks that already exist, so it cannot wipe your edits.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Layout
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/[locale]/          pages; every route is language-prefixed
+    admin/               the CMS (dashboard, track editor, lesson editor)
+  components/            UI, including the mission map and the robot mascot
+  content/
+    schema.ts            how content is stored, and how it becomes page shapes
+    store.ts             server-side reads (published only, cached)
+    admin-content.ts     admin reads and writes (drafts included)
+    repo-content.ts      the bundled curriculum: fallback and import seed
+    roadmap-data.ts      page-facing types and the map layout function
+  i18n/                  typed EN/FR messages; a missing key fails the build
+  lib/                   Firebase, auth, theme
+firestore.rules          the actual security boundary
+```
+
+## Security notes
+
+- The `NEXT_PUBLIC_FIREBASE_*` values are public by design — every Firebase web
+  app ships them. Protection comes from `firestore.rules`.
+- There is **no service-account key** anywhere in this project, and there should
+  not be. Seeding runs as the signed-in admin instead.
+- `AuthGate` and the admin role check are UX, not security. A determined visitor
+  can reach any page; what they cannot do is read a draft or write content.

@@ -7,9 +7,18 @@ rules_version = '2';
 //  - Nobody can give themselves the admin role from the browser: the `role`
 //    field is fixed at creation and can never be changed client-side. Admins
 //    are promoted from the Firebase console.
-//  - Course content is world-readable (it is the product) but writable only by
-//    admins, ready for the Phase-2 CMS.
+//  - PUBLISHED course content is world-readable (it is the product). DRAFTS are
+//    visible only to admins, so the supervisor can write a lesson in the open
+//    without it appearing on the site.
+//  - All content writes are admin-only.
 //  - Everything not listed is denied.
+//
+// Note on drafts and queries: rules are not filters. Because the read rule
+// below inspects `resource.data.status`, any LIST query over /tracks must
+// already constrain that field or Firestore rejects it outright. That is
+// deliberate -- it is what stops "give me every track" from returning drafts --
+// and it is why the server reads published content with a filtered query
+// (see src/content/store.ts) rather than a bare collection listing.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -23,6 +32,9 @@ service cloud.firestore {
       return isSignedIn()
         && exists(/databases/$(database)/documents/users/$(request.auth.uid))
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    function isPublished() {
+      return resource != null && resource.data.status == 'published';
     }
 
     match /users/{uid} {
@@ -41,9 +53,20 @@ service cloud.firestore {
                          || isAdmin();
     }
 
-    match /tracks/{id}   { allow read: if true; allow write: if isAdmin(); }
-    match /modules/{id}  { allow read: if true; allow write: if isAdmin(); }
-    match /lessons/{id}  { allow read: if true; allow write: if isAdmin(); }
+    // A track document holds its own lessons, so one read serves a whole map.
+    match /tracks/{trackId} {
+      allow read: if isPublished() || isAdmin();
+      allow write: if isAdmin();
+
+      // Long lesson text, kept out of the track document so that document
+      // stays well under Firestore's 1 MiB limit. Each body mirrors its
+      // lesson's status, so an unpublished lesson's text is admin-only too --
+      // checking the parent track instead would cost an extra read per open.
+      match /bodies/{lessonId} {
+        allow read: if isPublished() || isAdmin();
+        allow write: if isAdmin();
+      }
+    }
 
     match /{document=**} {
       allow read, write: if false;

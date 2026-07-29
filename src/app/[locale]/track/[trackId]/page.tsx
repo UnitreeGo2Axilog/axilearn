@@ -13,7 +13,8 @@ import {
   Zap,
 } from "lucide-react";
 import { getT, isLocale } from "@/i18n/messages";
-import { tracks, trackProgress } from "@/content/roadmap-data";
+import { trackProgress } from "@/content/roadmap-data";
+import { getTrack } from "@/content/store";
 import type { Locale } from "@/content/types";
 import { AuthGate } from "@/components/auth-gate";
 
@@ -35,7 +36,7 @@ export default async function TrackIntroPage({
   const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getT(locale);
 
-  const track = tracks.find((x) => x.id === trackId);
+  const track = await getTrack(locale, trackId);
   if (!track) notFound();
 
   const { overview } = track;

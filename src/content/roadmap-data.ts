@@ -29,6 +29,8 @@ export interface Level {
   skills: string[];
   badge?: string;
   section?: string;
+  /** YouTube id, when the lesson has a video. */
+  videoId?: string;
 }
 
 /** Optional warm-up module offered before a track starts. */
@@ -58,6 +60,8 @@ export interface RoadmapTrack {
   icon: string;
   /** Hidden from the main track switcher (e.g. an optional sub-course). */
   hidden?: boolean;
+  /** Shown but not enterable yet -- the supervisor decides this per track. */
+  comingSoon?: boolean;
   overview: TrackOverview;
   levels: Level[];
 }
@@ -90,7 +94,7 @@ export const learner: Learner = {
  * and walks from the bottom of the map to the top -- climbing, which reads as
  * progress.
  */
-function layout<T extends { id: string }>(items: T[]): { x: number; y: number }[] {
+export function layout<T extends { id: string }>(items: T[]): { x: number; y: number }[] {
   const pad = 9;
   const span = 100 - pad * 2;
   const gap = span / Math.max(items.length - 1, 1);
@@ -204,6 +208,7 @@ export const tracks: RoadmapTrack[] = [
     color: "#a78bfa",
     glow: "167,139,250",
     icon: "Brain",
+    comingSoon: true,
     overview: {
       tagline: "Teach a machine to learn from data -- from first principles to a model that predicts.",
       forWho: "For complete beginners. If you can use a browser, you can start here.",
@@ -231,6 +236,7 @@ export const tracks: RoadmapTrack[] = [
     color: "#f472b6",
     glow: "244,114,182",
     icon: "Gamepad2",
+    comingSoon: true,
     overview: {
       tagline: "Build a real game you can play, then put it online for your friends.",
       forWho: "Made for younger learners. Fun first -- the serious skills sneak in along the way.",

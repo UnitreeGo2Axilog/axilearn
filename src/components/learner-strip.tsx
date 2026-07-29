@@ -10,11 +10,11 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Coins, Flame, LayoutDashboard, ShieldCheck, Trophy } from "lucide-react";
-import { learner, mainTracks, trackProgress } from "@/content/roadmap-data";
+import { learner, trackProgress, type RoadmapTrack } from "@/content/roadmap-data";
 import { useAuth } from "@/lib/auth-context";
 import { useLocale, useT } from "@/i18n/use-t";
 
-export function LearnerStrip() {
+export function LearnerStrip({ tracks }: { tracks: RoadmapTrack[] }) {
   const { user, profile } = useAuth();
   const locale = useLocale();
   const t = useT();
@@ -139,7 +139,7 @@ export function LearnerStrip() {
 
       {/* per-track completion */}
       <div className="mt-4 grid gap-2 sm:grid-cols-3">
-        {mainTracks.map((track) => {
+        {tracks.map((track) => {
           const p = trackProgress(track);
           return (
             <div key={track.id} className="flex items-center gap-2">

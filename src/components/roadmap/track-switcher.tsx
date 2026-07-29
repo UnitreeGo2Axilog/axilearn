@@ -3,19 +3,19 @@
 /** Switch between the three worlds without leaving the map. */
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { mainTracks, trackProgress, type RoadmapTrack } from "@/content/roadmap-data";
+import { trackProgress, type RoadmapTrack } from "@/content/roadmap-data";
 import { useLocale } from "@/i18n/use-t";
 
 interface Props {
   activeId: string;
-  onChange: (track: RoadmapTrack) => void;
+  tracks: RoadmapTrack[];
 }
 
-export function TrackSwitcher({ activeId }: Props) {
+export function TrackSwitcher({ activeId, tracks }: Props) {
   const locale = useLocale();
   return (
     <div className="flex w-full gap-2 pb-3">
-      {mainTracks.map((track) => {
+      {tracks.map((track) => {
         const active = track.id === activeId;
         const pct = trackProgress(track);
         return (
