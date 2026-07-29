@@ -28,13 +28,14 @@ export default async function HomePage({
       {/* hero */}
       <section className="mb-10 grid items-center gap-6 md:grid-cols-[1fr_auto]">
         <div className="text-center md:text-left">
-          <span className="inline-block rounded-md border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-1 font-robot text-[10px] font-bold tracking-[0.24em] text-cyan-300">
+          <span className="inline-block rounded-md border px-2.5 py-1 font-robot text-[10px] font-bold tracking-[0.24em]"
+            style={{ borderColor: "var(--border-strong)", background: "color-mix(in srgb, var(--neon) 12%, transparent)", color: "var(--neon)" }}>
             AXILEARN
           </span>
-          <h1 className="mt-3 text-4xl font-extrabold leading-tight tracking-tight text-slate-50 sm:text-5xl">
+          <h1 className="mt-3 text-4xl font-extrabold leading-tight tracking-tight text-strong sm:text-5xl">
             {t("home.title")}
           </h1>
-          <p className="mx-auto mt-3 max-w-xl text-lg text-slate-400 md:mx-0">{t("home.subtitle")}</p>
+          <p className="mx-auto mt-3 max-w-xl text-lg text-muted md:mx-0">{t("home.subtitle")}</p>
         </div>
         <RobotMascot
           mood="happy"
@@ -53,8 +54,8 @@ export default async function HomePage({
             <div
               className="group relative h-full overflow-hidden rounded-2xl border p-5 transition"
               style={{
-                borderColor: locked ? "rgba(148,163,184,0.18)" : `${track.color}55`,
-                background: "rgba(10,16,32,0.7)",
+                borderColor: locked ? "var(--border)" : `${track.color}66`,
+                background: "var(--surface)",
                 boxShadow: locked ? "none" : `0 0 26px rgba(${track.glow},0.12)`,
               }}
             >
@@ -67,33 +68,35 @@ export default async function HomePage({
 
               <span
                 className="font-robot text-2xl font-black tracking-[0.18em]"
-                style={{ color: locked ? "#475569" : track.color }}
+                style={{ color: locked ? "var(--text-faint)" : track.color }}
               >
                 {track.short}
               </span>
-              <h2 className="mt-2 text-lg font-bold text-slate-100">{track.title}</h2>
-              <p className="mt-1 text-sm leading-relaxed text-slate-400">{track.description}</p>
+              <h2 className="mt-2 text-lg font-bold text-strong">{track.title}</h2>
+              <p className="mt-1 text-sm leading-relaxed text-muted">{track.description}</p>
 
               {locked ? (
-                <span className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-slate-600/40 bg-slate-700/20 px-3 py-1.5 text-xs font-bold text-slate-400">
+                <span className="mt-4 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold text-muted"
+                  style={{ borderColor: "var(--border)", background: "var(--bg-2)" }}>
                   <Lock className="h-3 w-3" />
                   {t("home.comingSoon")}
                 </span>
               ) : (
                 <>
-                  <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                  <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full"
+                    style={{ background: "color-mix(in srgb, var(--text) 14%, transparent)" }}>
                     <span
                       className="block h-full rounded-full"
                       style={{ width: `${pct}%`, background: track.color, boxShadow: `0 0 10px ${track.color}` }}
                     />
                   </div>
                   <div className="mt-3 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-500">
+                    <span className="text-xs font-semibold text-faint">
                       {track.levels.length} {t("home.lessons")} · {pct}%
                     </span>
                     <span
                       className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-black uppercase tracking-wide transition group-hover:gap-2.5"
-                      style={{ background: track.color, color: "#04121a" }}
+                      style={{ background: track.color, color: "var(--surface-solid)" }}
                     >
                       {t("home.start")}
                       <ArrowRight className="h-3.5 w-3.5" />

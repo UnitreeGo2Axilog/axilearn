@@ -29,15 +29,15 @@ interface Props {
 
 function style(level: Level) {
   if (level.state === "locked")
-    return { rim: "#334155", icon: "#64748b", glow: "51,65,85", size: 50, halo: 0 };
+    return { rim: "var(--route-dim)", icon: "var(--text-faint)", glow: "51,65,85", size: 50, halo: 0 };
   if (level.state === "current")
-    return { rim: "#22d3ee", icon: "#67e8f9", glow: "34,211,238", size: 66, halo: 26 };
+    return { rim: "var(--neon)", icon: "var(--neon)", glow: "34,211,238", size: 66, halo: 26 };
   if (level.type === "final_project")
-    return { rim: "#fbbf24", icon: "#fde68a", glow: "251,191,36", size: 68, halo: 22 };
+    return { rim: "var(--reward)", icon: "var(--reward)", glow: "251,191,36", size: 68, halo: 22 };
   if (level.type === "project")
-    return { rim: "#a78bfa", icon: "#ddd6fe", glow: "167,139,250", size: 58, halo: 18 };
+    return { rim: "var(--advanced)", icon: "var(--advanced)", glow: "167,139,250", size: 58, halo: 18 };
   // completed / checkpoint -> the reference's teal ring + green tick
-  return { rim: "#2dd4bf", icon: "#a3e635", glow: "45,212,191", size: 54, halo: 18 };
+  return { rim: "var(--teal-rim)", icon: "var(--cleared)", glow: "45,212,191", size: 54, halo: 18 };
 }
 
 function NodeIcon({ level, color }: { level: Level; color: string }) {
@@ -68,7 +68,7 @@ export function RoadmapNode({ level, index, selected, onSelect }: Props) {
           style={{
             width: s.size + s.halo,
             height: s.size + s.halo,
-            background: `radial-gradient(circle, rgba(${s.glow},0.55), transparent 70%)`,
+            background: `radial-gradient(circle, rgba(${s.glow},var(--halo-alpha)), transparent 70%)`,
           }}
         />
       )}
@@ -103,7 +103,9 @@ export function RoadmapNode({ level, index, selected, onSelect }: Props) {
           style={{
             clipPath: HEX,
             background: s.rim,
-            filter: s.halo ? `drop-shadow(0 0 ${isCurrent ? 14 : 8}px rgba(${s.glow},0.95))` : "none",
+            filter: s.halo
+              ? `drop-shadow(0 0 ${isCurrent ? 14 : 8}px rgba(${s.glow},var(--rim-glow)))`
+              : "none",
           }}
         />
         {/* dark interior -- this is what makes it read as an outline node */}
@@ -112,7 +114,7 @@ export function RoadmapNode({ level, index, selected, onSelect }: Props) {
           style={{
             inset: 3,
             clipPath: HEX,
-            background: isCurrent ? "rgba(8,47,73,0.95)" : "rgba(5,9,20,0.94)",
+            background: isCurrent ? "var(--node-inner-active)" : "var(--node-inner)",
           }}
         />
         {selected && (
@@ -129,7 +131,7 @@ export function RoadmapNode({ level, index, selected, onSelect }: Props) {
       <div className="pointer-events-none absolute left-1/2 top-full mt-1.5 w-28 -translate-x-1/2 text-center">
         <span
           className="text-[10px] font-semibold leading-tight"
-          style={{ color: level.state === "locked" ? "#475569" : "#94a3b8" }}
+          style={{ color: level.state === "locked" ? "var(--text-faint)" : "var(--text-muted)" }}
         >
           {level.title}
         </span>

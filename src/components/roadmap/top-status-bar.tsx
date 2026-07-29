@@ -6,6 +6,7 @@
  */
 import { motion } from "framer-motion";
 import { Coins, Flame, Menu } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface Props {
   name: string;
@@ -33,12 +34,14 @@ export function TopStatusBar({
   const pct = Math.min(100, Math.round((currentXp / nextLevelXp) * 100));
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/5 bg-[#050914]/85 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b backdrop-blur-md"
+      style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--bg) 88%, transparent)" }}>
       <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-2.5">
         <button
           onClick={onMenu}
           aria-label="Menu"
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border text-main transition"
+          style={{ borderColor: "var(--border)", background: "var(--bg-2)" }}
         >
           <Menu className="h-4 w-4" />
         </button>
@@ -47,13 +50,13 @@ export function TopStatusBar({
         <div className="relative shrink-0">
           <div
             className="grid h-10 w-10 place-items-center rounded-xl text-sm font-black text-slate-900"
-            style={{ background: `linear-gradient(135deg, ${accent}, #a3e635)` }}
+            style={{ background: `linear-gradient(135deg, ${accent}, var(--cleared))` }}
           >
             {name.slice(0, 1).toUpperCase()}
           </div>
           <span
-            className="absolute -bottom-1.5 -right-1.5 rounded-md border border-[#050914] px-1.5 text-[10px] font-black text-slate-900"
-            style={{ background: "#fbbf24" }}
+            className="absolute -bottom-1.5 -right-1.5 rounded-md px-1.5 text-[10px] font-black"
+            style={{ background: "var(--reward)", color: "var(--surface-solid)", border: "1px solid var(--bg)" }}
           >
             {level}
           </span>
@@ -62,15 +65,17 @@ export function TopStatusBar({
         {/* name + xp */}
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline justify-between gap-2">
-            <p className="truncate text-sm font-bold text-slate-100">{name}</p>
-            <p className="shrink-0 font-robot text-[10px] tracking-wider text-cyan-300">
+            <p className="truncate text-sm font-bold text-strong">{name}</p>
+            <p className="shrink-0 font-robot text-[10px] tracking-wider"
+              style={{ color: "var(--neon)" }}>
               {currentXp}/{nextLevelXp} XP
             </p>
           </div>
-          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full"
+            style={{ background: "color-mix(in srgb, var(--text) 14%, transparent)" }}>
             <motion.div
               className="h-full rounded-full"
-              style={{ background: `linear-gradient(90deg, ${accent}, #a3e635)` }}
+              style={{ background: `linear-gradient(90deg, ${accent}, var(--cleared))` }}
               initial={{ width: 0 }}
               animate={{ width: `${pct}%` }}
               transition={{ duration: 0.9, ease: "easeOut" }}
@@ -80,6 +85,7 @@ export function TopStatusBar({
 
         {/* streak + coins */}
         <div className="flex shrink-0 items-center gap-1.5">
+          <ThemeToggle />
           <span className="inline-flex items-center gap-1 rounded-lg border border-orange-400/25 bg-orange-400/10 px-2 py-1 text-xs font-bold text-orange-300">
             <Flame className="h-3.5 w-3.5" />
             {streakDays}

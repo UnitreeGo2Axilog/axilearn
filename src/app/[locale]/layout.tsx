@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AuthProvider } from "@/lib/auth-context";
+import { ThemeProvider } from "@/lib/theme";
 import { LocaleProvider } from "@/i18n/use-t";
 import { isLocale, LOCALES } from "@/i18n/messages";
 import { SiteHeader } from "@/components/site-header";
@@ -20,11 +21,13 @@ export default async function LocaleLayout({
   if (!isLocale(locale)) notFound();
 
   return (
-    <LocaleProvider locale={locale as Locale}>
-      <AuthProvider locale={locale as Locale}>
-        <SiteHeader />
-        <main className="flex-1">{children}</main>
-      </AuthProvider>
-    </LocaleProvider>
+    <ThemeProvider>
+      <LocaleProvider locale={locale as Locale}>
+        <AuthProvider locale={locale as Locale}>
+          <SiteHeader />
+          <main className="flex-1">{children}</main>
+        </AuthProvider>
+      </LocaleProvider>
+    </ThemeProvider>
   );
 }

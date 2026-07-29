@@ -49,7 +49,7 @@ export default function RoadmapPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#050914]">
+    <div className="flex min-h-screen flex-col bg-app">
       <TopStatusBar
         name={learner.name}
         level={learner.level}
@@ -66,14 +66,14 @@ export default function RoadmapPage() {
         <TrackSwitcher activeId={track.id} onChange={setTrack} />
         <div className="mb-3 flex items-end justify-between gap-3 px-1">
           <div>
-            <h1 className="text-xl font-extrabold text-slate-50 sm:text-2xl">{track.title}</h1>
-            <p className="text-xs text-slate-400 sm:text-sm">{track.description}</p>
+            <h1 className="text-xl font-extrabold text-strong sm:text-2xl">{track.title}</h1>
+            <p className="text-xs text-muted sm:text-sm">{track.description}</p>
           </div>
           <div className="shrink-0 text-right">
             <p className="font-robot text-xl font-bold" style={{ color: track.color }}>
               {pct}%
             </p>
-            <p className="text-[10px] uppercase tracking-wide text-slate-500">complete</p>
+            <p className="text-[10px] uppercase tracking-wide text-faint">complete</p>
           </div>
         </div>
       </div>
@@ -89,7 +89,7 @@ export default function RoadmapPage() {
       <div className="mx-auto w-full max-w-7xl px-4 pb-56 pt-4">
         <Link
           href={`/${locale}`}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-cyan-300"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-faint transition hover:opacity-80"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to AxiLearn
@@ -102,7 +102,7 @@ export default function RoadmapPage() {
             initial={{ y: -30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -30, opacity: 0 }}
-            className="fixed inset-x-0 top-28 z-50 mx-auto w-fit rounded-xl border border-cyan-400/30 bg-[#0a1020]/95 px-4 py-2 text-xs font-semibold text-cyan-200 backdrop-blur"
+            className="panel fixed inset-x-0 top-28 z-50 mx-auto w-fit rounded-xl px-4 py-2 text-xs font-semibold backdrop-blur"
           >
             <span className="inline-flex items-center gap-2">
               <Trophy className="h-3.5 w-3.5" />

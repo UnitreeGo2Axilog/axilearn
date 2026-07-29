@@ -33,10 +33,10 @@ const TYPE_LABEL: Record<Level["type"], string> = {
 
 function cta(level: Level) {
   if (level.state === "locked")
-    return { label: "Locked", icon: Lock, disabled: true, classes: "bg-slate-700 text-slate-400" };
+    return { label: "Locked", icon: Lock, disabled: true, classes: "text-faint", inline: { background: "var(--bg-2)" } };
   if (level.state === "completed")
-    return { label: "Review", icon: RotateCcw, disabled: false, classes: "bg-lime-400 text-slate-900" };
-  return { label: "Continue", icon: Play, disabled: false, classes: "bg-cyan-400 text-slate-900" };
+    return { label: "Review", icon: RotateCcw, disabled: false, classes: "", inline: { background: "var(--cleared)", color: "var(--surface-solid)" } };
+  return { label: "Continue", icon: Play, disabled: false, classes: "", inline: { background: "var(--neon)", color: "var(--surface-solid)" } };
 }
 
 export function BottomLessonPanel({ level, trackTitle, accent }: Props) {
@@ -55,8 +55,8 @@ export function BottomLessonPanel({ level, trackTitle, accent }: Props) {
         >
           <div className="mx-auto max-w-3xl px-3 pb-3">
             <div
-              className="relative overflow-hidden rounded-2xl border bg-[#0a1020]/95 p-4 backdrop-blur-md"
-              style={{ borderColor: `${accent}55`, boxShadow: `0 0 30px rgba(0,0,0,.6), 0 0 18px ${accent}22` }}
+              className="relative overflow-hidden rounded-2xl border p-4 backdrop-blur-md"
+              style={{ borderColor: `${accent}66`, background: "color-mix(in srgb, var(--surface-solid) 95%, transparent)", boxShadow: "var(--glow-soft)" }}
             >
               {/* sweeping highlight along the top edge */}
               {!reduce && (
@@ -76,31 +76,35 @@ export function BottomLessonPanel({ level, trackTitle, accent }: Props) {
                 >
                   {trackTitle}
                 </span>
-                <span className="text-slate-600">·</span>
-                <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                <span className="text-faint">·</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-muted">
                   {TYPE_LABEL[level.type]}
                 </span>
               </div>
 
-              <h2 className="text-lg font-extrabold leading-tight text-slate-50">{level.title}</h2>
-              <p className="mt-1 line-clamp-2 text-sm leading-snug text-slate-400">
+              <h2 className="text-lg font-extrabold leading-tight text-strong">{level.title}</h2>
+              <p className="mt-1 line-clamp-2 text-sm leading-snug text-muted">
                 {level.shortDescription}
               </p>
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-lg bg-white/5 px-2 py-1 text-[11px] font-semibold text-slate-300">
+                <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-main"
+                  style={{ background: "var(--bg-2)" }}>
                   <Clock className="h-3 w-3" />
                   {level.durationMinutes} min
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-lg bg-white/5 px-2 py-1 text-[11px] font-semibold text-slate-300">
+                <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-main"
+                  style={{ background: "var(--bg-2)" }}>
                   <Sparkles className="h-3 w-3" />
                   {DIFF_LABEL[level.difficulty]}
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-lg bg-amber-300/10 px-2 py-1 text-[11px] font-bold text-amber-300">
+                <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold"
+                  style={{ background: "color-mix(in srgb, var(--reward) 14%, transparent)", color: "var(--reward)" }}>
                   <Zap className="h-3 w-3" />+{level.xpReward} XP
                 </span>
                 {level.badge && (
-                  <span className="rounded-lg bg-violet-400/10 px-2 py-1 text-[11px] font-bold text-violet-300">
+                  <span className="rounded-lg px-2 py-1 text-[11px] font-bold"
+                    style={{ background: "color-mix(in srgb, var(--advanced) 14%, transparent)", color: "var(--advanced)" }}>
                     {level.badge}
                   </span>
                 )}
@@ -112,6 +116,7 @@ export function BottomLessonPanel({ level, trackTitle, accent }: Props) {
                 return (
                   <button
                     disabled={c.disabled}
+                    style={c.inline}
                     className={`mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-black uppercase tracking-wide transition active:translate-y-0.5 disabled:cursor-not-allowed ${c.classes}`}
                   >
                     <CtaIcon className="h-4 w-4" />

@@ -33,7 +33,7 @@ export default async function LessonPage({
       <div className="mb-4 flex items-center justify-between">
         <Link
           href={`/${locale}/track/${lesson.trackId}`}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-cyan-300"
+          className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-cyan-300"
         >
           <ArrowLeft className="h-4 w-4" />
           {t("lesson.backToMap")}
@@ -46,18 +46,18 @@ export default async function LessonPage({
         </span>
       </div>
 
-      <h1 className="mb-1 text-2xl font-bold text-slate-50">{pick(lesson.title, locale)}</h1>
-      <p className="mb-6 text-sm text-slate-500">
+      <h1 className="mb-1 text-2xl font-bold text-strong">{pick(lesson.title, locale)}</h1>
+      <p className="mb-6 text-sm text-strong0">
         {lesson.points} {t("track.points")} · {lesson.type.replace("_", " ")}
       </p>
 
       <div className="grid gap-4 lg:grid-cols-[320px_1fr_320px]">
         {/* instructions */}
         <section className="panel rounded-xl p-4">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-cyan-300/80">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--neon)" }}>
             {t("lesson.instructions")}
           </h2>
-          <p className="text-sm leading-relaxed text-slate-300">
+          <p className="text-sm leading-relaxed text-main">
             {pick(lesson.body, locale)}
           </p>
         </section>
@@ -65,7 +65,7 @@ export default async function LessonPage({
         {/* workspace */}
         <section className="panel panel-glow rounded-xl p-4 text-slate-100">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
               {t("lesson.workspace")}
             </h2>
             <span className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-md bg-emerald-600/60 px-2.5 py-1 text-xs font-medium">
@@ -73,17 +73,17 @@ export default async function LessonPage({
               {t("lesson.run")}
             </span>
           </div>
-          <pre className="min-h-[220px] whitespace-pre-wrap rounded-lg bg-slate-950/60 p-3 font-mono text-xs text-slate-300">
+          <pre className="min-h-[220px] whitespace-pre-wrap rounded-lg p-3 font-mono text-xs text-main" style={{ background: "var(--bg)" }}>
 {lesson.initialCode ?? `# ${t("lesson.comingSoon")}`}
           </pre>
         </section>
 
         {/* output */}
         <section className="panel rounded-xl p-4">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-cyan-300/80">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--neon)" }}>
             {t("lesson.output")}
           </h2>
-          <div className="grid min-h-[220px] place-items-center rounded-lg border border-cyan-400/10 bg-[#050914]/70 text-center text-sm text-slate-500">
+          <div className="grid min-h-[220px] place-items-center rounded-lg border border-cyan-400/10 bg-[#050914]/70 text-center text-sm text-strong0">
             {t("lesson.comingSoon")}
           </div>
         </section>

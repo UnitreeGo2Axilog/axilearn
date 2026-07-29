@@ -14,7 +14,7 @@ export default function AdminPage() {
   const { profile, loading } = useAuth();
 
   if (loading) {
-    return <div className="mx-auto max-w-2xl px-4 py-12 text-slate-500">…</div>;
+    return <div className="mx-auto max-w-2xl px-4 py-12 text-strong0">…</div>;
   }
 
   if (profile?.role !== "admin") {
@@ -30,8 +30,8 @@ export default function AdminPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
-      <h1 className="mb-3 text-2xl font-bold text-slate-50">{t("admin.title")}</h1>
-      <p className="panel rounded-xl p-6 text-sm text-slate-300">
+      <h1 className="mb-3 text-2xl font-bold text-strong">{t("admin.title")}</h1>
+      <p className="panel rounded-xl p-6 text-sm text-main">
         {t("admin.soon")}
       </p>
     </div>

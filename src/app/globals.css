@@ -1,36 +1,134 @@
 @import "tailwindcss";
 
 /*
- * AxiLearn — dark neon mission-map theme.
+ * AxiLearn theming.
  *
- * One visual language across the whole platform, taken from the game
- * reference: deep navy-black base, cyan/teal glow for anything live, lime for
- * anything cleared, amber for rewards, violet for advanced. Everything glows
- * rather than casts shadows.
+ * Two designed palettes, not one palette inverted:
+ *
+ *  NEON NIGHT (dark)   deep navy-black city at night. Colour comes from light
+ *                      -- cyan for live, lime for cleared, amber for rewards.
+ *                      Elements GLOW.
+ *
+ *  DAYLIGHT LAB (light) a blue-tinted blueprint, never plain white. The same
+ *                      hues but pulled darker and more saturated so they read
+ *                      on a pale surface, and glows replaced by soft coloured
+ *                      shadows -- neon on white just looks washed out.
+ *
+ * Everything downstream reads these variables, so a component never hard-codes
+ * a theme colour and both modes stay correct by construction.
  */
+
+:root,
+[data-theme="dark"] {
+  --bg: #050914;
+  --bg-2: #0a1020;
+  --surface: rgba(10, 16, 32, 0.82);
+  --surface-solid: #0a1020;
+  --border: rgba(34, 211, 238, 0.18);
+  --border-strong: rgba(34, 211, 238, 0.45);
+  --text: #e2e8f0;
+  --text-strong: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+
+  --neon: #22d3ee;
+  --cleared: #a3e635;
+  --cleared-line: #d9f99d;
+  --reward: #fbbf24;
+  --advanced: #a78bfa;
+  --teal-rim: #2dd4bf;
+
+  --grid: rgba(56, 189, 248, 0.09);
+  --grid-app: rgba(56, 189, 248, 0.045);
+  --street: rgba(45, 212, 191, 0.22);
+  --street-thin: rgba(56, 189, 248, 0.1);
+  --block-fill: rgba(45, 212, 191, 0.05);
+  --block-line: rgba(45, 212, 191, 0.16);
+  --star: rgba(255, 255, 255, 0.35);
+  --node-inner: rgba(5, 9, 20, 0.94);
+  --node-inner-active: rgba(8, 47, 73, 0.95);
+  --route-dim: rgba(100, 116, 139, 0.45);
+
+  --halo-alpha: 0.55;
+  --rim-glow: 0.95;
+  --glow-1: 0 0 18px rgba(34, 211, 238, 0.45);
+  --glow-soft: 0 0 24px rgba(34, 211, 238, 0.1);
+  --map-wash:
+    radial-gradient(700px 400px at 20% 8%, rgba(34, 211, 238, 0.12), transparent 60%),
+    radial-gradient(600px 380px at 85% 40%, rgba(167, 139, 250, 0.12), transparent 60%),
+    radial-gradient(700px 500px at 40% 95%, rgba(163, 230, 53, 0.08), transparent 60%);
+  --app-wash:
+    radial-gradient(900px 520px at 15% -5%, rgba(34, 211, 238, 0.1), transparent 60%),
+    radial-gradient(800px 480px at 88% 12%, rgba(167, 139, 250, 0.1), transparent 60%),
+    radial-gradient(900px 600px at 45% 100%, rgba(163, 230, 53, 0.06), transparent 60%);
+}
+
+[data-theme="light"] {
+  --bg: #e8eef7;
+  --bg-2: #f4f7fc;
+  --surface: rgba(255, 255, 255, 0.86);
+  --surface-solid: #ffffff;
+  --border: rgba(13, 148, 136, 0.24);
+  --border-strong: rgba(8, 145, 178, 0.55);
+  --text: #16233b;
+  --text-strong: #0b1424;
+  --text-muted: #4a5b74;
+  --text-faint: #7c8ba3;
+
+  --neon: #0891b2;
+  --cleared: #4d7c0f;
+  --cleared-line: #65a30d;
+  --reward: #b45309;
+  --advanced: #6d28d9;
+  --teal-rim: #0d9488;
+
+  --grid: rgba(13, 148, 136, 0.12);
+  --grid-app: rgba(13, 148, 136, 0.07);
+  --street: rgba(13, 148, 136, 0.3);
+  --street-thin: rgba(8, 145, 178, 0.14);
+  --block-fill: rgba(13, 148, 136, 0.07);
+  --block-line: rgba(13, 148, 136, 0.22);
+  --star: rgba(15, 35, 60, 0.18);
+  --node-inner: #ffffff;
+  --node-inner-active: #ecfeff;
+  --route-dim: rgba(100, 116, 139, 0.35);
+
+  /* bloom washes out on a pale surface: keep halos subtle */
+  --halo-alpha: 0.16;
+  --rim-glow: 0.3;
+
+  /* soft coloured shadows instead of bloom */
+  --glow-1: 0 6px 14px rgba(8, 145, 178, 0.28);
+  --glow-soft: 0 8px 24px rgba(15, 35, 60, 0.08);
+  --map-wash:
+    radial-gradient(700px 400px at 20% 8%, rgba(8, 145, 178, 0.1), transparent 60%),
+    radial-gradient(600px 380px at 85% 40%, rgba(109, 40, 217, 0.08), transparent 60%),
+    radial-gradient(700px 500px at 40% 95%, rgba(77, 124, 15, 0.08), transparent 60%);
+  --app-wash:
+    radial-gradient(900px 520px at 15% -5%, rgba(8, 145, 178, 0.1), transparent 60%),
+    radial-gradient(800px 480px at 88% 12%, rgba(109, 40, 217, 0.07), transparent 60%),
+    radial-gradient(900px 600px at 45% 100%, rgba(77, 124, 15, 0.06), transparent 60%);
+}
 
 @theme inline {
   --font-sans: var(--font-fredoka);
   --font-robot: var(--font-orbitron);
+}
 
-  --color-base: #050914;
-  --color-surface: #0a1020;
-  --color-neon: #22d3ee;
-  --color-cleared: #a3e635;
-  --color-reward: #fbbf24;
-  --color-advanced: #a78bfa;
+html {
+  color-scheme: dark;
+}
+[data-theme="light"] {
+  color-scheme: light;
 }
 
 body {
   font-family: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
-  color: #e2e8f0;
-  background:
-    radial-gradient(900px 520px at 15% -5%, rgba(34, 211, 238, 0.10), transparent 60%),
-    radial-gradient(800px 480px at 88% 12%, rgba(167, 139, 250, 0.10), transparent 60%),
-    radial-gradient(900px 600px at 45% 100%, rgba(163, 230, 53, 0.06), transparent 60%),
-    #050914;
+  color: var(--text);
+  background: var(--app-wash), var(--bg);
   background-attachment: fixed;
   min-height: 100%;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* faint circuit grid over the whole app */
@@ -41,11 +139,52 @@ body::before {
   pointer-events: none;
   z-index: 0;
   background-image:
-    linear-gradient(rgba(56, 189, 248, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56, 189, 248, 0.045) 1px, transparent 1px);
+    linear-gradient(var(--grid-app) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-app) 1px, transparent 1px);
   background-size: 44px 44px;
   mask-image: radial-gradient(circle at 50% 30%, black, transparent 85%);
 }
+
+/* ---- semantic helpers ------------------------------------------------ */
+
+.bg-app { background: var(--bg); }
+.bg-surface { background: var(--surface-solid); }
+.text-main { color: var(--text); }
+.text-strong { color: var(--text-strong); }
+.text-muted { color: var(--text-muted); }
+.text-faint { color: var(--text-faint); }
+.border-app { border-color: var(--border); }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+}
+.panel-glow { box-shadow: var(--glow-soft); }
+
+.field {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.field::placeholder { color: var(--text-faint); }
+.field:focus {
+  border-color: var(--neon);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--neon) 25%, transparent);
+  outline: none;
+}
+
+.text-glow { text-shadow: 0 0 14px color-mix(in srgb, var(--neon) 55%, transparent); }
+[data-theme="light"] .text-glow { text-shadow: none; }
+
+.btn-neon {
+  background: var(--neon);
+  color: #04121a;
+  box-shadow: var(--glow-1);
+  font-weight: 800;
+}
+[data-theme="light"] .btn-neon { color: #ffffff; }
+.btn-neon:active { transform: translateY(2px); }
 
 /* ---- motion ---------------------------------------------------------- */
 
@@ -55,7 +194,6 @@ body::before {
 @keyframes blink     { 0%,92%,100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
 @keyframes shake-x   { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
 @keyframes scan      { 0% { transform: translateY(-100%); } 100% { transform: translateY(400%); } }
-@keyframes neon-pulse{ 0%,100% { opacity: .55; } 50% { opacity: 1; } }
 
 .animate-float  { animation: float-y 3.5s ease-in-out infinite; }
 .animate-wiggle { animation: wiggle 2.2s ease-in-out infinite; }
@@ -63,28 +201,8 @@ body::before {
 .animate-blink  { animation: blink 4.5s ease-in-out infinite; }
 .animate-shake  { animation: shake-x .45s ease-in-out; }
 .animate-scan   { animation: scan 2.4s linear infinite; }
-.animate-neon   { animation: neon-pulse 2.6s ease-in-out infinite; }
-
-/* ---- neon surfaces --------------------------------------------------- */
-
-.panel {
-  background: rgba(10, 16, 32, 0.82);
-  border: 1px solid rgba(34, 211, 238, 0.18);
-  backdrop-filter: blur(10px);
-}
-.panel-glow { box-shadow: 0 0 24px rgba(34, 211, 238, 0.10), inset 0 1px 0 rgba(255,255,255,0.04); }
-
-.text-glow      { text-shadow: 0 0 14px rgba(34, 211, 238, 0.55); }
-.text-glow-lime { text-shadow: 0 0 14px rgba(163, 230, 53, 0.55); }
-
-.btn-neon {
-  background: linear-gradient(180deg, #22d3ee, #0891b2);
-  color: #04121a;
-  box-shadow: 0 0 18px rgba(34, 211, 238, 0.45), 0 4px 0 0 rgba(8, 145, 178, 0.9);
-}
-.btn-neon:active { transform: translateY(2px); box-shadow: 0 0 14px rgba(34,211,238,.35); }
 
 @media (prefers-reduced-motion: reduce) {
   .animate-float, .animate-wiggle, .animate-pop, .animate-blink,
-  .animate-shake, .animate-scan, .animate-neon { animation: none !important; }
+  .animate-shake, .animate-scan { animation: none !important; }
 }

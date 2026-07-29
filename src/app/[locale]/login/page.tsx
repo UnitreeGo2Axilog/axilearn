@@ -88,7 +88,7 @@ export default function LoginPage() {
       {/* the robot */}
       <div className="order-1 flex flex-col items-center md:order-none">
         <RobotMascot mood={mood} screenText={screen} className="h-64 w-64 sm:h-72 sm:w-72" />
-        <p className="mt-3 h-6 text-center font-semibold text-cyan-300">
+        <p className="mt-3 h-6 text-center font-semibold" style={{ color: "var(--neon)" }}>
           {done
             ? locale === "fr" ? "C'est parti !" : "Let's go!"
             : error
@@ -101,10 +101,10 @@ export default function LoginPage() {
 
       {/* the form */}
       <div className="order-2 md:order-none">
-        <h1 className="mb-1 text-3xl font-extrabold text-slate-50">
+        <h1 className="mb-1 text-3xl font-extrabold text-strong">
           {mode === "in" ? t("auth.signIn") : t("auth.signUp")}
         </h1>
-        <p className="mb-5 text-slate-400">{t("app.tagline")}</p>
+        <p className="mb-5 text-muted">{t("app.tagline")}</p>
 
         {!configured && (
           <p className="mb-4 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3 text-sm font-medium text-amber-200">
@@ -119,7 +119,7 @@ export default function LoginPage() {
         >
           {mode === "up" && (
             <input
-              className="w-full rounded-xl border border-cyan-400/20 bg-[#050914]/80 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
+              className="field w-full rounded-xl px-4 py-3 text-base"
               placeholder={t("auth.name")}
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -128,7 +128,7 @@ export default function LoginPage() {
           )}
           <input
             type="email"
-            className="w-full rounded-xl border border-cyan-400/20 bg-[#050914]/80 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
+            className="field w-full rounded-xl px-4 py-3 text-base"
             placeholder={t("auth.email")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -136,7 +136,7 @@ export default function LoginPage() {
           />
           <input
             type="password"
-            className="w-full rounded-xl border border-cyan-400/20 bg-[#050914]/80 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
+            className="field w-full rounded-xl px-4 py-3 text-base"
             placeholder={t("auth.password")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -156,27 +156,28 @@ export default function LoginPage() {
             type="button"
             onClick={google}
             disabled={busy}
-            className="w-full rounded-xl border border-cyan-400/25 py-3 font-semibold text-slate-200 transition hover:bg-white/5 disabled:opacity-50"
+            className="w-full rounded-xl border py-3 font-semibold text-main transition hover:opacity-80 disabled:opacity-50"
+            style={{ borderColor: "var(--border-strong)" }}
           >
             {t("auth.google")}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-slate-400">
+        <p className="mt-4 text-center text-muted">
           {mode === "in" ? t("auth.noAccount") : t("auth.haveAccount")}{" "}
           <button
             onClick={() => {
               setMode(mode === "in" ? "up" : "in");
               setError(null);
             }}
-            className="font-extrabold text-cyan-300 underline decoration-2 underline-offset-2"
+            className="font-extrabold underline decoration-2 underline-offset-2" style={{ color: "var(--neon)" }}
           >
             {mode === "in" ? t("auth.signUp") : t("auth.signIn")}
           </button>
         </p>
 
         <p className="mt-6 text-center">
-          <Link href={`/${locale}`} className="text-sm text-slate-500 hover:text-cyan-300">
+          <Link href={`/${locale}`} className="text-sm text-faint hover:opacity-80">
             ← {t("track.back")}
           </Link>
         </p>

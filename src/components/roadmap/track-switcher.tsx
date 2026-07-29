@@ -21,17 +21,18 @@ export function TrackSwitcher({ activeId, onChange }: Props) {
             onClick={() => onChange(track)}
             className="relative flex-1 overflow-hidden rounded-xl border px-2 py-2 text-left transition"
             style={{
-              borderColor: active ? `${track.color}88` : "rgba(255,255,255,0.08)",
-              background: active ? `${track.color}14` : "rgba(255,255,255,0.03)",
+              borderColor: active ? `${track.color}88` : "var(--border)",
+              background: active ? `${track.color}1f` : "var(--bg-2)",
             }}
           >
             <span
               className="block font-robot text-[10px] font-bold tracking-[0.16em]"
-              style={{ color: active ? track.color : "#64748b" }}
+              style={{ color: active ? track.color : "var(--text-faint)" }}
             >
               {track.short}
             </span>
-            <span className="mt-1 block h-1 w-full overflow-hidden rounded-full bg-white/10">
+            <span className="mt-1 block h-1 w-full overflow-hidden rounded-full"
+              style={{ background: "color-mix(in srgb, var(--text) 14%, transparent)" }}>
               <motion.span
                 className="block h-full rounded-full"
                 style={{ background: track.color }}
@@ -40,7 +41,7 @@ export function TrackSwitcher({ activeId, onChange }: Props) {
                 transition={{ duration: 0.6 }}
               />
             </span>
-            <span className="mt-1 block text-[10px] font-semibold text-slate-500">{pct}%</span>
+            <span className="mt-1 block text-[10px] font-semibold text-faint">{pct}%</span>
           </button>
         );
       })}

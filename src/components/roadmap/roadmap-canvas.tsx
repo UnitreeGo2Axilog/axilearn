@@ -52,22 +52,18 @@ export function RoadmapCanvas({ track, selectedId, onSelect }: Props) {
     <div className="relative h-full w-full">
       {/* fills whatever space the page gives it -- the map IS the screen */}
       <div className="relative h-full w-full">
-        <div className="absolute inset-0 overflow-hidden rounded-2xl border border-cyan-400/20 bg-[#050914]">
+        <div className="absolute inset-0 overflow-hidden rounded-2xl border"
+             style={{ borderColor: "var(--border)", background: "var(--bg)" }}>
           {/* --- background world --------------------------------------- */}
           <div
             className="absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(700px 400px at 20% 8%, rgba(34,211,238,.12), transparent 60%)," +
-                "radial-gradient(600px 380px at 85% 40%, rgba(167,139,250,.12), transparent 60%)," +
-                "radial-gradient(700px 500px at 40% 95%, rgba(163,230,53,.08), transparent 60%)",
-            }}
+            style={{ background: "var(--map-wash)" }}
           />
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
             {/* grid */}
             <defs>
               <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
-                <path d="M8 0 L0 0 0 8" fill="none" stroke="rgba(56,189,248,0.09)" strokeWidth="0.3" />
+                <path d="M8 0 L0 0 0 8" fill="none" stroke="var(--grid)" strokeWidth="0.3" />
               </pattern>
               <filter id="pathGlow" x="-40%" y="-40%" width="180%" height="180%">
                 <feGaussianBlur stdDeviation="1.6" result="b" />
@@ -81,14 +77,14 @@ export function RoadmapCanvas({ track, selectedId, onSelect }: Props) {
 
             {/* city map: main avenues, side streets and blocks -- the
                 reference reads as a night-time city seen from above */}
-            <g stroke="rgba(45,212,191,0.22)" strokeWidth="0.35" fill="none" strokeLinecap="square">
+            <g stroke="var(--street)" strokeWidth="0.35" fill="none" strokeLinecap="square">
               <path d="M-5 14 H26 V32 H58 V46 H105" />
               <path d="M-5 58 H18 V72 H52 V84 H105" />
               <path d="M105 8 H74 V22 H40 V8" />
               <path d="M-5 92 H32 V78 H70 V96 H105" />
               <path d="M12 -5 V20 M46 -5 V14 M84 4 V30 M64 54 V74 M28 82 V98 M92 70 V96" />
             </g>
-            <g stroke="rgba(56,189,248,0.10)" strokeWidth="0.3" fill="none">
+            <g stroke="var(--street-thin)" strokeWidth="0.3" fill="none">
               {Array.from({ length: 11 }).map((_, i) => (
                 <path key={`h${i}`} d={`M-5 ${5 + i * 10} H105`} />
               ))}
@@ -100,19 +96,19 @@ export function RoadmapCanvas({ track, selectedId, onSelect }: Props) {
             {[[20,20,8,5],[66,30,9,6],[34,52,7,4],[74,62,8,5],[16,84,8,4],[58,92,9,5],[80,40,6,4]].map(
               ([x, y, w, h], i) => (
                 <rect key={`b${i}`} x={x} y={y} width={w} height={h} rx="0.8"
-                      fill="rgba(45,212,191,0.05)" stroke="rgba(45,212,191,0.16)" strokeWidth="0.25" />
+                      fill="var(--block-fill)" stroke="var(--block-line)" strokeWidth="0.25" />
               ),
             )}
             {/* street lights */}
             {[[26,32],[58,46],[18,72],[52,84],[74,22],[32,92],[70,96],[84,30]].map(([x, y], i) => (
-              <circle key={`l${i}`} cx={x} cy={y} r="0.9" fill="rgba(34,211,238,0.55)" />
+              <circle key={`l${i}`} cx={x} cy={y} r="0.9" fill="var(--neon)" />
             ))}
 
             {/* star dust */}
             {Array.from({ length: 40 }).map((_, i) => {
               const x = (i * 37) % 100;
               const y = (i * 61) % 100;
-              return <circle key={`s${i}`} cx={x} cy={y} r={i % 7 === 0 ? 0.5 : 0.3} fill="rgba(255,255,255,0.35)" />;
+              return <circle key={`s${i}`} cx={x} cy={y} r={i % 7 === 0 ? 0.5 : 0.3} fill="var(--star)" />;
             })}
           </svg>
 
@@ -122,7 +118,7 @@ export function RoadmapCanvas({ track, selectedId, onSelect }: Props) {
             <path
               d={curve(pts)}
               fill="none"
-              stroke="rgba(100,116,139,0.45)"
+              stroke="var(--route-dim)"
               strokeWidth="2.2"
               strokeLinecap="round"
               strokeDasharray="0.5 6"
@@ -133,7 +129,7 @@ export function RoadmapCanvas({ track, selectedId, onSelect }: Props) {
               <motion.path
                 d={curve(pts, clearedCount)}
                 fill="none"
-                stroke="#d9f99d"
+                stroke="var(--cleared-line)"
                 strokeWidth="2.6"
                 strokeLinecap="round"
                 filter="url(#pathGlow)"
@@ -153,7 +149,8 @@ export function RoadmapCanvas({ track, selectedId, onSelect }: Props) {
                 className="absolute -translate-y-1/2 select-none"
                 style={{ left: "4%", top: `${l.position.y - 3.2}%` }}
               >
-                <span className="rounded-md border border-cyan-400/30 bg-cyan-400/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-cyan-300">
+                <span className="rounded-md border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em]"
+                      style={{ borderColor: "var(--border-strong)", background: "color-mix(in srgb, var(--neon) 12%, transparent)", color: "var(--neon)" }}>
                   {l.section}
                 </span>
               </div>

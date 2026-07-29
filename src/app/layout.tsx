@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fredoka, Orbitron } from "next/font/google";
 import "./globals.css";
+import { ThemeScript } from "@/lib/theme";
 
 /** Rounded, friendly type for everything the learner reads. */
 const fredoka = Fredoka({
@@ -24,8 +25,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html className={`${fredoka.variable} ${orbitron.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col text-slate-900">{children}</body>
+    <html className={`${fredoka.variable} ${orbitron.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }
