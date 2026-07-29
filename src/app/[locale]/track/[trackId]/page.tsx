@@ -15,6 +15,7 @@ import {
 import { getT, isLocale } from "@/i18n/messages";
 import { tracks, trackProgress } from "@/content/roadmap-data";
 import type { Locale } from "@/content/types";
+import { AuthGate } from "@/components/auth-gate";
 
 /**
  * Track briefing -- the page between choosing a world and entering its map.
@@ -44,6 +45,7 @@ export default async function TrackIntroPage({
   const pct = trackProgress(track);
 
   return (
+    <AuthGate>
     <div className="relative z-10 mx-auto max-w-5xl px-4 pb-20 pt-8">
       <Link
         href={`/${locale}`}
@@ -161,7 +163,7 @@ export default async function TrackIntroPage({
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <Link
-                href={`/${locale}/roadmap`}
+                href={`/${locale}/roadmap/python-primer`}
                 className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black"
                 style={{ background: "var(--advanced)", color: "var(--surface-solid)" }}
               >
@@ -216,7 +218,7 @@ export default async function TrackIntroPage({
           {pct > 0 ? `${pct}% ${t("track.alreadyDone")}` : t("track.readyToStart")}
         </p>
         <Link
-          href={`/${locale}/roadmap`}
+          href={`/${locale}/roadmap/${track.id}`}
           className="inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-base font-black uppercase tracking-wide"
           style={{ background: track.color, color: "var(--surface-solid)" }}
         >
@@ -225,5 +227,6 @@ export default async function TrackIntroPage({
         </Link>
       </section>
     </div>
+    </AuthGate>
   );
 }

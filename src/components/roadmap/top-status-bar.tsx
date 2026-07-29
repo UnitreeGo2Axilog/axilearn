@@ -4,7 +4,6 @@
  * Fixed top HUD: who you are, what level, how much XP to the next one, your
  * streak and coins -- the "I am progressing" signal, always on screen.
  */
-import { motion } from "framer-motion";
 import { Coins, Flame, Menu } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -31,8 +30,6 @@ export function TopStatusBar({
   accent,
   onMenu,
 }: Props) {
-  const pct = Math.min(100, Math.round((currentXp / nextLevelXp) * 100));
-
   return (
     <header className="sticky top-0 z-30 border-b backdrop-blur-md"
       style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--bg) 88%, transparent)" }}>
@@ -71,16 +68,8 @@ export function TopStatusBar({
               {currentXp}/{nextLevelXp} XP
             </p>
           </div>
-          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full"
-            style={{ background: "color-mix(in srgb, var(--text) 14%, transparent)" }}>
-            <motion.div
-              className="h-full rounded-full"
-              style={{ background: `linear-gradient(90deg, ${accent}, var(--cleared))` }}
-              initial={{ width: 0 }}
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.9, ease: "easeOut" }}
-            />
-          </div>
+          {/* the XP bar itself now lives on the main page, next to the
+              tracks -- see components/learner-strip.tsx */}
         </div>
 
         {/* streak + coins */}

@@ -2,23 +2,26 @@
 
 /** Switch between the three worlds without leaving the map. */
 import { motion } from "framer-motion";
-import { tracks, trackProgress, type RoadmapTrack } from "@/content/roadmap-data";
+import Link from "next/link";
+import { mainTracks, trackProgress, type RoadmapTrack } from "@/content/roadmap-data";
+import { useLocale } from "@/i18n/use-t";
 
 interface Props {
   activeId: string;
   onChange: (track: RoadmapTrack) => void;
 }
 
-export function TrackSwitcher({ activeId, onChange }: Props) {
+export function TrackSwitcher({ activeId }: Props) {
+  const locale = useLocale();
   return (
     <div className="flex w-full gap-2 pb-3">
-      {tracks.map((track) => {
+      {mainTracks.map((track) => {
         const active = track.id === activeId;
         const pct = trackProgress(track);
         return (
-          <button
+          <Link
             key={track.id}
-            onClick={() => onChange(track)}
+            href={`/${locale}/roadmap/${track.id}`}
             className="relative flex-1 overflow-hidden rounded-xl border px-2 py-2 text-left transition"
             style={{
               borderColor: active ? `${track.color}88` : "var(--border)",
@@ -42,7 +45,7 @@ export function TrackSwitcher({ activeId, onChange }: Props) {
               />
             </span>
             <span className="mt-1 block text-[10px] font-semibold text-faint">{pct}%</span>
-          </button>
+          </Link>
         );
       })}
     </div>

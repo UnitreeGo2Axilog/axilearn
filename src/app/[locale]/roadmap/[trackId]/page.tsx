@@ -10,6 +10,7 @@
  * minimum height so the route never squashes into an unreadable strip.
  */
 import { useEffect, useMemo, useState } from "react";
+import { notFound, useParams } from "next/navigation";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Trophy } from "lucide-react";
@@ -25,12 +26,20 @@ import { TopStatusBar } from "@/components/roadmap/top-status-bar";
 import { BottomLessonPanel } from "@/components/roadmap/bottom-lesson-panel";
 import { TrackSwitcher } from "@/components/roadmap/track-switcher";
 import { useLocale } from "@/i18n/use-t";
+import { AuthGate } from "@/components/auth-gate";
 
 export default function RoadmapPage() {
   const locale = useLocale();
+  const params = useParams<{ trackId: string }>();
+  const fromUrl = tracks.find((t) => t.id === params?.trackId);
   const [track, setTrack] = useState<RoadmapTrack>(
-    tracks.find((t) => t.id === learner.activeTrackId) ?? tracks[0],
+    fromUrl ?? tracks.find((t) => t.id === learner.activeTrackId) ?? tracks[0],
   );
+
+  // follow the URL when the learner switches track
+  useEffect(() => {
+    if (fromUrl && fromUrl.id !== track.id) setTrack(fromUrl);
+  }, [fromUrl, track.id]);
   const [selected, setSelected] = useState<Level | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -49,6 +58,7 @@ export default function RoadmapPage() {
   }
 
   return (
+    <AuthGate>
     <div className="flex min-h-screen flex-col bg-app">
       <TopStatusBar
         name={learner.name}
@@ -114,5 +124,6 @@ export default function RoadmapPage() {
 
       <BottomLessonPanel level={selected} trackTitle={track.title} accent={track.color} />
     </div>
+    </AuthGate>
   );
 }

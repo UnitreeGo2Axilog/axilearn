@@ -28,6 +28,14 @@ export const messages = {
     "home.start": "Start learning",
     "home.comingSoon": "Coming soon",
     "home.lessons": "lessons",
+    "home.welcomeBack": "Welcome back,",
+    "home.level": "Level",
+    "home.xpToNext": "XP to the next level",
+
+    "gate.badge": "Members only",
+    "gate.title": "Sign in to start learning",
+    "gate.body":
+      "Tracks, lessons and your progress live behind your account, so your XP and badges are always saved.",
 
     "track.back": "All tracks",
     "track.yourProgress": "Your progress",
@@ -69,6 +77,14 @@ export const messages = {
     "profile.title": "Your profile",
     "profile.role": "Role",
     "profile.language": "Language",
+    "profile.progress": "Your progress",
+    "profile.level": "Level",
+    "profile.xp": "Experience",
+    "profile.streak": "Day streak",
+    "profile.coins": "Coins",
+    "profile.badges": "Badges earned",
+    "profile.noBadges": "No badges yet — finish a chapter to earn your first.",
+    "profile.tracks": "Tracks",
 
     "admin.title": "Content admin",
     "admin.soon":
@@ -90,6 +106,14 @@ export const messages = {
     "home.start": "Commencer",
     "home.comingSoon": "Bientôt disponible",
     "home.lessons": "leçons",
+    "home.welcomeBack": "Bon retour,",
+    "home.level": "Niveau",
+    "home.xpToNext": "XP avant le niveau suivant",
+
+    "gate.badge": "Réservé aux membres",
+    "gate.title": "Connecte-toi pour commencer",
+    "gate.body":
+      "Les parcours, les leçons et ta progression sont liés à ton compte, pour que ton XP et tes badges soient toujours sauvegardés.",
 
     "track.back": "Tous les parcours",
     "track.yourProgress": "Ta progression",
@@ -131,6 +155,14 @@ export const messages = {
     "profile.title": "Ton profil",
     "profile.role": "Rôle",
     "profile.language": "Langue",
+    "profile.progress": "Ta progression",
+    "profile.level": "Niveau",
+    "profile.xp": "Expérience",
+    "profile.streak": "Jours d'affilée",
+    "profile.coins": "Pièces",
+    "profile.badges": "Badges obtenus",
+    "profile.noBadges": "Pas encore de badge — termine un chapitre pour gagner le premier.",
+    "profile.tracks": "Parcours",
 
     "admin.title": "Administration du contenu",
     "admin.soon":

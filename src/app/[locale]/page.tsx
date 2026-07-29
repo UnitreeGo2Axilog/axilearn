@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { ArrowRight, Lock } from "lucide-react";
 import { getT, isLocale } from "@/i18n/messages";
-import { tracks, trackProgress } from "@/content/roadmap-data";
+import { mainTracks, trackProgress } from "@/content/roadmap-data";
 import type { Locale } from "@/content/types";
 import { RobotMascot } from "@/components/robot-mascot";
+import { LearnerStrip } from "@/components/learner-strip";
 
 /**
  * Home: pick your world.
@@ -44,9 +45,11 @@ export default async function HomePage({
         />
       </section>
 
+      <LearnerStrip />
+
       {/* mission select */}
       <section className="grid gap-5 md:grid-cols-3">
-        {tracks.map((track) => {
+        {mainTracks.map((track) => {
           const locked = COMING_SOON.has(track.id);
           const pct = trackProgress(track);
 

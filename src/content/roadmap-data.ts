@@ -56,6 +56,8 @@ export interface RoadmapTrack {
   color: string;
   glow: string;
   icon: string;
+  /** Hidden from the main track switcher (e.g. an optional sub-course). */
+  hidden?: boolean;
   overview: TrackOverview;
   levels: Level[];
 }
@@ -142,6 +144,13 @@ const gameLevels = build([
   { id: "gd-7", title: "Level Design", shortDescription: "Build levels that are fun, not frustrating.", type: "checkpoint", state: "locked", xpReward: 110, durationMinutes: 30, difficulty: "medium", skills: ["design"], badge: "Level Designer", section: "Craft" },
   { id: "gd-8", title: "Build Your First Game", shortDescription: "Put every piece together into a game you can play.", type: "project", state: "locked", xpReward: 180, durationMinutes: 50, difficulty: "medium", skills: ["build"] },
   { id: "gd-9", title: "Publish & Share", shortDescription: "Put your game online and send it to your friends.", type: "final_project", state: "locked", xpReward: 260, durationMinutes: 40, difficulty: "medium", skills: ["publish"], badge: "Game Creator" },
+]);
+
+const primerLevels = build([
+  { id: "pp-1", title: "Your First Line of Code", shortDescription: "Say hello with print(), and learn what a comment is for.", type: "lesson", state: "current", xpReward: 30, durationMinutes: 15, difficulty: "easy", skills: ["print"], section: "Python Warm-up" },
+  { id: "pp-2", title: "Variables, Numbers & Text", shortDescription: "Store values, do maths, and join words together.", type: "lesson", state: "locked", xpReward: 30, durationMinutes: 15, difficulty: "easy", skills: ["variables"] },
+  { id: "pp-3", title: "If, Else & Loops", shortDescription: "Let your program decide, and repeat work without retyping it.", type: "lesson", state: "locked", xpReward: 40, durationMinutes: 15, difficulty: "easy", skills: ["if", "loops"] },
+  { id: "pp-4", title: "Functions & Lists", shortDescription: "Package code you reuse, and hold many values at once.", type: "final_project", state: "locked", xpReward: 60, durationMinutes: 15, difficulty: "easy", skills: ["functions", "lists"], badge: "Python Ready" },
 ]);
 
 export const tracks: RoadmapTrack[] = [
@@ -241,7 +250,37 @@ export const tracks: RoadmapTrack[] = [
     },
     levels: gameLevels,
   },
+
+  {
+    id: "python-primer",
+    title: "Python Warm-up",
+    short: "PYTHON",
+    description: "The optional hour of Python you need before the robot track.",
+    color: "#a78bfa",
+    glow: "167,139,250",
+    icon: "Code",
+    hidden: true,
+    overview: {
+      tagline: "One hour of Python, just enough to start talking to a robot.",
+      forWho: "For anyone who has never written code. Completely optional -- skip it if you already have.",
+      outcomes: [
+        "Write and run your own Python program",
+        "Use variables to store numbers and text",
+        "Make your program decide with if/else and repeat with loops",
+        "Write functions and use lists -- the two things robot code leans on most",
+      ],
+      advice: [
+        "Type every example instead of copying it.",
+        "Break it on purpose, then fix it. That is the fastest way to understand it.",
+        "One lesson a day is plenty -- this is a warm-up, not a race.",
+      ],
+    },
+    levels: primerLevels,
+  },
 ];
+
+/** Tracks shown in the main switcher (sub-courses stay out of it). */
+export const mainTracks = tracks.filter((t) => !t.hidden);
 
 export function trackProgress(track: RoadmapTrack): number {
   const done = track.levels.filter((l) => l.state === "completed").length;

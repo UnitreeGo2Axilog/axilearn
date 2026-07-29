@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Play } from "lucide-react";
 import { getT, isLocale } from "@/i18n/messages";
 import { LESSONS, MODULES } from "@/content/seed";
 import { t as pick, type Locale } from "@/content/types";
+import { AuthGate } from "@/components/auth-gate";
 
 /**
  * The Learning Studio shell, in the three-pane shape the tech spec describes:
@@ -29,6 +30,7 @@ export default async function LessonPage({
   const module = MODULES.find((m) => m.id === lesson.moduleId);
 
   return (
+    <AuthGate>
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="mb-4 flex items-center justify-between">
         <Link
@@ -101,5 +103,6 @@ export default async function LessonPage({
         </div>
       )}
     </div>
+    </AuthGate>
   );
 }
