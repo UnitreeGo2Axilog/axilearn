@@ -149,7 +149,7 @@ export default function LoginPage() {
             disabled={busy}
             className="w-full rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 py-3.5 text-lg font-extrabold text-white shadow-chunky-sm transition hover:brightness-105 active:translate-y-1 active:shadow-none disabled:opacity-60"
           >
-            {mode === "in" ? t("auth.signIn") : t("auth.signUp")} 🚀
+            {mode === "in" ? t("auth.signIn") : t("auth.signUp")}
           </button>
 
           <button
