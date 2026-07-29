@@ -1,26 +1,73 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * AxiLearn look & feel.
+ *
+ * Built for teenagers, not for a corporate dashboard: rounded playful type
+ * (Fredoka), a techy display face for anything the robot "says" on its screen
+ * (Orbitron), saturated colours, chunky shadows and a few springy animations.
+ * Dark mode is deliberately NOT auto-enabled -- the palette is bright by
+ * design, and a kids' site flipping to grey on some laptops looked broken.
+ */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: var(--font-fredoka);
+  --font-display: var(--font-fredoka);
+  --font-robot: var(--font-orbitron);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-brand: #f59e0b;
+  --color-robotics: #f97316;
+  --color-ai: #8b5cf6;
+  --color-games: #06b6d4;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
+  background:
+    radial-gradient(1100px 600px at 12% -10%, #dbeafe 0%, transparent 55%),
+    radial-gradient(900px 500px at 88% 0%, #ede9fe 0%, transparent 50%),
+    #f8fafc;
+  background-attachment: fixed;
 }
+
+/* ---- playful motion -------------------------------------------------- */
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-2deg); }
+  50%      { transform: rotate(2deg); }
+}
+@keyframes pop-in {
+  0%   { transform: scale(0.7); opacity: 0; }
+  70%  { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  96%           { transform: scaleY(0.1); }
+}
+@keyframes shake-x {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}
+@keyframes scan {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(400%); }
+}
+
+.animate-float   { animation: float-y 3.5s ease-in-out infinite; }
+.animate-wiggle  { animation: wiggle 2.2s ease-in-out infinite; }
+.animate-pop     { animation: pop-in 0.35s cubic-bezier(.34,1.56,.64,1) both; }
+.animate-blink   { animation: blink 4.5s ease-in-out infinite; }
+.animate-shake   { animation: shake-x 0.45s ease-in-out; }
+.animate-scan    { animation: scan 2.4s linear infinite; }
+
+/* Chunky "sticker" edge used on buttons and cards. */
+.shadow-chunky   { box-shadow: 0 6px 0 0 rgb(0 0 0 / 0.12); }
+.shadow-chunky-sm{ box-shadow: 0 4px 0 0 rgb(0 0 0 / 0.12); }

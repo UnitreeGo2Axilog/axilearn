@@ -1,26 +1,31 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fredoka, Orbitron } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+/** Rounded, friendly type for everything the learner reads. */
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+/** Techy display face -- used only for what the robot shows on its screen. */
+const orbitron = Orbitron({
+  variable: "--font-orbitron",
+  subsets: ["latin"],
+  weight: ["600", "800"],
+});
 
 export const metadata: Metadata = {
-  title: "AxiLearn",
-  description: "Learn to build intelligent machines — AI, robotics and games.",
+  title: "AxiLearn — Robotics, AI & Games",
+  description:
+    "Learn robotics, artificial intelligence and game creation by building real things.",
 };
 
-/**
- * Root shell. The real layout (header, auth, locale) lives in
- * src/app/[locale]/layout.tsx -- everything a visitor sees sits under a
- * language segment, so /en/... and /fr/... are fully separate, shareable URLs.
- */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
-        {children}
-      </body>
+    <html className={`${fredoka.variable} ${orbitron.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col text-slate-900">{children}</body>
     </html>
   );
 }
