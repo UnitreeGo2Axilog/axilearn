@@ -12,7 +12,7 @@ import { RobotMascot } from "@/components/robot-mascot";
  * product. Each track is a glowing "mission select" card that says in one
  * word what it is -- ROBOTICS / AI / GAMES -- before any reading happens.
  */
-const COMING_SOON = new Set(["python-ai", "game-dev"]);
+const COMING_SOON = new Set(["ml-ai", "game-dev"]);
 
 export default async function HomePage({
   params,

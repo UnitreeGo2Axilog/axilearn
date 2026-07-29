@@ -107,17 +107,17 @@ function build(
   return raw.map((l, i) => ({ ...l, position: pos[i] }));
 }
 
-const pythonLevels = build([
-  { id: "py-1", title: "Python Basics", shortDescription: "Your very first lines of code: print, comments, and running a program.", type: "lesson", state: "completed", xpReward: 40, durationMinutes: 15, difficulty: "easy", skills: ["print", "syntax"], section: "Foundations" },
-  { id: "py-2", title: "Variables & Data Types", shortDescription: "Store text and numbers, and learn what a type actually is.", type: "lesson", state: "completed", xpReward: 40, durationMinutes: 20, difficulty: "easy", skills: ["variables", "types"] },
-  { id: "py-3", title: "Conditions & Loops", shortDescription: "Make your program decide and repeat — the heart of every algorithm.", type: "lesson", state: "completed", xpReward: 60, durationMinutes: 25, difficulty: "easy", skills: ["if/else", "for", "while"] },
-  { id: "py-4", title: "Functions", shortDescription: "Package your code into reusable blocks you can call anywhere.", type: "lesson", state: "current", xpReward: 60, durationMinutes: 25, difficulty: "medium", skills: ["def", "return"], section: "Building Blocks" },
-  { id: "py-5", title: "Lists & Dictionaries", shortDescription: "Hold many values at once and look them up by name.", type: "lesson", state: "locked", xpReward: 70, durationMinutes: 30, difficulty: "medium", skills: ["list", "dict"] },
-  { id: "py-6", title: "Checkpoint: Code Drills", shortDescription: "Prove the basics stuck before moving into data work.", type: "checkpoint", state: "locked", xpReward: 100, durationMinutes: 20, difficulty: "medium", skills: ["review"], badge: "Syntax Solid" },
-  { id: "py-7", title: "NumPy Basics", shortDescription: "Arrays and fast maths — the foundation under every AI library.", type: "lesson", state: "locked", xpReward: 80, durationMinutes: 30, difficulty: "medium", skills: ["numpy", "arrays"], section: "Into AI" },
-  { id: "py-8", title: "Data Analysis Intro", shortDescription: "Load a real dataset and pull the story out of it.", type: "lesson", state: "locked", xpReward: 90, durationMinutes: 35, difficulty: "medium", skills: ["pandas", "plots"] },
-  { id: "py-9", title: "Machine Learning Basics", shortDescription: "How a model learns from examples instead of rules.", type: "lesson", state: "locked", xpReward: 110, durationMinutes: 40, difficulty: "hard", skills: ["training", "features"] },
-  { id: "py-10", title: "Build Your First AI Model", shortDescription: "Train, test and use a model that makes real predictions.", type: "final_project", state: "locked", xpReward: 250, durationMinutes: 60, difficulty: "hard", skills: ["end-to-end ML"], badge: "AI Builder" },
+const mlLevels = build([
+  { id: "ml-1", title: "Python Basics", shortDescription: "Your very first lines of code: print, comments, and running a program.", type: "lesson", state: "completed", xpReward: 40, durationMinutes: 15, difficulty: "easy", skills: ["print", "syntax"], section: "Foundations" },
+  { id: "ml-2", title: "Variables & Data Types", shortDescription: "Store text and numbers, and learn what a type actually is.", type: "lesson", state: "completed", xpReward: 40, durationMinutes: 20, difficulty: "easy", skills: ["variables", "types"] },
+  { id: "ml-3", title: "Conditions & Loops", shortDescription: "Make your program decide and repeat — the heart of every algorithm.", type: "lesson", state: "completed", xpReward: 60, durationMinutes: 25, difficulty: "easy", skills: ["if/else", "for", "while"] },
+  { id: "ml-4", title: "Functions", shortDescription: "Package your code into reusable blocks you can call anywhere.", type: "lesson", state: "current", xpReward: 60, durationMinutes: 25, difficulty: "medium", skills: ["def", "return"], section: "Building Blocks" },
+  { id: "ml-5", title: "Lists & Dictionaries", shortDescription: "Hold many values at once and look them up by name.", type: "lesson", state: "locked", xpReward: 70, durationMinutes: 30, difficulty: "medium", skills: ["list", "dict"] },
+  { id: "ml-6", title: "Checkpoint: Code Drills", shortDescription: "Prove the basics stuck before moving into data work.", type: "checkpoint", state: "locked", xpReward: 100, durationMinutes: 20, difficulty: "medium", skills: ["review"], badge: "Syntax Solid" },
+  { id: "ml-7", title: "NumPy Basics", shortDescription: "Arrays and fast maths — the foundation under every AI library.", type: "lesson", state: "locked", xpReward: 80, durationMinutes: 30, difficulty: "medium", skills: ["numpy", "arrays"], section: "Into AI" },
+  { id: "ml-8", title: "Data Analysis Intro", shortDescription: "Load a real dataset and pull the story out of it.", type: "lesson", state: "locked", xpReward: 90, durationMinutes: 35, difficulty: "medium", skills: ["pandas", "plots"] },
+  { id: "ml-9", title: "Machine Learning Basics", shortDescription: "How a model learns from examples instead of rules.", type: "lesson", state: "locked", xpReward: 110, durationMinutes: 40, difficulty: "hard", skills: ["training", "features"] },
+  { id: "ml-10", title: "Build Your First AI Model", shortDescription: "Train, test and use a model that makes real predictions.", type: "final_project", state: "locked", xpReward: 250, durationMinutes: 60, difficulty: "hard", skills: ["end-to-end ML"], badge: "AI Builder" },
 ]);
 
 const physicalLevels = build([
@@ -188,15 +188,15 @@ export const tracks: RoadmapTrack[] = [
     levels: physicalLevels,
   },
   {
-    id: "python-ai",
-    title: "Python for AI",
-    short: "AI",
-    description: "From your first line of code to your first AI model.",
+    id: "ml-ai",
+    title: "AI & Machine Learning",
+    short: "ML",
+    description: "Teach machines to find patterns and make predictions.",
     color: "#a78bfa",
     glow: "167,139,250",
     icon: "Brain",
     overview: {
-      tagline: "From your very first line of code to a model that makes real predictions.",
+      tagline: "Teach a machine to learn from data -- from first principles to a model that predicts.",
       forWho: "For complete beginners. If you can use a browser, you can start here.",
       outcomes: [
         "Write Python confidently: variables, conditions, loops, functions and data",
@@ -212,7 +212,7 @@ export const tracks: RoadmapTrack[] = [
         "Explain what you learned to someone else. If you cannot, you are not done yet.",
       ],
     },
-    levels: pythonLevels,
+    levels: mlLevels,
   },
   {
     id: "game-dev",
