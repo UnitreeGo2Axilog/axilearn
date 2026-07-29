@@ -15,7 +15,7 @@
  *   celebrate big grin, both arms raised, drawn sparkles
  *   error     frowning eyes, head shake, drawn thumbs-down
  */
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 
 export type RobotMood = "idle" | "thinking" | "happy" | "celebrate" | "error";
 
@@ -69,6 +69,9 @@ function Sparkle({ x, y, s = 1, delay = 0 }: { x: number; y: number; s?: number;
 export function RobotMascot({ mood = "idle", screenText = "HELLO", className = "" }: Props) {
   const [key, setKey] = useState(0);
   useEffect(() => setKey((k) => k + 1), [mood]);
+  // Two robots can share a page (home and login), and duplicate SVG ids make
+  // one of them borrow the other's gradient.
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
 
   const color = COLOR[mood];
   const isError = mood === "error";
@@ -100,8 +103,30 @@ export function RobotMascot({ mood = "idle", screenText = "HELLO", className = "
         <rect x="36" y="56" width="168" height="122" rx="26" fill="#e2e8f0" />
         <rect x="36" y="56" width="168" height="122" rx="26" fill="none" stroke={color} strokeWidth="6" />
 
-        {/* screen */}
-        <rect x="52" y="72" width="136" height="90" rx="16" fill="#0f172a" />
+        {/* screen -- translucent glass, not a solid black panel, so the page
+            behind shows through and it reads as a lit display rather than a
+            hole cut in the head. */}
+        <rect x="52" y="72" width="136" height="90" rx="16" fill="#0f172a" opacity="0.55" />
+        <rect
+          x="52"
+          y="72"
+          width="136"
+          height="90"
+          rx="16"
+          fill={`url(#axiGlass-${uid})`}
+          opacity="0.5"
+        />
+        <rect
+          x="52"
+          y="72"
+          width="136"
+          height="90"
+          rx="16"
+          fill="none"
+          stroke={color}
+          strokeWidth="2"
+          opacity="0.45"
+        />
 
         {/* eyes */}
         {isError ? (
@@ -135,13 +160,19 @@ export function RobotMascot({ mood = "idle", screenText = "HELLO", className = "
         </text>
 
         {/* scanline */}
-        <g clipPath="url(#axiScreen)">
-          <rect x="52" y="72" width="136" height="10" fill="white" opacity="0.06" className="animate-scan" />
+        <g clipPath={`url(#axiScreen-${uid})`}>
+          <rect x="52" y="72" width="136" height="10" fill="white" opacity="0.1" className="animate-scan" />
         </g>
         <defs>
-          <clipPath id="axiScreen">
+          <clipPath id={`axiScreen-${uid}`}>
             <rect x="52" y="72" width="136" height="90" rx="16" />
           </clipPath>
+          {/* a soft sheen across the glass, tinted by the current mood */}
+          <linearGradient id={`axiGlass-${uid}`} x1="0" y1="0" x2="0.6" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.35" />
+            <stop offset="55%" stopColor={color} stopOpacity="0.06" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0.12" />
+          </linearGradient>
         </defs>
 
         {/* body */}
