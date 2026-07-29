@@ -79,16 +79,33 @@ export function RoadmapCanvas({ track, selectedId, onSelect }: Props) {
             </defs>
             <rect width="100" height="260" fill="url(#grid)" />
 
-            {/* abstract city circuitry */}
-            <g stroke="rgba(56,189,248,0.16)" strokeWidth="0.4" fill="none">
-              <path d="M-5 40 H30 V70 H62 V96 H105" />
-              <path d="M-5 130 H22 V158 H55 V186 H105" />
-              <path d="M105 22 H78 V52 H44" />
-              <path d="M-5 210 H35 V236 H105" />
+            {/* city map: main avenues, side streets and blocks -- the
+                reference reads as a night-time city seen from above */}
+            <g stroke="rgba(45,212,191,0.22)" strokeWidth="0.55" fill="none" strokeLinecap="square">
+              <path d="M-5 34 H26 V62 H58 V88 H105" />
+              <path d="M-5 118 H18 V146 H52 V172 H105" />
+              <path d="M105 16 H74 V44 H40 V16" />
+              <path d="M-5 200 H32 V228 H70 V252 H105" />
+              <path d="M12 -5 V38 M46 -5 V30 M84 8 V60 M64 108 V150 M28 168 V214 M92 150 V206" />
             </g>
-            {/* nodes of the circuitry */}
-            {[[30, 70], [62, 96], [22, 158], [55, 186], [78, 52], [35, 236]].map(([x, y], i) => (
-              <circle key={i} cx={x} cy={y} r="0.8" fill="rgba(56,189,248,0.4)" />
+            <g stroke="rgba(56,189,248,0.10)" strokeWidth="0.3" fill="none">
+              {Array.from({ length: 13 }).map((_, i) => (
+                <path key={`h${i}`} d={`M-5 ${8 + i * 20} H105`} />
+              ))}
+              {Array.from({ length: 7 }).map((_, i) => (
+                <path key={`v${i}`} d={`M${6 + i * 15} -5 V265`} />
+              ))}
+            </g>
+            {/* lit city blocks */}
+            {[[20,50,10,7],[66,74,12,8],[34,132,9,6],[74,158,11,7],[16,214,10,6],[58,238,13,8],[80,96,8,6]].map(
+              ([x, y, w, h], i) => (
+                <rect key={`b${i}`} x={x} y={y} width={w} height={h} rx="0.8"
+                      fill="rgba(45,212,191,0.05)" stroke="rgba(45,212,191,0.16)" strokeWidth="0.25" />
+              ),
+            )}
+            {/* street lights */}
+            {[[26,62],[58,88],[18,146],[52,172],[74,44],[32,228],[70,252],[84,60]].map(([x, y], i) => (
+              <circle key={`l${i}`} cx={x} cy={y} r="0.9" fill="rgba(34,211,238,0.55)" />
             ))}
 
             {/* star dust */}
@@ -105,8 +122,8 @@ export function RoadmapCanvas({ track, selectedId, onSelect }: Props) {
             <path
               d={curve(pts)}
               fill="none"
-              stroke="rgba(100,116,139,0.5)"
-              strokeWidth="3"
+              stroke="rgba(100,116,139,0.45)"
+              strokeWidth="2.2"
               strokeLinecap="round"
               strokeDasharray="0.5 6"
               vectorEffect="non-scaling-stroke"
@@ -116,8 +133,8 @@ export function RoadmapCanvas({ track, selectedId, onSelect }: Props) {
               <motion.path
                 d={curve(pts, clearedCount)}
                 fill="none"
-                stroke="#a3e635"
-                strokeWidth="4"
+                stroke="#d9f99d"
+                strokeWidth="2.6"
                 strokeLinecap="round"
                 filter="url(#pathGlow)"
                 vectorEffect="non-scaling-stroke"

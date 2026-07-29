@@ -20,7 +20,7 @@ export default function AdminPage() {
   if (profile?.role !== "admin") {
     return (
       <div className="mx-auto max-w-2xl px-4 py-12">
-        <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+        <div className="flex items-center gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 p-4 text-amber-200">
           <ShieldAlert className="h-5 w-5 shrink-0" />
           <p className="text-sm">{t("admin.denied")}</p>
         </div>
@@ -30,8 +30,8 @@ export default function AdminPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
-      <h1 className="mb-3 text-2xl font-bold">{t("admin.title")}</h1>
-      <p className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
+      <h1 className="mb-3 text-2xl font-bold text-slate-50">{t("admin.title")}</h1>
+      <p className="panel rounded-xl p-6 text-sm text-slate-300">
         {t("admin.soon")}
       </p>
     </div>

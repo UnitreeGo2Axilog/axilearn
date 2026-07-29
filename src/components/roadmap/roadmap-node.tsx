@@ -1,23 +1,23 @@
 "use client";
 
 /**
- * A single node on the mission map.
+ * A node on the mission map.
  *
- * Hexagons, like the reference mission map -- drawn with CSS clip-path so they
- * stay crisp and cheap (no SVG per node). Five visual states, each readable at
- * a glance without reading text:
+ * Matched to the reference art: a DARK hexagon with a bright glowing outline
+ * and a coloured icon inside -- not a filled blob. The glow is what carries
+ * the state:
  *
- *   completed     lime-green fill, tick, steady glow
- *   current       cyan, larger, breathing halo + rotating ring
- *   locked        desaturated slate, padlock, no glow
- *   project       purple, trophy, slightly larger
- *   final_project the biggest, gold, crown, dramatic glow
+ *   completed  cyan-teal outline + lime tick, strong halo (the reference look)
+ *   current    cyan outline, larger, breathing halo + inner fill
+ *   locked     dim slate outline, no glow, padlock
+ *   project    violet outline, trophy
+ *   final      gold outline, crown, biggest
  */
 import { motion, useReducedMotion } from "framer-motion";
 import { Check, Crown, Flag, Lock, Trophy } from "lucide-react";
 import type { Level } from "@/content/roadmap-data";
 
-const HEX = "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)";
+const HEX = "polygon(50% 2%, 95% 26%, 95% 74%, 50% 98%, 5% 74%, 5% 26%)";
 
 interface Props {
   level: Level;
@@ -27,49 +27,60 @@ interface Props {
   onSelect: (level: Level) => void;
 }
 
-function look(level: Level, accent: string) {
-  if (level.state === "locked") {
-    return { fill: "#1e293b", ring: "#334155", text: "#64748b", glow: "0,0,0", size: 56 };
-  }
-  if (level.state === "current") {
-    return { fill: "#0e7490", ring: accent, text: "#e0f2fe", glow: "34,211,238", size: 72 };
-  }
-  // completed
+function style(level: Level) {
+  if (level.state === "locked")
+    return { rim: "#334155", icon: "#64748b", glow: "51,65,85", size: 50, halo: 0 };
+  if (level.state === "current")
+    return { rim: "#22d3ee", icon: "#67e8f9", glow: "34,211,238", size: 66, halo: 26 };
   if (level.type === "final_project")
-    return { fill: "#a16207", ring: "#fbbf24", text: "#fffbeb", glow: "251,191,36", size: 76 };
-  return { fill: "#3f6212", ring: "#a3e635", text: "#f7fee7", glow: "163,230,53", size: 56 };
+    return { rim: "#fbbf24", icon: "#fde68a", glow: "251,191,36", size: 68, halo: 22 };
+  if (level.type === "project")
+    return { rim: "#a78bfa", icon: "#ddd6fe", glow: "167,139,250", size: 58, halo: 18 };
+  // completed / checkpoint -> the reference's teal ring + green tick
+  return { rim: "#2dd4bf", icon: "#a3e635", glow: "45,212,191", size: 54, halo: 18 };
 }
 
-function Icon({ level }: { level: Level }) {
-  const cls = "h-6 w-6";
-  if (level.state === "locked") return <Lock className="h-5 w-5" />;
-  if (level.state === "completed") return <Check className={cls} strokeWidth={3.5} />;
-  if (level.type === "final_project") return <Crown className={cls} />;
-  if (level.type === "project") return <Trophy className={cls} />;
-  if (level.type === "checkpoint") return <Flag className={cls} />;
-  return <span className="text-lg font-black">{level.title.slice(0, 1)}</span>;
+function NodeIcon({ level, color }: { level: Level; color: string }) {
+  const p = { className: "h-5 w-5", style: { color } };
+  if (level.state === "locked") return <Lock {...p} />;
+  if (level.state === "completed") return <Check className="h-6 w-6" strokeWidth={4} style={{ color }} />;
+  if (level.type === "final_project") return <Crown {...p} />;
+  if (level.type === "project") return <Trophy {...p} />;
+  if (level.type === "checkpoint") return <Flag {...p} />;
+  return <span className="font-robot text-xs font-bold" style={{ color }}>{level.id.split("-")[1]}</span>;
 }
 
-export function RoadmapNode({ level, index, selected, accent, onSelect }: Props) {
+export function RoadmapNode({ level, index, selected, onSelect }: Props) {
   const reduce = useReducedMotion();
-  const s = look(level, accent);
+  const s = style(level);
   const isCurrent = level.state === "current";
-  const isBoss = level.type === "final_project";
-  const size = isBoss ? s.size + 8 : s.size;
 
   return (
     <div
       className="absolute -translate-x-1/2 -translate-y-1/2"
       style={{ left: `${level.position.x}%`, top: `${level.position.y}%` }}
     >
-      {/* breathing halo on the active node */}
+      {/* soft outer halo, like the reference nodes bleeding light into the map */}
+      {s.halo > 0 && (
+        <span
+          aria-hidden
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-md"
+          style={{
+            width: s.size + s.halo,
+            height: s.size + s.halo,
+            background: `radial-gradient(circle, rgba(${s.glow},0.55), transparent 70%)`,
+          }}
+        />
+      )}
+
+      {/* breathing ring on the active node */}
       {isCurrent && !reduce && (
         <motion.span
           aria-hidden
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-          style={{ width: size + 34, height: size + 34, background: `rgba(${s.glow},0.18)` }}
-          animate={{ scale: [1, 1.25, 1], opacity: [0.7, 0.15, 0.7] }}
-          transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+          style={{ width: s.size + 20, height: s.size + 20, clipPath: HEX, background: `rgba(${s.glow},0.35)` }}
+          animate={{ scale: [1, 1.22, 1], opacity: [0.55, 0.1, 0.55] }}
+          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
         />
       )}
 
@@ -79,47 +90,46 @@ export function RoadmapNode({ level, index, selected, accent, onSelect }: Props)
         aria-label={`${level.title} — ${level.state}`}
         aria-current={selected ? "true" : undefined}
         whileTap={{ scale: 0.92 }}
-        whileHover={level.state !== "locked" ? { scale: 1.08 } : undefined}
-        initial={reduce ? false : { opacity: 0, scale: 0.6 }}
+        whileHover={level.state !== "locked" ? { scale: 1.09 } : undefined}
+        initial={reduce ? false : { opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: reduce ? 0 : index * 0.05, type: "spring", stiffness: 260, damping: 18 }}
-        className="relative grid place-items-center outline-none focus-visible:ring-4 focus-visible:ring-cyan-300/60"
-        style={{ width: size, height: size }}
+        transition={{ delay: reduce ? 0 : index * 0.05, type: "spring", stiffness: 250, damping: 17 }}
+        className="relative grid place-items-center outline-none focus-visible:ring-4 focus-visible:ring-cyan-300/50"
+        style={{ width: s.size, height: s.size }}
       >
-        {/* outer hex = the glowing rim */}
+        {/* glowing rim */}
         <span
           className="absolute inset-0"
           style={{
             clipPath: HEX,
-            background: s.ring,
-            filter:
-              level.state === "locked"
-                ? "none"
-                : `drop-shadow(0 0 ${isCurrent || isBoss ? 16 : 9}px rgba(${s.glow},0.9))`,
+            background: s.rim,
+            filter: s.halo ? `drop-shadow(0 0 ${isCurrent ? 14 : 8}px rgba(${s.glow},0.95))` : "none",
           }}
         />
-        {/* inner hex = the fill */}
+        {/* dark interior -- this is what makes it read as an outline node */}
         <span
           className="absolute"
-          style={{ inset: 3, clipPath: HEX, background: s.fill }}
+          style={{
+            inset: 3,
+            clipPath: HEX,
+            background: isCurrent ? "rgba(8,47,73,0.95)" : "rgba(5,9,20,0.94)",
+          }}
         />
-        {/* selection ring */}
         {selected && (
           <span
-            className="absolute -inset-1.5"
-            style={{ clipPath: HEX, background: `rgba(${s.glow},0.35)` }}
+            className="absolute -inset-2"
+            style={{ clipPath: HEX, background: `rgba(${s.glow},0.22)` }}
           />
         )}
-        <span className="relative z-10" style={{ color: s.text }}>
-          <Icon level={level} />
+        <span className="relative z-10">
+          <NodeIcon level={level} color={s.icon} />
         </span>
       </motion.button>
 
-      {/* label under the node */}
-      <div className="pointer-events-none absolute left-1/2 top-full mt-1.5 w-32 -translate-x-1/2 text-center">
+      <div className="pointer-events-none absolute left-1/2 top-full mt-1.5 w-28 -translate-x-1/2 text-center">
         <span
-          className="text-[11px] font-semibold leading-tight"
-          style={{ color: level.state === "locked" ? "#64748b" : "#cbd5e1" }}
+          className="text-[10px] font-semibold leading-tight"
+          style={{ color: level.state === "locked" ? "#475569" : "#94a3b8" }}
         >
           {level.title}
         </span>

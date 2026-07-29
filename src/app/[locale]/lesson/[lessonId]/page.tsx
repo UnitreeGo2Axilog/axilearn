@@ -33,7 +33,7 @@ export default async function LessonPage({
       <div className="mb-4 flex items-center justify-between">
         <Link
           href={`/${locale}/track/${lesson.trackId}`}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-cyan-300"
         >
           <ArrowLeft className="h-4 w-4" />
           {t("lesson.backToMap")}
@@ -46,24 +46,24 @@ export default async function LessonPage({
         </span>
       </div>
 
-      <h1 className="mb-1 text-2xl font-bold">{pick(lesson.title, locale)}</h1>
+      <h1 className="mb-1 text-2xl font-bold text-slate-50">{pick(lesson.title, locale)}</h1>
       <p className="mb-6 text-sm text-slate-500">
         {lesson.points} {t("track.points")} · {lesson.type.replace("_", " ")}
       </p>
 
       <div className="grid gap-4 lg:grid-cols-[320px_1fr_320px]">
         {/* instructions */}
-        <section className="rounded-xl border border-slate-200 bg-white p-4">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <section className="panel rounded-xl p-4">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-cyan-300/80">
             {t("lesson.instructions")}
           </h2>
-          <p className="text-sm leading-relaxed text-slate-700">
+          <p className="text-sm leading-relaxed text-slate-300">
             {pick(lesson.body, locale)}
           </p>
         </section>
 
         {/* workspace */}
-        <section className="rounded-xl border border-slate-200 bg-slate-900 p-4 text-slate-100">
+        <section className="panel panel-glow rounded-xl p-4 text-slate-100">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
               {t("lesson.workspace")}
@@ -79,11 +79,11 @@ export default async function LessonPage({
         </section>
 
         {/* output */}
-        <section className="rounded-xl border border-slate-200 bg-white p-4">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <section className="panel rounded-xl p-4">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-cyan-300/80">
             {t("lesson.output")}
           </h2>
-          <div className="grid min-h-[220px] place-items-center rounded-lg bg-slate-50 text-center text-sm text-slate-400">
+          <div className="grid min-h-[220px] place-items-center rounded-lg border border-cyan-400/10 bg-[#050914]/70 text-center text-sm text-slate-500">
             {t("lesson.comingSoon")}
           </div>
         </section>
@@ -93,7 +93,7 @@ export default async function LessonPage({
         <div className="mt-6 flex justify-end">
           <Link
             href={`/${locale}/lesson/${next.id}`}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+            className="btn-neon inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-bold"
           >
             {t("lesson.next")}
             <ArrowRight className="h-4 w-4" />

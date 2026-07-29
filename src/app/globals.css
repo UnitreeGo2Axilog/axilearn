@@ -1,73 +1,90 @@
 @import "tailwindcss";
 
 /*
- * AxiLearn look & feel.
+ * AxiLearn — dark neon mission-map theme.
  *
- * Built for teenagers, not for a corporate dashboard: rounded playful type
- * (Fredoka), a techy display face for anything the robot "says" on its screen
- * (Orbitron), saturated colours, chunky shadows and a few springy animations.
- * Dark mode is deliberately NOT auto-enabled -- the palette is bright by
- * design, and a kids' site flipping to grey on some laptops looked broken.
+ * One visual language across the whole platform, taken from the game
+ * reference: deep navy-black base, cyan/teal glow for anything live, lime for
+ * anything cleared, amber for rewards, violet for advanced. Everything glows
+ * rather than casts shadows.
  */
 
 @theme inline {
   --font-sans: var(--font-fredoka);
-  --font-display: var(--font-fredoka);
   --font-robot: var(--font-orbitron);
 
-  --color-brand: #f59e0b;
-  --color-robotics: #f97316;
-  --color-ai: #8b5cf6;
-  --color-games: #06b6d4;
+  --color-base: #050914;
+  --color-surface: #0a1020;
+  --color-neon: #22d3ee;
+  --color-cleared: #a3e635;
+  --color-reward: #fbbf24;
+  --color-advanced: #a78bfa;
 }
 
 body {
   font-family: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
+  color: #e2e8f0;
   background:
-    radial-gradient(1100px 600px at 12% -10%, #dbeafe 0%, transparent 55%),
-    radial-gradient(900px 500px at 88% 0%, #ede9fe 0%, transparent 50%),
-    #f8fafc;
+    radial-gradient(900px 520px at 15% -5%, rgba(34, 211, 238, 0.10), transparent 60%),
+    radial-gradient(800px 480px at 88% 12%, rgba(167, 139, 250, 0.10), transparent 60%),
+    radial-gradient(900px 600px at 45% 100%, rgba(163, 230, 53, 0.06), transparent 60%),
+    #050914;
   background-attachment: fixed;
+  min-height: 100%;
 }
 
-/* ---- playful motion -------------------------------------------------- */
-
-@keyframes float-y {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
-}
-@keyframes wiggle {
-  0%, 100% { transform: rotate(-2deg); }
-  50%      { transform: rotate(2deg); }
-}
-@keyframes pop-in {
-  0%   { transform: scale(0.7); opacity: 0; }
-  70%  { transform: scale(1.06); opacity: 1; }
-  100% { transform: scale(1); }
-}
-@keyframes blink {
-  0%, 92%, 100% { transform: scaleY(1); }
-  96%           { transform: scaleY(0.1); }
-}
-@keyframes shake-x {
-  0%, 100% { transform: translateX(0); }
-  20%      { transform: translateX(-6px); }
-  40%      { transform: translateX(6px); }
-  60%      { transform: translateX(-4px); }
-  80%      { transform: translateX(4px); }
-}
-@keyframes scan {
-  0%   { transform: translateY(-100%); }
-  100% { transform: translateY(400%); }
+/* faint circuit grid over the whole app */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.045) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(circle at 50% 30%, black, transparent 85%);
 }
 
-.animate-float   { animation: float-y 3.5s ease-in-out infinite; }
-.animate-wiggle  { animation: wiggle 2.2s ease-in-out infinite; }
-.animate-pop     { animation: pop-in 0.35s cubic-bezier(.34,1.56,.64,1) both; }
-.animate-blink   { animation: blink 4.5s ease-in-out infinite; }
-.animate-shake   { animation: shake-x 0.45s ease-in-out; }
-.animate-scan    { animation: scan 2.4s linear infinite; }
+/* ---- motion ---------------------------------------------------------- */
 
-/* Chunky "sticker" edge used on buttons and cards. */
-.shadow-chunky   { box-shadow: 0 6px 0 0 rgb(0 0 0 / 0.12); }
-.shadow-chunky-sm{ box-shadow: 0 4px 0 0 rgb(0 0 0 / 0.12); }
+@keyframes float-y   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes wiggle    { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+@keyframes pop-in    { 0% { transform: scale(.7); opacity: 0; } 70% { transform: scale(1.06); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes blink     { 0%,92%,100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+@keyframes shake-x   { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+@keyframes scan      { 0% { transform: translateY(-100%); } 100% { transform: translateY(400%); } }
+@keyframes neon-pulse{ 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+
+.animate-float  { animation: float-y 3.5s ease-in-out infinite; }
+.animate-wiggle { animation: wiggle 2.2s ease-in-out infinite; }
+.animate-pop    { animation: pop-in .35s cubic-bezier(.34,1.56,.64,1) both; }
+.animate-blink  { animation: blink 4.5s ease-in-out infinite; }
+.animate-shake  { animation: shake-x .45s ease-in-out; }
+.animate-scan   { animation: scan 2.4s linear infinite; }
+.animate-neon   { animation: neon-pulse 2.6s ease-in-out infinite; }
+
+/* ---- neon surfaces --------------------------------------------------- */
+
+.panel {
+  background: rgba(10, 16, 32, 0.82);
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  backdrop-filter: blur(10px);
+}
+.panel-glow { box-shadow: 0 0 24px rgba(34, 211, 238, 0.10), inset 0 1px 0 rgba(255,255,255,0.04); }
+
+.text-glow      { text-shadow: 0 0 14px rgba(34, 211, 238, 0.55); }
+.text-glow-lime { text-shadow: 0 0 14px rgba(163, 230, 53, 0.55); }
+
+.btn-neon {
+  background: linear-gradient(180deg, #22d3ee, #0891b2);
+  color: #04121a;
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.45), 0 4px 0 0 rgba(8, 145, 178, 0.9);
+}
+.btn-neon:active { transform: translateY(2px); box-shadow: 0 0 14px rgba(34,211,238,.35); }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float, .animate-wiggle, .animate-pop, .animate-blink,
+  .animate-shake, .animate-scan, .animate-neon { animation: none !important; }
+}

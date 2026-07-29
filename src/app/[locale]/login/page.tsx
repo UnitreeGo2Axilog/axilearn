@@ -88,7 +88,7 @@ export default function LoginPage() {
       {/* the robot */}
       <div className="order-1 flex flex-col items-center md:order-none">
         <RobotMascot mood={mood} screenText={screen} className="h-64 w-64 sm:h-72 sm:w-72" />
-        <p className="mt-3 h-6 text-center font-semibold text-slate-600">
+        <p className="mt-3 h-6 text-center font-semibold text-cyan-300">
           {done
             ? locale === "fr" ? "C'est parti !" : "Let's go!"
             : error
@@ -101,13 +101,13 @@ export default function LoginPage() {
 
       {/* the form */}
       <div className="order-2 md:order-none">
-        <h1 className="mb-1 text-3xl font-extrabold">
+        <h1 className="mb-1 text-3xl font-extrabold text-slate-50">
           {mode === "in" ? t("auth.signIn") : t("auth.signUp")}
         </h1>
-        <p className="mb-5 text-slate-500">{t("app.tagline")}</p>
+        <p className="mb-5 text-slate-400">{t("app.tagline")}</p>
 
         {!configured && (
-          <p className="mb-4 rounded-2xl bg-amber-100 p-3 text-sm font-medium text-amber-900">
+          <p className="mb-4 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3 text-sm font-medium text-amber-200">
             {t("auth.notConfigured")}
           </p>
         )}
@@ -115,11 +115,11 @@ export default function LoginPage() {
         <form
           onSubmit={submit}
           onChange={() => setTouched(true)}
-          className="space-y-3 rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-chunky"
+          className="panel panel-glow space-y-3 rounded-2xl p-6"
         >
           {mode === "up" && (
             <input
-              className="w-full rounded-2xl border-2 border-slate-200 px-4 py-3 text-base outline-none transition focus:border-sky-400"
+              className="w-full rounded-xl border border-cyan-400/20 bg-[#050914]/80 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
               placeholder={t("auth.name")}
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -128,7 +128,7 @@ export default function LoginPage() {
           )}
           <input
             type="email"
-            className="w-full rounded-2xl border-2 border-slate-200 px-4 py-3 text-base outline-none transition focus:border-sky-400"
+            className="w-full rounded-xl border border-cyan-400/20 bg-[#050914]/80 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
             placeholder={t("auth.email")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -136,7 +136,7 @@ export default function LoginPage() {
           />
           <input
             type="password"
-            className="w-full rounded-2xl border-2 border-slate-200 px-4 py-3 text-base outline-none transition focus:border-sky-400"
+            className="w-full rounded-xl border border-cyan-400/20 bg-[#050914]/80 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
             placeholder={t("auth.password")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -147,7 +147,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 py-3.5 text-lg font-extrabold text-white shadow-chunky-sm transition hover:brightness-105 active:translate-y-1 active:shadow-none disabled:opacity-60"
+            className="btn-neon w-full rounded-xl py-3.5 text-lg font-black uppercase tracking-wide transition hover:brightness-110 disabled:opacity-50"
           >
             {mode === "in" ? t("auth.signIn") : t("auth.signUp")}
           </button>
@@ -156,27 +156,27 @@ export default function LoginPage() {
             type="button"
             onClick={google}
             disabled={busy}
-            className="w-full rounded-2xl border-2 border-slate-200 py-3 font-semibold transition hover:bg-slate-50 disabled:opacity-60"
+            className="w-full rounded-xl border border-cyan-400/25 py-3 font-semibold text-slate-200 transition hover:bg-white/5 disabled:opacity-50"
           >
             {t("auth.google")}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-slate-600">
+        <p className="mt-4 text-center text-slate-400">
           {mode === "in" ? t("auth.noAccount") : t("auth.haveAccount")}{" "}
           <button
             onClick={() => {
               setMode(mode === "in" ? "up" : "in");
               setError(null);
             }}
-            className="font-extrabold text-orange-600 underline decoration-2 underline-offset-2"
+            className="font-extrabold text-cyan-300 underline decoration-2 underline-offset-2"
           >
             {mode === "in" ? t("auth.signUp") : t("auth.signIn")}
           </button>
         </p>
 
         <p className="mt-6 text-center">
-          <Link href={`/${locale}`} className="text-sm text-slate-500 hover:text-slate-800">
+          <Link href={`/${locale}`} className="text-sm text-slate-500 hover:text-cyan-300">
             ← {t("track.back")}
           </Link>
         </p>

@@ -1,38 +1,18 @@
 import Link from "next/link";
-import { ArrowRight, Lock, Sparkles } from "lucide-react";
+import { ArrowRight, Lock } from "lucide-react";
 import { getT, isLocale } from "@/i18n/messages";
-import { LESSONS, TRACKS } from "@/content/seed";
-import { t as pick, type Locale } from "@/content/types";
+import { tracks, trackProgress } from "@/content/roadmap-data";
+import type { Locale } from "@/content/types";
 import { RobotMascot } from "@/components/robot-mascot";
 
 /**
- * Home. The three tracks are the whole message, so each card leads with a huge
- * emoji and a one-word label -- ROBOTICS / AI / GAMES -- so a visitor knows in
- * one second what this site teaches, before reading anything.
+ * Home: pick your world.
+ *
+ * Same dark neon language as the mission map, so the site feels like one
+ * product. Each track is a glowing "mission select" card that says in one
+ * word what it is -- ROBOTICS / AI / GAMES -- before any reading happens.
  */
-const LOOK: Record<
-  string,
-  { emoji: string; word: { en: string; fr: string }; from: string; to: string }
-> = {
-  "physical-ai": {
-    emoji: "🤖",
-    word: { en: "ROBOTICS", fr: "ROBOTIQUE" },
-    from: "from-orange-400",
-    to: "to-amber-500",
-  },
-  "ml-ai": {
-    emoji: "🧠",
-    word: { en: "AI", fr: "IA" },
-    from: "from-violet-500",
-    to: "to-fuchsia-500",
-  },
-  "game-dev": {
-    emoji: "🎮",
-    word: { en: "GAMES", fr: "JEUX" },
-    from: "from-cyan-400",
-    to: "to-sky-500",
-  },
-};
+const COMING_SOON = new Set(["python-ai", "game-dev"]);
 
 export default async function HomePage({
   params,
@@ -44,20 +24,17 @@ export default async function HomePage({
   const t = getT(locale);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-16 pt-8">
+    <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-8">
       {/* hero */}
       <section className="mb-10 grid items-center gap-6 md:grid-cols-[1fr_auto]">
         <div className="text-center md:text-left">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-sm font-bold text-orange-600 shadow-sm">
-            <Sparkles className="h-4 w-4" />
-            {t("app.name")}
+          <span className="inline-block rounded-md border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-1 font-robot text-[10px] font-bold tracking-[0.24em] text-cyan-300">
+            AXILEARN
           </span>
-          <h1 className="mt-3 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+          <h1 className="mt-3 text-4xl font-extrabold leading-tight tracking-tight text-slate-50 sm:text-5xl">
             {t("home.title")}
           </h1>
-          <p className="mx-auto mt-3 max-w-xl text-lg text-slate-600 md:mx-0">
-            {t("home.subtitle")}
-          </p>
+          <p className="mx-auto mt-3 max-w-xl text-lg text-slate-400 md:mx-0">{t("home.subtitle")}</p>
         </div>
         <RobotMascot
           mood="happy"
@@ -66,64 +43,75 @@ export default async function HomePage({
         />
       </section>
 
-      {/* the three worlds */}
-      <section className="grid gap-6 md:grid-cols-3">
-        {TRACKS.map((track) => {
-          const look = LOOK[track.id];
-          const count = LESSONS.filter((l) => l.trackId === track.id).length;
-          const active = track.status === "active";
+      {/* mission select */}
+      <section className="grid gap-5 md:grid-cols-3">
+        {tracks.map((track) => {
+          const locked = COMING_SOON.has(track.id);
+          const pct = trackProgress(track);
 
           const card = (
             <div
-              className={`group relative flex h-full flex-col overflow-hidden rounded-3xl border-2 border-white bg-white shadow-chunky transition ${
-                active ? "hover:-translate-y-1.5" : "opacity-75 grayscale-[35%]"
-              }`}
+              className="group relative h-full overflow-hidden rounded-2xl border p-5 transition"
+              style={{
+                borderColor: locked ? "rgba(148,163,184,0.18)" : `${track.color}55`,
+                background: "rgba(10,16,32,0.7)",
+                boxShadow: locked ? "none" : `0 0 26px rgba(${track.glow},0.12)`,
+              }}
             >
-              {/* big coloured header = the instant "what is this" */}
-              <div
-                className={`relative flex flex-col items-center bg-gradient-to-br ${look.from} ${look.to} px-6 py-8 text-white`}
+              {/* corner accent */}
+              <span
+                aria-hidden
+                className="absolute right-0 top-0 h-16 w-16 opacity-25"
+                style={{ background: `radial-gradient(circle at top right, ${track.color}, transparent 70%)` }}
+              />
+
+              <span
+                className="font-robot text-2xl font-black tracking-[0.18em]"
+                style={{ color: locked ? "#475569" : track.color }}
               >
-                <span className="text-6xl drop-shadow-md">{look.emoji}</span>
-                <span className="mt-2 text-2xl font-extrabold tracking-widest">
-                  {look.word[locale]}
+                {track.short}
+              </span>
+              <h2 className="mt-2 text-lg font-bold text-slate-100">{track.title}</h2>
+              <p className="mt-1 text-sm leading-relaxed text-slate-400">{track.description}</p>
+
+              {locked ? (
+                <span className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-slate-600/40 bg-slate-700/20 px-3 py-1.5 text-xs font-bold text-slate-400">
+                  <Lock className="h-3 w-3" />
+                  {t("home.comingSoon")}
                 </span>
-                {!active && (
-                  <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-black/25 px-3 py-1 text-xs font-bold">
-                    <Lock className="h-3 w-3" />
-                    {t("home.comingSoon")}
-                  </span>
-                )}
-              </div>
-
-              <div className="flex flex-1 flex-col p-5">
-                <h2 className="text-lg font-extrabold">{pick(track.title, locale)}</h2>
-                <p className="mt-1.5 flex-1 text-sm leading-relaxed text-slate-600">
-                  {pick(track.description, locale)}
-                </p>
-
-                {active && (
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
-                      {count} {t("home.lessons")}
+              ) : (
+                <>
+                  <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                    <span
+                      className="block h-full rounded-full"
+                      style={{ width: `${pct}%`, background: track.color, boxShadow: `0 0 10px ${track.color}` }}
+                    />
+                  </div>
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-slate-500">
+                      {track.levels.length} {t("home.lessons")} · {pct}%
                     </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-sm font-extrabold text-white transition group-hover:gap-2.5">
+                    <span
+                      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-black uppercase tracking-wide transition group-hover:gap-2.5"
+                      style={{ background: track.color, color: "#04121a" }}
+                    >
                       {t("home.start")}
-                      <ArrowRight className="h-4 w-4" />
+                      <ArrowRight className="h-3.5 w-3.5" />
                     </span>
                   </div>
-                )}
-              </div>
+                </>
+              )}
             </div>
           );
 
-          return active ? (
-            <Link key={track.id} href={`/${locale}/track/${track.id}`} className="h-full">
-              {card}
-            </Link>
-          ) : (
-            <div key={track.id} className="h-full">
+          return locked ? (
+            <div key={track.id} className="h-full opacity-70">
               {card}
             </div>
+          ) : (
+            <Link key={track.id} href={`/${locale}/roadmap`} className="h-full">
+              {card}
+            </Link>
           );
         })}
       </section>
