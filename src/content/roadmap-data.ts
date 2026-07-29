@@ -62,14 +62,23 @@ export const learner: Learner = {
   activeTrackId: "physical-ai",
 };
 
-/** Zig-zag positions: alternate sides, walk down the canvas. */
+/**
+ * Positions the levels across the WHOLE map area (percentages).
+ *
+ * The reference art shows an entire mission map filling the screen, so the
+ * route weaves widely (14%..86%) instead of hugging a narrow centre column,
+ * and walks from the bottom of the map to the top -- climbing, which reads as
+ * progress.
+ */
 function layout<T extends { id: string }>(items: T[]): { x: number; y: number }[] {
-  const top = 6;
-  const gap = (100 - top * 2) / Math.max(items.length - 1, 1);
+  const pad = 9;
+  const span = 100 - pad * 2;
+  const gap = span / Math.max(items.length - 1, 1);
+  // five-column weave: wide, irregular, never a straight zig-zag
+  const weave = [20, 46, 74, 86, 58, 30, 14, 50];
   return items.map((_, i) => ({
-    // three-column weave so the road bends rather than zig-zags flatly
-    x: [30, 50, 70, 50][i % 4],
-    y: top + i * gap,
+    x: weave[i % weave.length],
+    y: 100 - pad - i * gap,
   }));
 }
 

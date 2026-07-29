@@ -49,10 +49,10 @@ export function RoadmapCanvas({ track, selectedId, onSelect }: Props) {
   const clearedCount = levels.filter((l) => l.state === "completed").length;
 
   return (
-    <div className="relative mx-auto w-full max-w-md">
-      {/* tall canvas -- this is a world you scroll through, not a card */}
-      <div className="relative w-full" style={{ paddingBottom: "260%" }}>
-        <div className="absolute inset-0 overflow-hidden rounded-3xl border border-cyan-400/20 bg-[#050914]">
+    <div className="relative h-full w-full">
+      {/* fills whatever space the page gives it -- the map IS the screen */}
+      <div className="relative h-full w-full">
+        <div className="absolute inset-0 overflow-hidden rounded-2xl border border-cyan-400/20 bg-[#050914]">
           {/* --- background world --------------------------------------- */}
           <div
             className="absolute inset-0"
@@ -63,7 +63,7 @@ export function RoadmapCanvas({ track, selectedId, onSelect }: Props) {
                 "radial-gradient(700px 500px at 40% 95%, rgba(163,230,53,.08), transparent 60%)",
             }}
           />
-          <svg viewBox="0 0 100 260" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
             {/* grid */}
             <defs>
               <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
@@ -77,41 +77,41 @@ export function RoadmapCanvas({ track, selectedId, onSelect }: Props) {
                 </feMerge>
               </filter>
             </defs>
-            <rect width="100" height="260" fill="url(#grid)" />
+            <rect width="100" height="100" fill="url(#grid)" />
 
             {/* city map: main avenues, side streets and blocks -- the
                 reference reads as a night-time city seen from above */}
-            <g stroke="rgba(45,212,191,0.22)" strokeWidth="0.55" fill="none" strokeLinecap="square">
-              <path d="M-5 34 H26 V62 H58 V88 H105" />
-              <path d="M-5 118 H18 V146 H52 V172 H105" />
-              <path d="M105 16 H74 V44 H40 V16" />
-              <path d="M-5 200 H32 V228 H70 V252 H105" />
-              <path d="M12 -5 V38 M46 -5 V30 M84 8 V60 M64 108 V150 M28 168 V214 M92 150 V206" />
+            <g stroke="rgba(45,212,191,0.22)" strokeWidth="0.35" fill="none" strokeLinecap="square">
+              <path d="M-5 14 H26 V32 H58 V46 H105" />
+              <path d="M-5 58 H18 V72 H52 V84 H105" />
+              <path d="M105 8 H74 V22 H40 V8" />
+              <path d="M-5 92 H32 V78 H70 V96 H105" />
+              <path d="M12 -5 V20 M46 -5 V14 M84 4 V30 M64 54 V74 M28 82 V98 M92 70 V96" />
             </g>
             <g stroke="rgba(56,189,248,0.10)" strokeWidth="0.3" fill="none">
-              {Array.from({ length: 13 }).map((_, i) => (
-                <path key={`h${i}`} d={`M-5 ${8 + i * 20} H105`} />
+              {Array.from({ length: 11 }).map((_, i) => (
+                <path key={`h${i}`} d={`M-5 ${5 + i * 10} H105`} />
               ))}
-              {Array.from({ length: 7 }).map((_, i) => (
-                <path key={`v${i}`} d={`M${6 + i * 15} -5 V265`} />
+              {Array.from({ length: 9 }).map((_, i) => (
+                <path key={`v${i}`} d={`M${4 + i * 12} -5 V105`} />
               ))}
             </g>
             {/* lit city blocks */}
-            {[[20,50,10,7],[66,74,12,8],[34,132,9,6],[74,158,11,7],[16,214,10,6],[58,238,13,8],[80,96,8,6]].map(
+            {[[20,20,8,5],[66,30,9,6],[34,52,7,4],[74,62,8,5],[16,84,8,4],[58,92,9,5],[80,40,6,4]].map(
               ([x, y, w, h], i) => (
                 <rect key={`b${i}`} x={x} y={y} width={w} height={h} rx="0.8"
                       fill="rgba(45,212,191,0.05)" stroke="rgba(45,212,191,0.16)" strokeWidth="0.25" />
               ),
             )}
             {/* street lights */}
-            {[[26,62],[58,88],[18,146],[52,172],[74,44],[32,228],[70,252],[84,60]].map(([x, y], i) => (
+            {[[26,32],[58,46],[18,72],[52,84],[74,22],[32,92],[70,96],[84,30]].map(([x, y], i) => (
               <circle key={`l${i}`} cx={x} cy={y} r="0.9" fill="rgba(34,211,238,0.55)" />
             ))}
 
             {/* star dust */}
             {Array.from({ length: 40 }).map((_, i) => {
               const x = (i * 37) % 100;
-              const y = (i * 61) % 260;
+              const y = (i * 61) % 100;
               return <circle key={`s${i}`} cx={x} cy={y} r={i % 7 === 0 ? 0.5 : 0.3} fill="rgba(255,255,255,0.35)" />;
             })}
           </svg>

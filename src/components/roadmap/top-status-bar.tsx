@@ -34,7 +34,7 @@ export function TopStatusBar({
 
   return (
     <header className="sticky top-0 z-30 border-b border-white/5 bg-[#050914]/85 backdrop-blur-md">
-      <div className="mx-auto flex max-w-md items-center gap-3 px-3 py-2.5">
+      <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-2.5">
         <button
           onClick={onMenu}
           aria-label="Menu"
@@ -92,7 +92,7 @@ export function TopStatusBar({
       </div>
 
       {/* current track chip */}
-      <div className="mx-auto max-w-md px-3 pb-2">
+      <div className="mx-auto w-full max-w-7xl px-4 pb-2">
         <span
           className="inline-block rounded-md px-2 py-0.5 font-robot text-[10px] font-bold tracking-[0.2em]"
           style={{ color: accent, background: `${accent}1a`, border: `1px solid ${accent}40` }}

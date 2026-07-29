@@ -11,7 +11,7 @@ interface Props {
 
 export function TrackSwitcher({ activeId, onChange }: Props) {
   return (
-    <div className="mx-auto flex max-w-md gap-2 px-3 pb-3">
+    <div className="flex w-full gap-2 pb-3">
       {tracks.map((track) => {
         const active = track.id === activeId;
         const pct = trackProgress(track);

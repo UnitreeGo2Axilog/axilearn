@@ -24,7 +24,7 @@ export default async function HomePage({
   const t = getT(locale);
 
   return (
-    <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-8">
+    <div className="relative z-10 mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-7xl flex-col justify-center px-4 py-10">
       {/* hero */}
       <section className="mb-10 grid items-center gap-6 md:grid-cols-[1fr_auto]">
         <div className="text-center md:text-left">

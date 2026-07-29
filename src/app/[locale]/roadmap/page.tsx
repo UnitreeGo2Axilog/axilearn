@@ -1,12 +1,13 @@
 "use client";
 
 /**
- * The mission map screen.
+ * The mission map screen -- a full-viewport game world.
  *
- * Mobile-first by construction: a fixed HUD on top, a tall scrollable world in
- * the middle, and a fixed mission card at the bottom -- the same shape as the
- * game reference. On wider screens the map stays centred and phone-width
- * rather than stretching into a dashboard, which is what kills the game feel.
+ * Layout: HUD pinned at the top, the map filling ALL the space between it and
+ * the mission card, card pinned at the bottom. Nothing is centred in a narrow
+ * column: on a laptop the map spreads across the whole window (the reference
+ * shows an entire mission map filling the screen), while on a phone it keeps a
+ * minimum height so the route never squashes into an unreadable strip.
  */
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -33,10 +34,8 @@ export default function RoadmapPage() {
   const [selected, setSelected] = useState<Level | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
-  // Preselect the lesson the learner is on, so the card is never empty.
   useEffect(() => {
-    const current = track.levels.find((l) => l.state === "current") ?? track.levels[0];
-    setSelected(current);
+    setSelected(track.levels.find((l) => l.state === "current") ?? track.levels[0]);
   }, [track]);
 
   const pct = useMemo(() => trackProgress(track), [track]);
@@ -50,7 +49,7 @@ export default function RoadmapPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050914]">
+    <div className="flex min-h-screen flex-col bg-[#050914]">
       <TopStatusBar
         name={learner.name}
         level={learner.level}
@@ -62,17 +61,16 @@ export default function RoadmapPage() {
         accent={track.color}
       />
 
-      <TrackSwitcher activeId={track.id} onChange={setTrack} />
-
-      {/* track headline + completion */}
-      <div className="mx-auto mb-3 max-w-md px-4">
-        <div className="flex items-end justify-between gap-3">
+      {/* track bar: switcher + headline, full width */}
+      <div className="mx-auto w-full max-w-7xl px-3">
+        <TrackSwitcher activeId={track.id} onChange={setTrack} />
+        <div className="mb-3 flex items-end justify-between gap-3 px-1">
           <div>
-            <h1 className="text-xl font-extrabold text-slate-50">{track.title}</h1>
-            <p className="text-xs text-slate-400">{track.description}</p>
+            <h1 className="text-xl font-extrabold text-slate-50 sm:text-2xl">{track.title}</h1>
+            <p className="text-xs text-slate-400 sm:text-sm">{track.description}</p>
           </div>
           <div className="shrink-0 text-right">
-            <p className="font-robot text-lg font-bold" style={{ color: track.color }}>
+            <p className="font-robot text-xl font-bold" style={{ color: track.color }}>
               {pct}%
             </p>
             <p className="text-[10px] uppercase tracking-wide text-slate-500">complete</p>
@@ -80,29 +78,31 @@ export default function RoadmapPage() {
         </div>
       </div>
 
-      {/* the world -- extra bottom padding so the fixed card never covers it */}
-      <div className="px-3 pb-64">
-        <RoadmapCanvas track={track} selectedId={selected?.id ?? null} onSelect={choose} />
-
-        <div className="mx-auto mt-6 max-w-md">
-          <Link
-            href={`/${locale}`}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-slate-300"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to AxiLearn
-          </Link>
+      {/* THE MAP -- fills the rest of the viewport, min height on small screens */}
+      <div className="mx-auto w-full max-w-7xl flex-1 px-3">
+        <div className="h-[max(620px,calc(100vh-330px))] w-full">
+          <RoadmapCanvas track={track} selectedId={selected?.id ?? null} onSelect={choose} />
         </div>
       </div>
 
-      {/* achievement / locked toast */}
+      {/* leaves room for the fixed mission card */}
+      <div className="mx-auto w-full max-w-7xl px-4 pb-56 pt-4">
+        <Link
+          href={`/${locale}`}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-cyan-300"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to AxiLearn
+        </Link>
+      </div>
+
       <AnimatePresence>
         {toast && (
           <motion.div
             initial={{ y: -30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -30, opacity: 0 }}
-            className="fixed inset-x-0 top-24 z-50 mx-auto w-fit rounded-xl border border-cyan-400/30 bg-[#0a1020]/95 px-4 py-2 text-xs font-semibold text-cyan-200 backdrop-blur"
+            className="fixed inset-x-0 top-28 z-50 mx-auto w-fit rounded-xl border border-cyan-400/30 bg-[#0a1020]/95 px-4 py-2 text-xs font-semibold text-cyan-200 backdrop-blur"
           >
             <span className="inline-flex items-center gap-2">
               <Trophy className="h-3.5 w-3.5" />

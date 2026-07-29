@@ -53,7 +53,7 @@ export function BottomLessonPanel({ level, trackTitle, accent }: Props) {
           transition={{ type: "spring", stiffness: 320, damping: 32 }}
           className="fixed inset-x-0 bottom-0 z-40"
         >
-          <div className="mx-auto max-w-md px-3 pb-3">
+          <div className="mx-auto max-w-3xl px-3 pb-3">
             <div
               className="relative overflow-hidden rounded-2xl border bg-[#0a1020]/95 p-4 backdrop-blur-md"
               style={{ borderColor: `${accent}55`, boxShadow: `0 0 30px rgba(0,0,0,.6), 0 0 18px ${accent}22` }}
