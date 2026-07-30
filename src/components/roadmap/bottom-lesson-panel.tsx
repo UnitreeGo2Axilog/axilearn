@@ -9,13 +9,16 @@
  */
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Clock, Lock, Play, RotateCcw, Sparkles, Zap } from "lucide-react";
+import { Award, Clock, Lock, Play, RotateCcw, Sparkles, Zap } from "lucide-react";
 import type { Level } from "@/content/roadmap-data";
-import { useLocale } from "@/i18n/use-t";
+import { useLocale, useT } from "@/i18n/use-t";
 
 interface Props {
   level: Level | null;
+  trackId: string;
   trackTitle: string;
+  /** Every lesson in the track finished -- the certificate condition. */
+  trackComplete: boolean;
   accent: string;
   onClose?: () => void;
 }
@@ -41,9 +44,11 @@ function cta(level: Level) {
   return { label: "Continue", icon: Play, disabled: false, classes: "", inline: { background: "var(--neon)", color: "var(--surface-solid)" } };
 }
 
-export function BottomLessonPanel({ level, trackTitle, accent }: Props) {
+export function BottomLessonPanel({ level, trackId, trackTitle, trackComplete, accent }: Props) {
   const locale = useLocale();
+  const t = useT();
   const reduce = useReducedMotion();
+  const isFinal = level?.type === "final_project";
 
   return (
     <AnimatePresence mode="wait">
@@ -112,6 +117,42 @@ export function BottomLessonPanel({ level, trackTitle, accent }: Props) {
                   </span>
                 )}
               </div>
+
+              {/* the capstone node carries the certificate, once every lesson
+                  in the track -- not just this one -- is actually done */}
+              {isFinal && (
+                <div
+                  className="mt-3 flex items-center gap-2.5 rounded-xl border p-3"
+                  style={{
+                    borderColor: trackComplete
+                      ? "color-mix(in srgb, var(--reward) 45%, transparent)"
+                      : "var(--border)",
+                    background: trackComplete
+                      ? "color-mix(in srgb, var(--reward) 10%, transparent)"
+                      : "var(--bg-2)",
+                  }}
+                >
+                  <Award
+                    className="h-4 w-4 shrink-0"
+                    style={{ color: trackComplete ? "var(--reward)" : "var(--text-faint)" }}
+                  />
+                  <p
+                    className="flex-1 text-xs font-semibold leading-snug"
+                    style={{ color: trackComplete ? "var(--reward)" : "var(--text-muted)" }}
+                  >
+                    {trackComplete ? t("cert.available") : t("cert.lockedBody")}
+                  </p>
+                  {trackComplete && (
+                    <Link
+                      href={`/${locale}/certificate/${trackId}`}
+                      className="shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-black"
+                      style={{ background: "var(--reward)", color: "var(--surface-solid)" }}
+                    >
+                      {t("cert.view")}
+                    </Link>
+                  )}
+                </div>
+              )}
 
               {(() => {
                 const c = cta(level);

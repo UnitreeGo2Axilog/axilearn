@@ -130,7 +130,13 @@ export function RoadmapView({
         )}
       </AnimatePresence>
 
-      <BottomLessonPanel level={selected} trackTitle={track.title} accent={track.color} />
+      <BottomLessonPanel
+        level={selected}
+        trackId={track.id}
+        trackTitle={track.title}
+        trackComplete={pct === 100}
+        accent={track.color}
+      />
     </div>
   );
 }

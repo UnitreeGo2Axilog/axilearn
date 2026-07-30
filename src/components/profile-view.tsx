@@ -376,24 +376,37 @@ function LearnerProfile({
           {mainTracks.map((track) => {
             const done = track.levels.filter((l) => completedIds.has(l.id)).length;
             const p = track.levels.length ? Math.round((done / track.levels.length) * 100) : 0;
+            const complete = track.levels.length > 0 && p === 100;
             return (
-              <Link key={track.id} href={`/${locale}/track/${track.id}`} className="block">
-                <div className="mb-1.5 flex items-baseline justify-between">
-                  <span className="text-sm font-bold text-main">{track.title}</span>
-                  <span className="text-xs font-bold" style={{ color: track.color }}>
-                    {done}/{track.levels.length} · {p}%
-                  </span>
-                </div>
-                <div
-                  className="h-2 w-full overflow-hidden rounded-full"
-                  style={{ background: "color-mix(in srgb, var(--text) 12%, transparent)" }}
-                >
-                  <span
-                    className="block h-full rounded-full"
-                    style={{ width: `${p}%`, background: track.color }}
-                  />
-                </div>
-              </Link>
+              <div key={track.id}>
+                <Link href={`/${locale}/track/${track.id}`} className="block">
+                  <div className="mb-1.5 flex items-baseline justify-between">
+                    <span className="text-sm font-bold text-main">{track.title}</span>
+                    <span className="text-xs font-bold" style={{ color: track.color }}>
+                      {done}/{track.levels.length} · {p}%
+                    </span>
+                  </div>
+                  <div
+                    className="h-2 w-full overflow-hidden rounded-full"
+                    style={{ background: "color-mix(in srgb, var(--text) 12%, transparent)" }}
+                  >
+                    <span
+                      className="block h-full rounded-full"
+                      style={{ width: `${p}%`, background: track.color }}
+                    />
+                  </div>
+                </Link>
+                {complete && (
+                  <Link
+                    href={`/${locale}/certificate/${track.id}`}
+                    className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-bold"
+                    style={{ color: "var(--reward)" }}
+                  >
+                    <Award className="h-3 w-3" />
+                    {t("cert.view")}
+                  </Link>
+                )}
+              </div>
             );
           })}
         </div>

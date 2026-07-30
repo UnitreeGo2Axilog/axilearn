@@ -68,6 +68,54 @@ export interface LessonEntry {
   videoId?: string;
 }
 
+/**
+ * One multiple-choice question, stored the same bilingual way as everything
+ * else. `correctIndex` picks the right entry in `options` (2-4 of them).
+ *
+ * This is what a lesson's "mark as done" gates on. Without it, completion was
+ * a single unguarded button -- a learner could mark a lesson finished without
+ * having read a word of it, and every progress number on the platform
+ * (map, profile, admin roster) would have been reporting that as real
+ * learning. A quiz that can only be written from having actually read the
+ * lesson closes that gap.
+ */
+export interface QuizQuestion {
+  question: L10n;
+  options: L10n[];
+  correctIndex: number;
+  /** Shown after answering, right or wrong -- this is the teaching moment. */
+  explanation?: L10n;
+}
+
+export type LessonQuiz = QuizQuestion[];
+
+/** A quiz resolved to one language, ready for the UI. */
+export interface ResolvedQuizQuestion {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation?: string;
+}
+export type ResolvedQuiz = ResolvedQuizQuestion[];
+
+export function resolveQuiz(quiz: LessonQuiz | undefined, locale: Locale): ResolvedQuiz | null {
+  if (!quiz || quiz.length === 0) return null;
+  return quiz.map((q) => ({
+    question: pick(q.question, locale),
+    options: q.options.map((o) => pick(o, locale)),
+    correctIndex: q.correctIndex,
+    ...(q.explanation ? { explanation: pick(q.explanation, locale) } : {}),
+  }));
+}
+
+export function emptyQuizQuestion(): QuizQuestion {
+  return {
+    question: { en: "" },
+    options: [{ en: "" }, { en: "" }],
+    correctIndex: 0,
+  };
+}
+
 export interface PrimerDoc {
   title: L10n;
   why: L10n;

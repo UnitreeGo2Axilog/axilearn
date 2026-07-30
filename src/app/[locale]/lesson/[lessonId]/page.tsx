@@ -2,10 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, Clock, Play, Zap } from "lucide-react";
 import { getT, isLocale } from "@/i18n/messages";
-import { getLessonBody, getLessonLocation } from "@/content/store";
+import { getLessonContent, getLessonLocation } from "@/content/store";
 import type { Locale } from "@/content/types";
 import { AuthGate } from "@/components/auth-gate";
 import { LessonComplete } from "@/components/lesson-complete";
+import { LessonQuiz } from "@/components/lesson-quiz";
 
 /**
  * The Learning Studio shell, in the three-pane shape the tech spec describes:
@@ -30,7 +31,7 @@ export default async function LessonPage({
   if (!found) notFound();
 
   const { track, level, next } = found;
-  const body = await getLessonBody(track.id, level.id, locale);
+  const { body, quiz } = await getLessonContent(track.id, level.id, locale);
 
   return (
     <AuthGate>
@@ -162,14 +163,27 @@ export default async function LessonPage({
         </div>
 
         {/* completion -- the only write a learner makes, and what every
-            progress number on the platform is counted from */}
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-          <LessonComplete
-            trackId={track.id}
-            lessonId={level.id}
-            xp={level.xpReward}
-            accent={track.color}
-          />
+            progress number on the platform is counted from. A lesson with a
+            quiz can only be marked done by passing it; one without falls
+            back to the plain button, so lessons that don't have a quiz yet
+            still work. */}
+        <div className="mt-6">
+          {quiz ? (
+            <LessonQuiz
+              trackId={track.id}
+              lessonId={level.id}
+              quiz={quiz}
+              xp={level.xpReward}
+              accent={track.color}
+            />
+          ) : (
+            <LessonComplete
+              trackId={track.id}
+              lessonId={level.id}
+              xp={level.xpReward}
+              accent={track.color}
+            />
+          )}
         </div>
 
         {next && (

@@ -27,7 +27,8 @@ import {
 import { getDb } from "@/lib/firebase";
 import { repoTrackDocs } from "./repo-content";
 import { lessonBodies } from "./lesson-bodies";
-import type { L10n, LessonEntry, PublishStatus, TrackDoc } from "./schema";
+import { lessonQuizzes } from "./lesson-quizzes";
+import type { L10n, LessonEntry, LessonQuiz, PublishStatus, TrackDoc } from "./schema";
 
 const TRACKS = "tracks";
 
@@ -117,21 +118,27 @@ function renumber(lessons: LessonEntry[]): LessonEntry[] {
 
 /* ----------------------------------------------------------- lesson body */
 
-export async function readLessonBody(trackId: string, lessonId: string): Promise<L10n> {
+export interface LessonBodyDoc {
+  content: L10n;
+  quiz: LessonQuiz;
+}
+
+export async function readLessonBody(trackId: string, lessonId: string): Promise<LessonBodyDoc> {
   const snap = await getDoc(doc(getDb(), TRACKS, trackId, "bodies", lessonId));
-  const data = snap.exists() ? (snap.data() as { content?: L10n }) : null;
-  return data?.content ?? { en: "" };
+  const data = snap.exists() ? (snap.data() as { content?: L10n; quiz?: LessonQuiz }) : null;
+  return { content: data?.content ?? { en: "" }, quiz: data?.quiz ?? [] };
 }
 
 export async function saveLessonBody(
   trackId: string,
   lessonId: string,
   content: L10n,
+  quiz: LessonQuiz,
   status: PublishStatus,
 ): Promise<void> {
   await setDoc(
     doc(getDb(), TRACKS, trackId, "bodies", lessonId),
-    { content: clean(content), status, updatedAt: Date.now() },
+    { content: clean(content), quiz: clean(quiz), status, updatedAt: Date.now() },
     { merge: true },
   );
 }
@@ -153,14 +160,16 @@ export interface ImportResult {
  * service-account key exists in this project: the seed runs as the signed-in
  * admin.
  *
- * LESSON BODIES are handled separately from that skip, on purpose. A track
- * that already exists in Firestore (because it was imported before) can still
- * be missing body text, if the writer added lessonBodies.ts content after the
- * first import. So every lesson with repo text is checked on its own: if
- * Firestore's body for it is still empty, it gets written, regardless of
- * whether the track around it was skipped. If an admin already wrote or
- * edited that body in the CMS, it is left alone -- the check is "is Firestore
- * empty", not "did the track get skipped".
+ * LESSON BODIES AND QUIZZES are handled separately from that skip, on
+ * purpose. A track that already exists in Firestore (because it was imported
+ * before) can still be missing body text or a quiz, if that content was added
+ * to the repo after the first import. So every lesson is checked on its own,
+ * field by field: if Firestore's text for it is still empty, the text gets
+ * written; if its quiz is still empty, the quiz gets written -- independently
+ * of each other and independently of whether the track around it was
+ * skipped. If an admin already wrote or edited either one in the CMS, it is
+ * left alone -- the check is "is Firestore empty", not "did the track get
+ * skipped".
  */
 export async function importStarterContent(overwrite = false): Promise<ImportResult> {
   const existing = new Set((await listTrackDocs()).map((t) => t.id));
@@ -183,11 +192,22 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
   const bodiesWritten: string[] = [];
   for (const track of repoTrackDocs) {
     for (const lesson of track.lessons) {
-      const text = lessonBodies[lesson.id];
-      if (!text) continue;
+      const repoText = lessonBodies[lesson.id];
+      const repoQuiz = lessonQuizzes[lesson.id];
+      if (!repoText && !repoQuiz) continue;
+
       const current = await readLessonBody(track.id, lesson.id);
-      if (current.en.trim()) continue; // an admin already wrote something here
-      await saveLessonBody(track.id, lesson.id, text, lesson.status);
+      const needsText = Boolean(repoText) && !current.content.en.trim();
+      const needsQuiz = Boolean(repoQuiz) && current.quiz.length === 0;
+      if (!needsText && !needsQuiz) continue; // admin already wrote both
+
+      await saveLessonBody(
+        track.id,
+        lesson.id,
+        needsText ? repoText! : current.content,
+        needsQuiz ? repoQuiz! : current.quiz,
+        lesson.status,
+      );
       bodiesWritten.push(lesson.id);
     }
   }

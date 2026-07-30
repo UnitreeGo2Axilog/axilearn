@@ -18,7 +18,8 @@
 import { unstable_cache } from "next/cache";
 import { repoTrackDoc, repoTrackDocs } from "./repo-content";
 import { lessonBodies } from "./lesson-bodies";
-import { toRoadmapTrack, type TrackDoc } from "./schema";
+import { lessonQuizzes } from "./lesson-quizzes";
+import { resolveQuiz, toRoadmapTrack, type LessonQuiz, type ResolvedQuiz, type TrackDoc } from "./schema";
 import type { Level, RoadmapTrack } from "./roadmap-data";
 import type { Locale } from "./types";
 
@@ -244,39 +245,68 @@ export async function getMainTracks(locale: Locale): Promise<RoadmapTrack[]> {
   return (await getTracks(locale)).filter((t) => !t.hidden);
 }
 
+/** Turn a decoded Firestore quiz array into the stored LessonQuiz shape. */
+function quizOf(v: unknown): LessonQuiz {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((q) => {
+      const o = (q ?? {}) as Record<string, unknown>;
+      const options = l10nList(o.options);
+      if (options.length < 2) return null; // not a usable question
+      const explanation = l10nOf(o.explanation);
+      return {
+        question: l10nOf(o.question),
+        options,
+        correctIndex: Math.min(Math.max(num(o.correctIndex, 0), 0), options.length - 1),
+        ...(explanation.en.trim() ? { explanation } : {}),
+      };
+    })
+    .filter((q): q is LessonQuiz[number] => q !== null);
+}
+
 /**
- * A lesson's long text, stored apart from its track so the track document
- * stays small.
+ * A lesson's long text and its quiz, stored together apart from the track
+ * document so that document stays small.
  *
- * Falls back to the repo's own lesson-bodies.ts when Firestore has nothing --
- * same reasoning as repoTrackDocs: a fresh clone with no Firestore project
- * configured should still teach something, not show "coming soon" on every
- * lesson that hasn't been imported yet.
+ * Both fall back to the repo's own lesson-bodies.ts / lesson-quizzes.ts when
+ * Firestore has nothing -- same reasoning as repoTrackDocs: a fresh clone
+ * with no Firestore project configured should still teach something, not
+ * show "coming soon" on every lesson that hasn't been imported yet. The two
+ * fall back INDEPENDENTLY: a lesson can have Firestore text but a repo quiz,
+ * or vice versa, if only one half was ever written into Firestore.
  */
-export async function getLessonBody(
+export async function getLessonContent(
   trackId: string,
   lessonId: string,
   locale: Locale,
-): Promise<string | null> {
-  const repoFallback = () => {
+): Promise<{ body: string | null; quiz: ResolvedQuiz | null }> {
+  const repoBody = (): string | null => {
     const text = lessonBodies[lessonId];
     if (!text) return null;
     const picked = locale === "fr" ? text.fr || text.en : text.en;
     return picked?.trim() ? picked : null;
   };
+  const repoQuiz = (): ResolvedQuiz | null => resolveQuiz(lessonQuizzes[lessonId], locale);
 
-  if (!BASE || !KEY) return repoFallback();
+  if (!BASE || !KEY) return { body: repoBody(), quiz: repoQuiz() };
   try {
     const res = await fetch(`${BASE}/tracks/${trackId}/bodies/${lessonId}?key=${KEY}`, {
       next: { revalidate: CONTENT_TTL_SECONDS, tags: ["content"] },
     });
-    if (!res.ok) return repoFallback();
-    const body = (await res.json()) as { fields?: Record<string, RestValue> };
-    const content = l10nOf(decodeFields(body.fields ?? {}).content);
+    if (!res.ok) return { body: repoBody(), quiz: repoQuiz() };
+    const doc = (await res.json()) as { fields?: Record<string, RestValue> };
+    const fields = decodeFields(doc.fields ?? {});
+
+    const content = l10nOf(fields.content);
     const text = locale === "fr" ? content.fr || content.en : content.en;
-    return text?.trim() ? text : repoFallback();
+    const body = text?.trim() ? text : repoBody();
+
+    const stored = quizOf(fields.quiz);
+    const quiz = stored.length ? resolveQuiz(stored, locale) : repoQuiz();
+
+    return { body, quiz };
   } catch {
-    return repoFallback();
+    return { body: repoBody(), quiz: repoQuiz() };
   }
 }
 
