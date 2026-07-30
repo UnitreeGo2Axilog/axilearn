@@ -17,6 +17,7 @@
  */
 import { unstable_cache } from "next/cache";
 import { repoTrackDoc, repoTrackDocs } from "./repo-content";
+import { lessonBodies } from "./lesson-bodies";
 import { toRoadmapTrack, type TrackDoc } from "./schema";
 import type { Level, RoadmapTrack } from "./roadmap-data";
 import type { Locale } from "./types";
@@ -245,25 +246,37 @@ export async function getMainTracks(locale: Locale): Promise<RoadmapTrack[]> {
 
 /**
  * A lesson's long text, stored apart from its track so the track document
- * stays small. Returns null when nobody has written the body yet.
+ * stays small.
+ *
+ * Falls back to the repo's own lesson-bodies.ts when Firestore has nothing --
+ * same reasoning as repoTrackDocs: a fresh clone with no Firestore project
+ * configured should still teach something, not show "coming soon" on every
+ * lesson that hasn't been imported yet.
  */
 export async function getLessonBody(
   trackId: string,
   lessonId: string,
   locale: Locale,
 ): Promise<string | null> {
-  if (!BASE || !KEY) return null;
+  const repoFallback = () => {
+    const text = lessonBodies[lessonId];
+    if (!text) return null;
+    const picked = locale === "fr" ? text.fr || text.en : text.en;
+    return picked?.trim() ? picked : null;
+  };
+
+  if (!BASE || !KEY) return repoFallback();
   try {
     const res = await fetch(`${BASE}/tracks/${trackId}/bodies/${lessonId}?key=${KEY}`, {
       next: { revalidate: CONTENT_TTL_SECONDS, tags: ["content"] },
     });
-    if (!res.ok) return null;
+    if (!res.ok) return repoFallback();
     const body = (await res.json()) as { fields?: Record<string, RestValue> };
     const content = l10nOf(decodeFields(body.fields ?? {}).content);
     const text = locale === "fr" ? content.fr || content.en : content.en;
-    return text?.trim() ? text : null;
+    return text?.trim() ? text : repoFallback();
   } catch {
-    return null;
+    return repoFallback();
   }
 }
 

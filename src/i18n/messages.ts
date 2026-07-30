@@ -187,6 +187,7 @@ export const messages = {
     "admin.importing": "Importing…",
     "admin.importDone": "Imported:",
     "admin.importSkipped": "Already there, left untouched:",
+    "admin.importBodies": "Lesson texts written:",
     "admin.noTracks": "No tracks in the database yet. Import the starter content to begin.",
     "admin.noLessons": "No lessons yet.",
     "admin.lessons": "lessons",
@@ -421,6 +422,7 @@ export const messages = {
     "admin.importing": "Importation…",
     "admin.importDone": "Importés :",
     "admin.importSkipped": "Déjà présents, non modifiés :",
+    "admin.importBodies": "Textes de leçon écrits :",
     "admin.noTracks":
       "Aucun parcours dans la base. Importe le contenu de départ pour commencer.",
     "admin.noLessons": "Aucune leçon pour l'instant.",

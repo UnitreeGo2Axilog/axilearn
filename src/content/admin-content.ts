@@ -26,6 +26,7 @@ import {
 } from "firebase/firestore";
 import { getDb } from "@/lib/firebase";
 import { repoTrackDocs } from "./repo-content";
+import { lessonBodies } from "./lesson-bodies";
 import type { L10n, LessonEntry, PublishStatus, TrackDoc } from "./schema";
 
 const TRACKS = "tracks";
@@ -140,14 +141,26 @@ export async function saveLessonBody(
 export interface ImportResult {
   written: string[];
   skipped: string[];
+  /** Lesson ids that got real body text written, on this run. */
+  bodiesWritten: string[];
 }
 
 /**
  * Copy the repo curriculum into Firestore.
  *
- * Existing tracks are skipped unless `overwrite` is asked for, so pressing the
- * button twice cannot wipe edited content. This is why no service-account key
- * exists in this project: the seed runs as the signed-in admin.
+ * Existing TRACKS are skipped unless `overwrite` is asked for, so pressing the
+ * button twice cannot wipe edited track metadata. This is why no
+ * service-account key exists in this project: the seed runs as the signed-in
+ * admin.
+ *
+ * LESSON BODIES are handled separately from that skip, on purpose. A track
+ * that already exists in Firestore (because it was imported before) can still
+ * be missing body text, if the writer added lessonBodies.ts content after the
+ * first import. So every lesson with repo text is checked on its own: if
+ * Firestore's body for it is still empty, it gets written, regardless of
+ * whether the track around it was skipped. If an admin already wrote or
+ * edited that body in the CMS, it is left alone -- the check is "is Firestore
+ * empty", not "did the track get skipped".
  */
 export async function importStarterContent(overwrite = false): Promise<ImportResult> {
   const existing = new Set((await listTrackDocs()).map((t) => t.id));
@@ -166,5 +179,18 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
   }
 
   if (written.length) await batch.commit();
-  return { written, skipped };
+
+  const bodiesWritten: string[] = [];
+  for (const track of repoTrackDocs) {
+    for (const lesson of track.lessons) {
+      const text = lessonBodies[lesson.id];
+      if (!text) continue;
+      const current = await readLessonBody(track.id, lesson.id);
+      if (current.en.trim()) continue; // an admin already wrote something here
+      await saveLessonBody(track.id, lesson.id, text, lesson.status);
+      bodiesWritten.push(lesson.id);
+    }
+  }
+
+  return { written, skipped, bodiesWritten };
 }

@@ -139,6 +139,11 @@ function Dashboard() {
                 {t("admin.importSkipped")} {result.skipped.join(", ")}
               </p>
             )}
+            {result.bodiesWritten.length > 0 && (
+              <p style={{ color: "var(--advanced)" }}>
+                {t("admin.importBodies")} {result.bodiesWritten.length}
+              </p>
+            )}
           </div>
         )}
       </section>
