@@ -19,9 +19,11 @@ import {
   Compass,
   Flame,
   FolderKanban,
+  GraduationCap,
   Layers,
   LayoutDashboard,
   ShieldCheck,
+  Swords,
   Trophy,
   Users,
   Zap,
@@ -278,17 +280,28 @@ function LearnerProfile({
 }) {
   // Every number here is this learner's real record now, counted from the
   // lessons they marked done -- not the authored demo state the prototype used.
-  const { completedIds, xp, level, into, span, streak } = useProgress();
+  const { completedIds, xp, level, into, span, streak, solvedChallengeIds } = useProgress();
   const pct = Math.min(100, Math.round((into / span) * 100));
 
   const badges = tracks
     .flatMap((tr) => tr.levels.map((l) => ({ level: l, color: tr.color })))
     .filter((x) => x.level.badge && completedIds.has(x.level.id));
 
+  const earnedCerts = mainTracks.filter(
+    (tr) => tr.levels.length > 0 && tr.levels.every((l) => completedIds.has(l.id)),
+  );
+  // The next track worth pointing an empty-state CTA at: the one still in
+  // progress, or the first available if nothing has been started yet.
+  const nextTrack =
+    mainTracks.find((tr) => tr.levels.some((l) => completedIds.has(l.id)) && !earnedCerts.includes(tr)) ??
+    mainTracks[0];
+  const nextTrackHref = nextTrack ? `/${locale}/roadmap/${nextTrack.id}` : `/${locale}`;
+
   const stats = [
     { icon: Zap, label: t("profile.xp"), value: `${xp}`, color: "var(--neon)" },
     { icon: Trophy, label: t("profile.done"), value: `${completedIds.size}`, color: "var(--cleared)" },
     { icon: Flame, label: t("profile.streak"), value: `${streak}`, color: "var(--reward)" },
+    { icon: Swords, label: t("profile.challengesSolved"), value: `${solvedChallengeIds.size}`, color: "var(--advanced)" },
     { icon: Award, label: t("profile.badges"), value: `${badges.length}`, color: "var(--advanced)" },
   ];
 
@@ -354,7 +367,7 @@ function LearnerProfile({
       </header>
 
       {/* score */}
-      <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
         {stats.map(({ icon: Icon, label, value, color }) => (
           <div key={label} className="panel rounded-xl p-4 text-center">
             <Icon className="mx-auto h-5 w-5" style={{ color }} />
@@ -413,13 +426,18 @@ function LearnerProfile({
       </section>
 
       {/* badges */}
-      <section className="panel rounded-2xl p-5">
+      <section className="panel mb-6 rounded-2xl p-5">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-extrabold text-strong">
           <Award className="h-5 w-5" style={{ color: "var(--advanced)" }} />
           {t("profile.badges")}
         </h2>
         {badges.length === 0 ? (
-          <p className="text-sm text-muted">{t("profile.noBadges")}</p>
+          <EmptyReward
+            text={t("profile.noBadges")}
+            cta={t("profile.getBadges")}
+            href={nextTrackHref}
+            color="var(--advanced)"
+          />
         ) : (
           <div className="flex flex-wrap gap-2">
             {badges.map(({ level, color }) => (
@@ -439,6 +457,74 @@ function LearnerProfile({
           </div>
         )}
       </section>
+
+      {/* certifications -- earned once a track hits 100% of its lessons.
+          "mandatory" just means "every lesson", since nothing on the platform
+          is optional yet; a real exam gate is planned but not built. */}
+      <section className="panel rounded-2xl p-5">
+        <h2 className="mb-4 flex items-center gap-2 text-lg font-extrabold text-strong">
+          <GraduationCap className="h-5 w-5" style={{ color: "var(--reward)" }} />
+          {t("profile.certifications")}
+        </h2>
+        {earnedCerts.length === 0 ? (
+          <>
+            <EmptyReward
+              text={t("profile.noCerts")}
+              cta={t("profile.getCertified")}
+              href={nextTrackHref}
+              color="var(--reward)"
+            />
+            <p className="mt-3 text-[11px] leading-relaxed text-faint">
+              {t("profile.certEligibility")} {t("profile.certFutureNote")}
+            </p>
+          </>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {earnedCerts.map((track) => (
+              <Link
+                key={track.id}
+                href={`/${locale}/certificate/${track.id}`}
+                className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold transition hover:opacity-80"
+                style={{
+                  borderColor: "color-mix(in srgb, var(--reward) 40%, transparent)",
+                  background: "color-mix(in srgb, var(--reward) 12%, transparent)",
+                  color: "var(--reward)",
+                }}
+              >
+                <Award className="h-3.5 w-3.5" />
+                {track.title}
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+/** The shared "nothing here yet, go get one" empty state for badges/certs. */
+function EmptyReward({
+  text,
+  cta,
+  href,
+  color,
+}: {
+  text: string;
+  cta: string;
+  href: string;
+  color: string;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <p className="text-sm text-muted">{text}</p>
+      <Link
+        href={href}
+        className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-black uppercase tracking-wide"
+        style={{ background: color, color: "var(--surface-solid)" }}
+      >
+        {cta}
+        <ArrowRight className="h-3.5 w-3.5" />
+      </Link>
     </div>
   );
 }

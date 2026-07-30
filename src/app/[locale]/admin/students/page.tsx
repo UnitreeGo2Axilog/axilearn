@@ -21,6 +21,7 @@ import {
   Download,
   RefreshCw,
   Search,
+  Swords,
   Trophy,
   Users,
   Zap,
@@ -28,6 +29,7 @@ import {
 import { listTrackDocs } from "@/content/admin-content";
 import type { TrackDoc } from "@/content/schema";
 import {
+  fetchAllChallengeProgress,
   fetchAllNotes,
   fetchAllProgress,
   fetchAllStudents,
@@ -35,11 +37,13 @@ import {
   saveNote,
   statsFor,
   STUCK_AFTER_MS,
+  type ChallengeProgressRecord,
   type ProgressRecord,
   type StaffNote,
   type StudentRow,
 } from "@/lib/progress";
 import { AdminBack, AdminGuard } from "@/components/admin/admin-shell";
+import { Tooltip } from "@/components/tooltip";
 import { useLocale, useT } from "@/i18n/use-t";
 
 type SortKey = "name" | "progress" | "activity";
@@ -58,6 +62,7 @@ function Students() {
 
   const [students, setStudents] = useState<StudentRow[] | null>(null);
   const [progress, setProgress] = useState<ProgressRecord[]>([]);
+  const [challengeProgress, setChallengeProgress] = useState<ChallengeProgressRecord[]>([]);
   const [notes, setNotes] = useState<Record<string, StaffNote>>({});
   const [tracks, setTracks] = useState<TrackDoc[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -73,13 +78,15 @@ function Students() {
 
   const load = useCallback(async () => {
     try {
-      const [s, p, tr] = await Promise.all([
+      const [s, p, cp, tr] = await Promise.all([
         fetchAllStudents(),
         fetchAllProgress(),
+        fetchAllChallengeProgress(),
         listTrackDocs(),
       ]);
       setStudents(s);
       setProgress(p);
+      setChallengeProgress(cp);
       setTracks(tr);
       setError(null);
 
@@ -116,7 +123,11 @@ function Students() {
 
   const rows = useMemo(() => {
     const learners = (students ?? []).filter((s) => s.role === "student");
-    const withStats = learners.map((s) => ({ student: s, stats: statsFor(s.uid, progress) }));
+    const withStats = learners.map((s) => ({
+      student: s,
+      stats: statsFor(s.uid, progress),
+      challengesSolved: challengeProgress.filter((c) => c.uid === s.uid).length,
+    }));
 
     const needle = search.trim().toLowerCase();
     const filtered = needle
@@ -132,7 +143,7 @@ function Students() {
       if (sort === "progress") return b.stats.completed - a.stats.completed;
       return (b.student.lastSeenAt ?? 0) - (a.student.lastSeenAt ?? 0);
     });
-  }, [students, progress, search, sort]);
+  }, [students, progress, challengeProgress, search, sort]);
 
   const admins = (students ?? []).filter((s) => s.role === "admin").length;
   const onlineCount = rows.filter((r) => isOnline(r.student.lastSeenAt, now)).length;
@@ -142,12 +153,22 @@ function Students() {
   ).length;
 
   function exportCsv() {
-    const header = ["name", "email", "lessons_done", "xp", "last_seen", "joined", "remark"];
+    const header = [
+      "name",
+      "email",
+      "lessons_done",
+      "challenges_solved",
+      "xp",
+      "last_seen",
+      "joined",
+      "remark",
+    ];
     const lines = rows.map((r) =>
       [
         r.student.displayName,
         r.student.email ?? "",
         String(r.stats.completed),
+        String(r.challengesSolved),
         String(r.stats.xp),
         r.student.lastSeenAt ? new Date(r.student.lastSeenAt).toISOString() : "",
         r.student.createdAt ? new Date(r.student.createdAt).toISOString() : "",
@@ -210,7 +231,7 @@ function Students() {
       )}
 
       {/* the four numbers a teacher actually opens this page for */}
-      <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
         <Stat icon={Users} label={t("admin.totalStudents")} value={rows.length} color="var(--neon)" />
         <Stat
           icon={Circle}
@@ -229,6 +250,12 @@ function Students() {
           label={t("admin.completions")}
           value={progress.length}
           color="var(--advanced)"
+        />
+        <Stat
+          icon={Swords}
+          label={t("profile.challengesSolved")}
+          value={challengeProgress.length}
+          color="var(--reward)"
         />
       </section>
 
@@ -256,14 +283,16 @@ function Students() {
           <option value="progress">{t("admin.sortProgress")}</option>
           <option value="name">{t("admin.sortName")}</option>
         </select>
-        <button
-          onClick={() => void load()}
-          className="grid h-10 w-10 place-items-center rounded-xl border text-main"
-          style={{ borderColor: "var(--border-strong)" }}
-          aria-label="Refresh"
-        >
-          <RefreshCw className="h-4 w-4" />
-        </button>
+        <Tooltip label="Refresh">
+          <button
+            onClick={() => void load()}
+            className="grid h-10 w-10 place-items-center rounded-xl border text-main"
+            style={{ borderColor: "var(--border-strong)" }}
+            aria-label="Refresh"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </button>
+        </Tooltip>
         <button
           onClick={exportCsv}
           disabled={rows.length === 0}
@@ -282,7 +311,7 @@ function Students() {
         <p className="panel rounded-2xl p-5 text-sm text-muted">{t("admin.noStudents")}</p>
       ) : (
         <div className="space-y-2.5">
-          {rows.map(({ student, stats }) => {
+          {rows.map(({ student, stats, challengesSolved }) => {
             const online = isOnline(student.lastSeenAt, now);
             const stuck =
               stats.completed > 0 &&
@@ -367,6 +396,21 @@ function Students() {
                     {stats.xp}
                   </span>
 
+                  {challengesSolved > 0 && (
+                    <Tooltip label={t("profile.challengesSolved")}>
+                      <span
+                        className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-bold"
+                        style={{
+                          background: "color-mix(in srgb, var(--advanced) 14%, transparent)",
+                          color: "var(--advanced)",
+                        }}
+                      >
+                        <Swords className="h-3 w-3" />
+                        {challengesSolved}
+                      </span>
+                    </Tooltip>
+                  )}
+
                   <span className="w-24 shrink-0 text-right text-[11px] text-faint">
                     {ago(student.lastSeenAt, locale, t("admin.never"), now)}
                   </span>
@@ -382,6 +426,7 @@ function Students() {
                     student={student}
                     perTrack={stats.perTrack}
                     lastActivity={stats.lastActivity}
+                    challengesSolved={challengesSolved}
                     tracks={tracks}
                     now={now}
                     note={notes[student.uid]?.text ?? ""}
@@ -413,6 +458,7 @@ function StudentDetail({
   student,
   perTrack,
   lastActivity,
+  challengesSolved,
   tracks,
   now,
   note,
@@ -421,6 +467,7 @@ function StudentDetail({
   student: StudentRow;
   perTrack: Record<string, number>;
   lastActivity: number | null;
+  challengesSolved: number;
   tracks: TrackDoc[];
   now: number;
   note: string;
@@ -492,6 +539,7 @@ function StudentDetail({
           label={t("admin.sortActivity")}
           value={ago(lastActivity, locale, t("admin.notStarted"), now)}
         />
+        <Row label={t("profile.challengesSolved")} value={String(challengesSolved)} />
         <Row label="Language" value={student.locale.toUpperCase()} />
         <Row label="UID" value={`${student.uid.slice(0, 10)}…`} />
       </dl>

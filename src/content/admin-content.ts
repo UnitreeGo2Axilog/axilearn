@@ -28,7 +28,8 @@ import { getDb } from "@/lib/firebase";
 import { repoTrackDocs } from "./repo-content";
 import { lessonBodies } from "./lesson-bodies";
 import { lessonQuizzes } from "./lesson-quizzes";
-import type { L10n, LessonEntry, LessonQuiz, PublishStatus, TrackDoc } from "./schema";
+import { repoChallenges } from "./challenges";
+import type { ChallengeDoc, L10n, LessonEntry, LessonQuiz, PublishStatus, TrackDoc } from "./schema";
 
 const TRACKS = "tracks";
 
@@ -150,6 +151,8 @@ export interface ImportResult {
   skipped: string[];
   /** Lesson ids that got real body text written, on this run. */
   bodiesWritten: string[];
+  /** Challenge ids created, on this run. */
+  challengesWritten: string[];
 }
 
 /**
@@ -212,5 +215,64 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
     }
   }
 
-  return { written, skipped, bodiesWritten };
+  const challengesWritten: string[] = [];
+  for (const track of repoTrackDocs) {
+    const repoList = repoChallenges[track.id];
+    if (!repoList?.length) continue;
+    for (const challenge of repoList) {
+      const exists = await readChallenge(track.id, challenge.id);
+      if (exists) continue; // an admin-authored or previously-imported challenge
+      await saveChallenge(track.id, challenge);
+      challengesWritten.push(challenge.id);
+    }
+  }
+
+  return { written, skipped, bodiesWritten, challengesWritten };
+}
+
+/* ------------------------------------------------------------ challenges */
+
+const CHALLENGES = "challenges";
+
+export async function listChallenges(trackId: string): Promise<ChallengeDoc[]> {
+  const snap = await getDocs(collection(getDb(), TRACKS, trackId, CHALLENGES));
+  return snap.docs
+    .map((d) => ({ ...(d.data() as ChallengeDoc), id: d.id }))
+    .sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+}
+
+export async function readChallenge(trackId: string, id: string): Promise<ChallengeDoc | null> {
+  const snap = await getDoc(doc(getDb(), TRACKS, trackId, CHALLENGES, id));
+  return snap.exists() ? { ...(snap.data() as ChallengeDoc), id: snap.id } : null;
+}
+
+export async function saveChallenge(trackId: string, challenge: ChallengeDoc): Promise<void> {
+  const { id, ...rest } = clean(challenge);
+  await setDoc(
+    doc(getDb(), TRACKS, trackId, CHALLENGES, id),
+    { ...rest, updatedAt: Date.now() },
+    { merge: false },
+  );
+}
+
+export async function deleteChallenge(trackId: string, id: string): Promise<void> {
+  await deleteDoc(doc(getDb(), TRACKS, trackId, CHALLENGES, id));
+}
+
+/** Move a challenge one step up or down within the track's whole list. */
+export async function moveChallenge(
+  trackId: string,
+  id: string,
+  direction: -1 | 1,
+): Promise<void> {
+  const list = await listChallenges(trackId);
+  const at = list.findIndex((c) => c.id === id);
+  const to = at + direction;
+  if (at < 0 || to < 0 || to >= list.length) return;
+  const a = list[at];
+  const b = list[to];
+  await Promise.all([
+    updateDoc(doc(getDb(), TRACKS, trackId, CHALLENGES, a.id), { order: b.order }),
+    updateDoc(doc(getDb(), TRACKS, trackId, CHALLENGES, b.id), { order: a.order }),
+  ]);
 }

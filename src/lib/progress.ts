@@ -28,6 +28,7 @@ import {
 import { getDb } from "./firebase";
 
 const PROGRESS = "progress";
+const CHALLENGE_PROGRESS = "challengeProgress";
 const NOTES = "staffNotes";
 const USERS = "users";
 
@@ -73,6 +74,52 @@ export async function isLessonDone(uid: string, lessonId: string): Promise<boole
 export async function fetchMyProgress(uid: string): Promise<ProgressRecord[]> {
   const snap = await getDocs(query(collection(getDb(), PROGRESS), where("uid", "==", uid)));
   return snap.docs.map((d) => d.data() as ProgressRecord);
+}
+
+/* -------------------------------------------------------- challenges */
+
+/**
+ * Solved challenges, mirroring lesson progress exactly: one document per
+ * solve (`challengeProgress/{uid}__{challengeId}`), so two challenges solved
+ * at once cannot clobber each other and the admin roster is one more
+ * collection read, not N.
+ */
+export interface ChallengeProgressRecord {
+  uid: string;
+  challengeId: string;
+  trackId: string;
+  xp: number;
+  completedAt: number;
+}
+
+function challengeIdFor(uid: string, challengeId: string): string {
+  return `${uid}__${challengeId}`;
+}
+
+export async function markChallengeSolved(
+  uid: string,
+  trackId: string,
+  challengeId: string,
+  xp: number,
+): Promise<void> {
+  const record: ChallengeProgressRecord = { uid, trackId, challengeId, xp, completedAt: Date.now() };
+  await setDoc(doc(getDb(), CHALLENGE_PROGRESS, challengeIdFor(uid, challengeId)), record);
+}
+
+export async function unmarkChallengeSolved(uid: string, challengeId: string): Promise<void> {
+  await deleteDoc(doc(getDb(), CHALLENGE_PROGRESS, challengeIdFor(uid, challengeId)));
+}
+
+export async function fetchMyChallengeProgress(uid: string): Promise<ChallengeProgressRecord[]> {
+  const snap = await getDocs(
+    query(collection(getDb(), CHALLENGE_PROGRESS), where("uid", "==", uid)),
+  );
+  return snap.docs.map((d) => d.data() as ChallengeProgressRecord);
+}
+
+export async function fetchAllChallengeProgress(): Promise<ChallengeProgressRecord[]> {
+  const snap = await getDocs(collection(getDb(), CHALLENGE_PROGRESS));
+  return snap.docs.map((d) => d.data() as ChallengeProgressRecord);
 }
 
 /**

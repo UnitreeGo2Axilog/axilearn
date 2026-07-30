@@ -17,11 +17,12 @@
  * be passed, not a one-shot exam.
  */
 import { useMemo, useState } from "react";
-import { Check, Loader2, RotateCcw, Sparkles, X } from "lucide-react";
+import { Check, Loader2, RotateCcw, Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useProgress } from "@/lib/progress-context";
 import { markLessonDone, unmarkLessonDone } from "@/lib/progress";
 import { useT } from "@/i18n/use-t";
+import { QuizOptions } from "@/components/quiz-options";
 import type { ResolvedQuiz } from "@/content/schema";
 
 export function LessonQuiz({
@@ -152,61 +153,14 @@ export function LessonQuiz({
             <p className="mb-3 text-sm font-bold text-strong">
               {qi + 1}. {q.question}
             </p>
-            <div className="space-y-2">
-              {q.options.map((opt, oi) => {
-                const selected = chosen === oi;
-                const revealCorrect = checked && oi === q.correctIndex;
-                const revealWrong = checked && selected && oi !== q.correctIndex;
-                return (
-                  <button
-                    key={oi}
-                    type="button"
-                    onClick={() => pick(qi, oi)}
-                    disabled={checked}
-                    className="flex w-full items-center gap-2.5 rounded-lg border px-3 py-2.5 text-left text-sm font-semibold transition disabled:cursor-default"
-                    style={{
-                      borderColor: revealCorrect
-                        ? "color-mix(in srgb, var(--cleared) 60%, transparent)"
-                        : revealWrong
-                          ? "color-mix(in srgb, var(--reward) 60%, transparent)"
-                          : selected
-                            ? `${accent}88`
-                            : "var(--border)",
-                      background: revealCorrect
-                        ? "color-mix(in srgb, var(--cleared) 12%, transparent)"
-                        : revealWrong
-                          ? "color-mix(in srgb, var(--reward) 12%, transparent)"
-                          : selected
-                            ? `color-mix(in srgb, ${accent} 12%, transparent)`
-                            : "var(--bg-2)",
-                      color: revealCorrect
-                        ? "var(--cleared)"
-                        : revealWrong
-                          ? "var(--reward)"
-                          : "var(--text)",
-                    }}
-                  >
-                    <span
-                      className="grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[10px] font-black"
-                      style={{
-                        borderColor: "currentColor",
-                        background: selected ? "currentColor" : "transparent",
-                        color: "inherit",
-                      }}
-                    >
-                      {revealCorrect ? (
-                        <Check className="h-3 w-3" style={{ color: "var(--surface-solid)" }} strokeWidth={3.5} />
-                      ) : revealWrong ? (
-                        <X className="h-3 w-3" style={{ color: "var(--surface-solid)" }} strokeWidth={3.5} />
-                      ) : (
-                        String.fromCharCode(65 + oi)
-                      )}
-                    </span>
-                    {opt}
-                  </button>
-                );
-              })}
-            </div>
+            <QuizOptions
+              options={q.options}
+              correctIndex={q.correctIndex}
+              chosen={chosen}
+              checked={checked}
+              accent={accent}
+              onPick={(oi) => pick(qi, oi)}
+            />
 
             {checked && q.explanation && (
               <p

@@ -116,6 +116,70 @@ export function emptyQuizQuestion(): QuizQuestion {
   };
 }
 
+/**
+ * A challenge: one multiple-choice question, tagged by difficulty, that lives
+ * on its own rather than at the end of a specific lesson.
+ *
+ * Where a lesson's quiz checks whether someone read THAT lesson, a challenge
+ * is optional extra practice for a whole track -- something to come back to,
+ * grouped by how hard it is, with its own solved/unsolved state. Reuses the
+ * same question/options/correctIndex/explanation shape as a lesson's quiz
+ * question on purpose: it's the same interaction, just not gating anything.
+ */
+export type ChallengeDifficulty = "easy" | "medium" | "hard";
+
+export interface ChallengeDoc {
+  id: string;
+  order: number;
+  status: PublishStatus;
+  difficulty: ChallengeDifficulty;
+  xpReward: number;
+  title: L10n;
+  prompt: L10n;
+  options: L10n[];
+  correctIndex: number;
+  explanation?: L10n;
+}
+
+export interface ResolvedChallenge {
+  id: string;
+  difficulty: ChallengeDifficulty;
+  xpReward: number;
+  title: string;
+  prompt: string;
+  options: string[];
+  correctIndex: number;
+  explanation?: string;
+}
+
+export function resolveChallenge(c: ChallengeDoc, locale: Locale): ResolvedChallenge {
+  const explanation = c.explanation ? pick(c.explanation, locale) : undefined;
+  return {
+    id: c.id,
+    difficulty: c.difficulty,
+    xpReward: c.xpReward,
+    title: pick(c.title, locale),
+    prompt: pick(c.prompt, locale),
+    options: c.options.map((o) => pick(o, locale)),
+    correctIndex: c.correctIndex,
+    ...(explanation ? { explanation } : {}),
+  };
+}
+
+export function emptyChallengeDoc(id: string, order: number): ChallengeDoc {
+  return {
+    id,
+    order,
+    status: "draft",
+    difficulty: "easy",
+    xpReward: 30,
+    title: { en: "" },
+    prompt: { en: "" },
+    options: [{ en: "" }, { en: "" }],
+    correctIndex: 0,
+  };
+}
+
 export interface PrimerDoc {
   title: L10n;
   why: L10n;

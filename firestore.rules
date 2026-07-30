@@ -72,6 +72,18 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // One document per solved challenge, id `{uid}__{challengeId}` -- the
+    // same shape as /progress, for the same reason: a learner can only ever
+    // write their own uid, so nobody can forge a classmate's solve.
+    match /challengeProgress/{docId} {
+      allow read: if isSignedIn()
+                  && (isAdmin() || (resource != null && resource.data.uid == request.auth.uid));
+      allow create, update: if isSignedIn()
+                            && request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn()
+                    && (isAdmin() || (resource != null && resource.data.uid == request.auth.uid));
+    }
+
     // A track document holds its own lessons, so one read serves a whole map.
     match /tracks/{trackId} {
       allow read: if isPublished() || isAdmin();
@@ -82,6 +94,13 @@ service cloud.firestore {
       // lesson's status, so an unpublished lesson's text is admin-only too --
       // checking the parent track instead would cost an extra read per open.
       match /bodies/{lessonId} {
+        allow read: if isPublished() || isAdmin();
+        allow write: if isAdmin();
+      }
+
+      // Standalone practice questions, grouped by difficulty in the UI, each
+      // carrying its own status directly (not mirrored from anything else).
+      match /challenges/{challengeId} {
         allow read: if isPublished() || isAdmin();
         allow write: if isAdmin();
       }

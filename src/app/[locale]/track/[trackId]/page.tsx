@@ -9,11 +9,12 @@ import {
   Compass,
   Lightbulb,
   Sparkles,
+  Swords,
   Users,
   Zap,
 } from "lucide-react";
 import { getT, isLocale } from "@/i18n/messages";
-import { getTrack } from "@/content/store";
+import { getChallenges, getTrack } from "@/content/store";
 import type { Locale } from "@/content/types";
 import { AuthGate } from "@/components/auth-gate";
 import { TrackCta } from "@/components/track-cta";
@@ -43,6 +44,7 @@ export default async function TrackIntroPage({
   const totalXp = track.levels.reduce((sum, l) => sum + l.xpReward, 0);
   const totalMin = track.levels.reduce((sum, l) => sum + l.durationMinutes, 0);
   const sections = track.levels.filter((l) => l.section).length;
+  const challengeCount = (await getChallenges(trackId, locale)).length;
 
   return (
     <AuthGate>
@@ -175,6 +177,36 @@ export default async function TrackIntroPage({
               </span>
             </div>
           </div>
+        </section>
+      )}
+
+      {/* --- challenges: entry point between the briefing and the map ---- */}
+      {challengeCount > 0 && (
+        <section
+          className="mb-8 flex flex-wrap items-center gap-4 rounded-2xl border p-5"
+          style={{
+            borderColor: "color-mix(in srgb, var(--reward) 40%, transparent)",
+            background: "color-mix(in srgb, var(--reward) 6%, var(--surface))",
+          }}
+        >
+          <span
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
+            style={{ background: "color-mix(in srgb, var(--reward) 16%, transparent)", color: "var(--reward)" }}
+          >
+            <Swords className="h-5 w-5" />
+          </span>
+          <div className="min-w-[200px] flex-1">
+            <h2 className="text-base font-extrabold text-strong">{t("challenges.entryTitle")}</h2>
+            <p className="mt-0.5 text-sm leading-relaxed text-muted">{t("challenges.entryBody")}</p>
+          </div>
+          <Link
+            href={`/${locale}/challenges/${track.id}`}
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black uppercase tracking-wide"
+            style={{ background: "var(--reward)", color: "var(--surface-solid)" }}
+          >
+            {t("challenges.open")}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </section>
       )}
 

@@ -15,11 +15,13 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowDown,
+  ArrowRight,
   ArrowUp,
   BookOpen,
   Compass,
   Plus,
   Save,
+  Swords,
   Trash2,
 } from "lucide-react";
 import {
@@ -41,6 +43,7 @@ import {
   StatusToggle,
   TextInput,
 } from "@/components/admin/admin-shell";
+import { Tooltip } from "@/components/tooltip";
 import { useLocale, useT } from "@/i18n/use-t";
 
 export default function AdminTrackPage() {
@@ -370,6 +373,19 @@ function TrackEditor() {
           )}
         </section>
       )}
+
+      {/* challenges -- managed on their own page, since difficulty grouping
+          and per-question editing does not fit the lesson list's shape */}
+      {!isNew && (
+        <Link
+          href={`/${locale}/admin/track/${track.id}/challenges`}
+          className="panel mt-6 flex items-center gap-3 rounded-xl p-4 transition hover:opacity-90"
+        >
+          <Swords className="h-5 w-5" style={{ color: "var(--reward)" }} />
+          <span className="flex-1 text-sm font-bold text-main">{t("admin.challenges")}</span>
+          <ArrowRight className="h-4 w-4 text-faint" />
+        </Link>
+      )}
     </div>
   );
 }
@@ -411,10 +427,9 @@ function IconButton({
   disabled?: boolean;
   danger?: boolean;
 }) {
-  return (
+  const button = (
     <button
       type="button"
-      title={label}
       aria-label={label}
       onClick={onClick}
       disabled={disabled}
@@ -427,6 +442,7 @@ function IconButton({
       {children}
     </button>
   );
+  return disabled ? button : <Tooltip label={label}>{button}</Tooltip>;
 }
 
 /** The map's glow is an "r,g,b" string, so keep it in step with the colour. */

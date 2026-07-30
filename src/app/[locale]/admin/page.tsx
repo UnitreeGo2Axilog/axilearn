@@ -144,6 +144,11 @@ function Dashboard() {
                 {t("admin.importBodies")} {result.bodiesWritten.length}
               </p>
             )}
+            {result.challengesWritten.length > 0 && (
+              <p style={{ color: "var(--reward)" }}>
+                {t("admin.importChallenges")} {result.challengesWritten.length}
+              </p>
+            )}
           </div>
         )}
       </section>

@@ -7,22 +7,35 @@
  * Fetching it in each of them would triple the read count on every navigation
  * for no benefit, so it is fetched here and handed down.
  *
- * `refresh` exists so marking a lesson done updates the map behind it without a
- * page reload.
+ * Lesson completions and solved challenges are fetched together and combined
+ * into ONE xp/level total -- two disconnected XP numbers on the same profile
+ * would just be confusing ("why do I have two scores?"), so a solved
+ * challenge counts toward the same level as a finished lesson. The two are
+ * still tracked separately underneath (`completedIds` vs
+ * `solvedChallengeIds`), because the map needs "which lessons" and the
+ * challenge page needs "which challenges", not a merged blob.
+ *
+ * `refresh` exists so marking a lesson done (or solving a challenge) updates
+ * the map/page behind it without a page reload.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "./auth-context";
 import {
+  fetchMyChallengeProgress,
   fetchMyProgress,
   levelFromXp,
   streakFromRecords,
   touchLastSeen,
+  type ChallengeProgressRecord,
   type ProgressRecord,
 } from "./progress";
 
 interface ProgressValue {
   records: ProgressRecord[];
   completedIds: Set<string>;
+  challengeRecords: ChallengeProgressRecord[];
+  solvedChallengeIds: Set<string>;
+  challengeXp: number;
   xp: number;
   level: number;
   into: number;
@@ -38,6 +51,7 @@ const ProgressContext = createContext<ProgressValue | null>(null);
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const { user, configured } = useAuth();
   const [records, setRecords] = useState<ProgressRecord[]>([]);
+  const [challengeRecords, setChallengeRecords] = useState<ChallengeProgressRecord[]>([]);
   const [loading, setLoading] = useState(false);
   /** Today, as state, so the streak is not computed from a clock read during
       render -- impure, and the React Compiler may call render twice. */
@@ -48,15 +62,22 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const refresh = useCallback(async () => {
     if (!uid || !configured) {
       setRecords([]);
+      setChallengeRecords([]);
       return;
     }
     setLoading(true);
     try {
-      setRecords(await fetchMyProgress(uid));
+      const [lessons, challenges] = await Promise.all([
+        fetchMyProgress(uid),
+        fetchMyChallengeProgress(uid),
+      ]);
+      setRecords(lessons);
+      setChallengeRecords(challenges);
     } catch {
       // Offline or rules not deployed yet: an empty record set is the honest
       // answer, and the maps simply show nothing completed.
       setRecords([]);
+      setChallengeRecords([]);
     } finally {
       setLoading(false);
     }
@@ -83,11 +104,16 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   }, [uid, configured]);
 
   const value = useMemo<ProgressValue>(() => {
-    const xp = records.reduce((sum, r) => sum + (r.xp ?? 0), 0);
+    const lessonXp = records.reduce((sum, r) => sum + (r.xp ?? 0), 0);
+    const challengeXp = challengeRecords.reduce((sum, r) => sum + (r.xp ?? 0), 0);
+    const xp = lessonXp + challengeXp;
     const { level, into, span } = levelFromXp(xp);
     return {
       records,
       completedIds: new Set(records.map((r) => r.lessonId)),
+      challengeRecords,
+      solvedChallengeIds: new Set(challengeRecords.map((r) => r.challengeId)),
+      challengeXp,
       xp,
       level,
       into,
@@ -96,7 +122,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       loading,
       refresh,
     };
-  }, [records, now, loading, refresh]);
+  }, [records, challengeRecords, now, loading, refresh]);
 
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;
 }

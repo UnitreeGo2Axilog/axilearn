@@ -19,7 +19,17 @@ import { unstable_cache } from "next/cache";
 import { repoTrackDoc, repoTrackDocs } from "./repo-content";
 import { lessonBodies } from "./lesson-bodies";
 import { lessonQuizzes } from "./lesson-quizzes";
-import { resolveQuiz, toRoadmapTrack, type LessonQuiz, type ResolvedQuiz, type TrackDoc } from "./schema";
+import { repoChallenges } from "./challenges";
+import {
+  resolveChallenge,
+  resolveQuiz,
+  toRoadmapTrack,
+  type ChallengeDoc,
+  type LessonQuiz,
+  type ResolvedChallenge,
+  type ResolvedQuiz,
+  type TrackDoc,
+} from "./schema";
 import type { Level, RoadmapTrack } from "./roadmap-data";
 import type { Locale } from "./types";
 
@@ -327,4 +337,88 @@ export async function getLessonLocation(
     }
   }
   return null;
+}
+
+/** Turn a decoded Firestore challenge document into the stored shape. */
+function challengeOf(id: string, raw: Record<string, unknown>): ChallengeDoc | null {
+  const options = l10nList(raw.options);
+  if (options.length < 2) return null; // not a usable question
+  const explanation = l10nOf(raw.explanation);
+  const difficulty =
+    raw.difficulty === "medium" || raw.difficulty === "hard" ? raw.difficulty : "easy";
+  return {
+    id,
+    order: num(raw.order, 99),
+    status: raw.status === "draft" ? "draft" : "published",
+    difficulty,
+    xpReward: num(raw.xpReward, 30),
+    title: l10nOf(raw.title),
+    prompt: l10nOf(raw.prompt),
+    options,
+    correctIndex: Math.min(Math.max(num(raw.correctIndex, 0), 0), options.length - 1),
+    ...(explanation.en.trim() ? { explanation } : {}),
+  };
+}
+
+/**
+ * A track's published challenges, in order (the UI groups them by difficulty
+ * itself). From Firestore when there are any, the repo bundle otherwise.
+ *
+ * Same "rules are not filters" reasoning as the tracks list, and it is not
+ * optional here either: the challenges rule hides drafts by checking
+ * `resource.data.status`, so a bare, unfiltered list read over the
+ * subcollection would be REJECTED OUTRIGHT, not silently filtered -- it would
+ * look like "Firestore is unreachable" and fall back to the repo bundle every
+ * single time, quietly hiding anything an admin wrote. The read has to be a
+ * QUERY filtered on `status == "published"`, same as fetchTrackDocs, and for
+ * the same reason it goes through unstable_cache rather than Next's fetch
+ * cache: a filtered query is a POST, which plain fetch caching does not cover.
+ */
+const fetchChallenges = unstable_cache(
+  async (trackId: string): Promise<ChallengeDoc[]> => {
+    const res = await fetch(`${BASE}/tracks/${trackId}/challenges:runQuery?key=${KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        structuredQuery: {
+          from: [{ collectionId: "challenges" }],
+          where: {
+            fieldFilter: {
+              field: { fieldPath: "status" },
+              op: "EQUAL",
+              value: { stringValue: "published" },
+            },
+          },
+          limit: 100,
+        },
+      }),
+    });
+    if (!res.ok) return [];
+    const rows = (await res.json()) as {
+      document?: { name: string; fields?: Record<string, RestValue> };
+    }[];
+    return (Array.isArray(rows) ? rows : [])
+      .filter((r) => r.document)
+      .map((r) => challengeOf(docId(r.document!.name), decodeFields(r.document!.fields ?? {})))
+      .filter((c): c is ChallengeDoc => c !== null)
+      .sort((a, b) => a.order - b.order);
+  },
+  ["axilearn-published-challenges"],
+  { revalidate: CONTENT_TTL_SECONDS, tags: ["content"] },
+);
+
+export async function getChallenges(trackId: string, locale: Locale): Promise<ResolvedChallenge[]> {
+  const repoFallback = () =>
+    (repoChallenges[trackId] ?? [])
+      .filter((c) => c.status === "published")
+      .sort((a, b) => a.order - b.order)
+      .map((c) => resolveChallenge(c, locale));
+
+  if (!BASE || !KEY) return repoFallback();
+  try {
+    const docs = await fetchChallenges(trackId);
+    return docs.length ? docs.map((c) => resolveChallenge(c, locale)) : repoFallback();
+  } catch {
+    return repoFallback();
+  }
 }
