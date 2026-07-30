@@ -94,7 +94,6 @@ src/
     roadmap-data.ts      page-facing types and the map layout function
   i18n/                  typed EN/FR messages; a missing key fails the build
   lib/                   Firebase, auth, theme
-  lib/
     progress.ts          completions, presence, teacher remarks
     progress-context.tsx the signed-in learner's record, fetched once
 firestore.rules          the actual security boundary
