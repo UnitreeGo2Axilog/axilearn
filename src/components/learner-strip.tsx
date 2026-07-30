@@ -10,12 +10,14 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Coins, Flame, LayoutDashboard, ShieldCheck, Trophy } from "lucide-react";
-import { learner, trackProgress, type RoadmapTrack } from "@/content/roadmap-data";
+import { learner, type RoadmapTrack } from "@/content/roadmap-data";
+import { useProgress } from "@/lib/progress-context";
 import { useAuth } from "@/lib/auth-context";
 import { useLocale, useT } from "@/i18n/use-t";
 
 export function LearnerStrip({ tracks }: { tracks: RoadmapTrack[] }) {
   const { user, profile } = useAuth();
+  const { completedIds, xp, level, into, span } = useProgress();
   const locale = useLocale();
   const t = useT();
   if (!user) return null;
@@ -53,8 +55,10 @@ export function LearnerStrip({ tracks }: { tracks: RoadmapTrack[] }) {
     );
   }
 
-  const pct = Math.min(100, Math.round((learner.currentXp / learner.nextLevelXp) * 100));
+  const pct = Math.min(100, Math.round((into / span) * 100));
   const name = profile?.displayName ?? learner.name;
+  const doneIn = (track: RoadmapTrack) =>
+    track.levels.filter((l) => completedIds.has(l.id)).length;
 
   return (
     <section className="panel panel-glow mb-8 rounded-2xl p-4">
@@ -78,7 +82,7 @@ export function LearnerStrip({ tracks }: { tracks: RoadmapTrack[] }) {
               border: "1px solid var(--bg)",
             }}
           >
-            {learner.level}
+            {level}
           </span>
         </div>
 
@@ -89,7 +93,7 @@ export function LearnerStrip({ tracks }: { tracks: RoadmapTrack[] }) {
               {t("home.welcomeBack")} {name}
             </p>
             <p className="font-robot text-[11px] tracking-wider" style={{ color: "var(--neon)" }}>
-              {learner.currentXp}/{learner.nextLevelXp} XP
+              {into}/{span} XP
             </p>
           </div>
           <div
@@ -105,8 +109,7 @@ export function LearnerStrip({ tracks }: { tracks: RoadmapTrack[] }) {
             />
           </div>
           <p className="mt-1 text-[11px] text-faint">
-            {t("home.level")} {learner.level} · {learner.nextLevelXp - learner.currentXp}{" "}
-            {t("home.xpToNext")}
+            {t("home.level")} {level} · {span - into} {t("home.xpToNext")}
           </p>
         </div>
 
@@ -132,7 +135,7 @@ export function LearnerStrip({ tracks }: { tracks: RoadmapTrack[] }) {
             }}
           >
             <Coins className="h-4 w-4" />
-            {learner.coins}
+            {xp}
           </span>
         </div>
       </div>
@@ -140,7 +143,10 @@ export function LearnerStrip({ tracks }: { tracks: RoadmapTrack[] }) {
       {/* per-track completion */}
       <div className="mt-4 grid gap-2 sm:grid-cols-3">
         {tracks.map((track) => {
-          const p = trackProgress(track);
+          const done = doneIn(track);
+          const p = track.levels.length
+            ? Math.round((done / track.levels.length) * 100)
+            : 0;
           return (
             <div key={track.id} className="flex items-center gap-2">
               <Trophy className="h-3.5 w-3.5 shrink-0" style={{ color: track.color }} />

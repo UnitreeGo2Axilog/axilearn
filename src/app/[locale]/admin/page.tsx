@@ -9,7 +9,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { BookOpen, Compass, Download, LayoutDashboard, Plus, RefreshCw } from "lucide-react";
+import { ArrowRight, BookOpen, Compass, Download, LayoutDashboard, Plus, RefreshCw, Users } from "lucide-react";
 import {
   importStarterContent,
   listTrackDocs,
@@ -84,6 +84,31 @@ function Dashboard() {
           {error}
         </p>
       )}
+
+      {/* the other half of the job: the people, not the content */}
+      <Link
+        href={`/${locale}/admin/students`}
+        className="panel mb-6 flex flex-wrap items-center gap-3 rounded-2xl p-5 transition hover:opacity-90"
+      >
+        <span
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
+          style={{
+            background: "color-mix(in srgb, var(--neon) 16%, transparent)",
+            color: "var(--neon)",
+          }}
+        >
+          <Users className="h-5 w-5" />
+        </span>
+        <span className="min-w-[200px] flex-1">
+          <span className="block text-sm font-extrabold text-strong">
+            {t("admin.openStudents")}
+          </span>
+          <span className="mt-0.5 block text-xs leading-relaxed text-muted">
+            {t("admin.studentsIntro")}
+          </span>
+        </span>
+        <ArrowRight className="h-5 w-5 shrink-0" style={{ color: "var(--neon)" }} />
+      </Link>
 
       {/* seed */}
       <section className="panel mb-6 rounded-2xl p-5">

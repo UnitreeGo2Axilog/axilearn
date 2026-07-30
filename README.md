@@ -58,6 +58,27 @@ Three steps, in order:
    curriculum into Firestore as the starting point. Running it again skips
    tracks that already exist, so it cannot wipe your edits.
 
+## Progress and the teaching side
+
+Learners mark a lesson done at the bottom of the lesson page. That single write
+is what every progress number on the platform is counted from -- the mission
+map, the profile and the admin roster all read the same `progress` collection,
+so they cannot disagree.
+
+`/admin/students` is the teaching view: who is enrolled, what they have
+finished, per-track breakdowns, who is on the platform right now, a "needs a
+nudge" flag for anyone who has gone quiet for over a week, CSV export, and a
+private remark per learner.
+
+Remarks live in their own `staffNotes` collection rather than on the learner's
+document, and that is deliberate: a learner can read their own document, so a
+note like "struggling, call home" must not be one click away from the person it
+is about. Admins only, both directions.
+
+Presence is a `lastSeenAt` heartbeat the learner writes to their own document,
+throttled to at most one write every four minutes -- writes are the scarcer free
+quota (20k/day), and an open tab would otherwise spend it alone.
+
 ## Layout
 
 ```
@@ -73,6 +94,9 @@ src/
     roadmap-data.ts      page-facing types and the map layout function
   i18n/                  typed EN/FR messages; a missing key fails the build
   lib/                   Firebase, auth, theme
+  lib/
+    progress.ts          completions, presence, teacher remarks
+    progress-context.tsx the signed-in learner's record, fetched once
 firestore.rules          the actual security boundary
 ```
 

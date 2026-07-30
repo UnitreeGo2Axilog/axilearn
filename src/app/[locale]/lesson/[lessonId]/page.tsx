@@ -5,6 +5,7 @@ import { getT, isLocale } from "@/i18n/messages";
 import { getLessonBody, getLessonLocation } from "@/content/store";
 import type { Locale } from "@/content/types";
 import { AuthGate } from "@/components/auth-gate";
+import { LessonComplete } from "@/components/lesson-complete";
 
 /**
  * The Learning Studio shell, in the three-pane shape the tech spec describes:
@@ -158,6 +159,17 @@ export default async function LessonPage({
               {t("lesson.comingSoon")}
             </div>
           </section>
+        </div>
+
+        {/* completion -- the only write a learner makes, and what every
+            progress number on the platform is counted from */}
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+          <LessonComplete
+            trackId={track.id}
+            lessonId={level.id}
+            xp={level.xpReward}
+            accent={track.color}
+          />
         </div>
 
         {next && (

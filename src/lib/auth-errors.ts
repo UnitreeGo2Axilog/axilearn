@@ -25,9 +25,13 @@ const MAP: Record<string, { en: string; fr: string }> = {
     en: "This email already has an account. Try signing in instead.",
     fr: "Cet email a déjà un compte. Essaie plutôt de te connecter.",
   },
+  // Firebase returns this same code for a wrong password, an email with no
+  // account, AND an account that only has Google sign-in -- email enumeration
+  // protection hides which. So the message must not claim to know, and the UI
+  // offers both ways out instead.
   "auth/invalid-credential": {
-    en: "Wrong email or password. Try again!",
-    fr: "Email ou mot de passe incorrect. Réessaie !",
+    en: "That email and password did not match. If you signed up with Google, use the Google button below.",
+    fr: "Cet email et ce mot de passe ne correspondent pas. Si tu t'es inscrit avec Google, utilise le bouton Google ci-dessous.",
   },
   "auth/user-not-found": {
     en: "No account with that email yet. Create one!",

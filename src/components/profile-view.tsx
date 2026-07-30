@@ -16,7 +16,6 @@ import {
   Award,
   BookOpen,
   Clock,
-  Coins,
   Compass,
   Flame,
   FolderKanban,
@@ -24,9 +23,11 @@ import {
   LayoutDashboard,
   ShieldCheck,
   Trophy,
+  Users,
   Zap,
 } from "lucide-react";
-import { learner, trackProgress, type RoadmapTrack } from "@/content/roadmap-data";
+import { learner, type RoadmapTrack } from "@/content/roadmap-data";
+import { useProgress } from "@/lib/progress-context";
 import { useAuth } from "@/lib/auth-context";
 import { useLocale, useT } from "@/i18n/use-t";
 import type { Profile } from "@/lib/auth-context";
@@ -235,15 +236,25 @@ function AdminProfile({
         </dl>
       </section>
 
-      <Link
-        href={`/${locale}/admin`}
-        className="flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-base font-black"
-        style={{ background: "var(--advanced)", color: "var(--surface-solid)" }}
-      >
-        <LayoutDashboard className="h-5 w-5" />
-        {t("profile.openAdmin")}
-        <ArrowRight className="h-5 w-5" />
-      </Link>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Link
+          href={`/${locale}/admin`}
+          className="flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-base font-black"
+          style={{ background: "var(--advanced)", color: "var(--surface-solid)" }}
+        >
+          <LayoutDashboard className="h-5 w-5" />
+          {t("profile.openAdmin")}
+        </Link>
+        <Link
+          href={`/${locale}/admin/students`}
+          className="flex items-center justify-center gap-2 rounded-xl border px-6 py-3.5 text-base font-black text-main"
+          style={{ borderColor: "var(--border-strong)" }}
+        >
+          <Users className="h-5 w-5" />
+          {t("admin.students")}
+          <ArrowRight className="h-5 w-5" />
+        </Link>
+      </div>
     </div>
   );
 }
@@ -265,17 +276,19 @@ function LearnerProfile({
   tracks: RoadmapTrack[];
   mainTracks: RoadmapTrack[];
 }) {
-  const pct = Math.min(100, Math.round((learner.currentXp / learner.nextLevelXp) * 100));
+  // Every number here is this learner's real record now, counted from the
+  // lessons they marked done -- not the authored demo state the prototype used.
+  const { completedIds, xp, level, into, span } = useProgress();
+  const pct = Math.min(100, Math.round((into / span) * 100));
 
-  // A badge counts as earned only when its level is cleared.
   const badges = tracks
     .flatMap((tr) => tr.levels.map((l) => ({ level: l, color: tr.color })))
-    .filter((x) => x.level.badge && x.level.state === "completed");
+    .filter((x) => x.level.badge && completedIds.has(x.level.id));
 
   const stats = [
-    { icon: Zap, label: t("profile.xp"), value: `${learner.currentXp}`, color: "var(--neon)" },
+    { icon: Zap, label: t("profile.xp"), value: `${xp}`, color: "var(--neon)" },
+    { icon: Trophy, label: t("profile.done"), value: `${completedIds.size}`, color: "var(--cleared)" },
     { icon: Flame, label: t("profile.streak"), value: `${learner.streakDays}`, color: "var(--reward)" },
-    { icon: Coins, label: t("profile.coins"), value: `${learner.coins}`, color: "var(--cleared)" },
     { icon: Award, label: t("profile.badges"), value: `${badges.length}`, color: "var(--advanced)" },
   ];
 
@@ -301,7 +314,7 @@ function LearnerProfile({
               border: "2px solid var(--bg)",
             }}
           >
-            {learner.level}
+            {level}
           </span>
         </div>
 
@@ -311,10 +324,10 @@ function LearnerProfile({
           <div className="mt-3">
             <div className="flex items-baseline justify-between">
               <span className="text-xs font-bold text-faint">
-                {t("profile.level")} {learner.level}
+                {t("profile.level")} {level}
               </span>
               <span className="font-robot text-[11px]" style={{ color: "var(--neon)" }}>
-                {learner.currentXp}/{learner.nextLevelXp} XP
+                {into}/{span} XP
               </span>
             </div>
             <div
@@ -361,8 +374,8 @@ function LearnerProfile({
         </h2>
         <div className="space-y-4">
           {mainTracks.map((track) => {
-            const p = trackProgress(track);
-            const done = track.levels.filter((l) => l.state === "completed").length;
+            const done = track.levels.filter((l) => completedIds.has(l.id)).length;
+            const p = track.levels.length ? Math.round((done / track.levels.length) * 100) : 0;
             return (
               <Link key={track.id} href={`/${locale}/track/${track.id}`} className="block">
                 <div className="mb-1.5 flex items-baseline justify-between">

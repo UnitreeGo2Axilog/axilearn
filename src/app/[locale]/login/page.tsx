@@ -25,6 +25,12 @@ import type { MessageKey } from "@/i18n/messages";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function codeOf(error: unknown): string {
+  return typeof error === "object" && error !== null && "code" in error
+    ? String((error as { code: unknown }).code)
+    : "";
+}
+
 const STRENGTH_LABEL: Record<Exclude<Strength, "empty">, MessageKey> = {
   easy: "auth.strengthEasy",
   medium: "auth.strengthMedium",
@@ -56,6 +62,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  /** Kept so a failed sign-in can offer recovery, not just a sentence. */
+  const [stuck, setStuck] = useState(false);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   /** Which fields the learner has actually engaged with, so an untouched form
@@ -148,6 +156,7 @@ export default function LoginPage() {
       setTimeout(() => router.push(`/${locale}`), 900);
     } catch (err) {
       setError(friendlyAuthError(err, locale));
+      setStuck(codeOf(err) === "auth/invalid-credential" || codeOf(err) === "auth/wrong-password");
     } finally {
       setBusy(false);
     }
@@ -167,6 +176,7 @@ export default function LoginPage() {
   function switchMode(next: "in" | "up" | "reset") {
     setMode(next);
     setError(null);
+    setStuck(false);
     setSent(false);
     setSeen({ name: false, email: false, password: false });
   }
@@ -350,6 +360,45 @@ export default function LoginPage() {
             >
               {t("auth.forgot")}
             </button>
+          )}
+
+          {/* Sign-in failed with the one ambiguous code. Rather than repeat
+              "wrong password", offer the two things that actually fix it --
+              including the case where the account has no password at all. */}
+          {stuck && mode === "in" && (
+            <div
+              className="space-y-2 rounded-xl border p-3"
+              style={{
+                borderColor: "color-mix(in srgb, var(--reward) 35%, transparent)",
+                background: "color-mix(in srgb, var(--reward) 8%, transparent)",
+              }}
+            >
+              <p className="text-xs font-black uppercase tracking-wide" style={{ color: "var(--reward)" }}>
+                {t("auth.stuckTitle")}
+              </p>
+              <p className="text-[11px] leading-relaxed text-muted">{t("auth.stuckHint")}</p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    switchMode("reset");
+                    // keep the email they already typed
+                  }}
+                  className="rounded-lg px-3 py-2 text-xs font-black"
+                  style={{ background: "var(--neon)", color: "var(--surface-solid)" }}
+                >
+                  {t("auth.stuckReset")}
+                </button>
+                <button
+                  type="button"
+                  onClick={google}
+                  className="rounded-lg border px-3 py-2 text-xs font-bold text-main"
+                  style={{ borderColor: "var(--border-strong)" }}
+                >
+                  {t("auth.stuckGoogle")}
+                </button>
+              </div>
+            </div>
           )}
 
           {sent && (

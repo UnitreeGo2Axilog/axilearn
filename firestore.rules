@@ -40,17 +40,36 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if isOwner(uid) || isAdmin();
       // On create the role must be 'student'; on update it must stay unchanged.
+      // The unchanged-role check is also what makes it safe for a learner to
+      // write their own `lastSeenAt` heartbeat, which is how the dashboard
+      // knows who is on the platform right now.
       allow create: if isOwner(uid) && request.resource.data.role == 'student';
       allow update: if isOwner(uid)
                     && request.resource.data.role == resource.data.role;
       allow delete: if isAdmin();
     }
 
+    // One document per completed lesson, id `{uid}__{lessonId}`.
+    //
+    // A learner may only ever write progress carrying their own uid, so nobody
+    // can award themselves someone else's completions -- or forge a classmate's.
+    // Admins read everything, for the dashboard, and write nothing.
     match /progress/{docId} {
-      allow read, write: if isSignedIn()
-                         && request.resource.data.uid == request.auth.uid
-                         || (resource != null && isOwner(resource.data.uid))
-                         || isAdmin();
+      allow read: if isSignedIn()
+                  && (isAdmin() || (resource != null && resource.data.uid == request.auth.uid));
+      allow create, update: if isSignedIn()
+                            && request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn()
+                    && (isAdmin() || (resource != null && resource.data.uid == request.auth.uid));
+    }
+
+    // A teacher's private remark about a learner, one document per uid.
+    //
+    // Deliberately NOT a field on the user document: a learner can read their
+    // own user document, and a note like "struggling, needs a call home" must
+    // not be one click away from the person it is about. Admin-only, both ways.
+    match /staffNotes/{uid} {
+      allow read, write: if isAdmin();
     }
 
     // A track document holds its own lessons, so one read serves a whole map.

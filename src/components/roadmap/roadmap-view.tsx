@@ -17,6 +17,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Trophy } from "lucide-react";
 import { learner, trackProgress, type Level, type RoadmapTrack } from "@/content/roadmap-data";
+import { useProgress } from "@/lib/progress-context";
 import { RoadmapCanvas } from "@/components/roadmap/roadmap-canvas";
 import { TopStatusBar } from "@/components/roadmap/top-status-bar";
 import { BottomLessonPanel } from "@/components/roadmap/bottom-lesson-panel";
@@ -24,13 +25,22 @@ import { TrackSwitcher } from "@/components/roadmap/track-switcher";
 import { useLocale } from "@/i18n/use-t";
 
 export function RoadmapView({
-  track,
-  switcherTracks,
+  track: raw,
+  switcherTracks: rawSwitcher,
 }: {
   track: RoadmapTrack;
   switcherTracks: RoadmapTrack[];
 }) {
   const locale = useLocale();
+  const { completedIds, xp, level: myLevel, into, span } = useProgress();
+
+  // The server sends content; which nodes are cleared is this learner's
+  // business, so the states are recomputed here from their own record.
+  const track = useMemo(() => withProgress(raw, completedIds), [raw, completedIds]);
+  const switcherTracks = useMemo(
+    () => rawSwitcher.map((t) => withProgress(t, completedIds)),
+    [rawSwitcher, completedIds],
+  );
   const [selected, setSelected] = useState<Level | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -56,11 +66,11 @@ export function RoadmapView({
     <div className="flex min-h-screen flex-col bg-app">
       <TopStatusBar
         name={learner.name}
-        level={learner.level}
-        currentXp={learner.currentXp}
-        nextLevelXp={learner.nextLevelXp}
+        level={myLevel}
+        currentXp={into}
+        nextLevelXp={span}
         streakDays={learner.streakDays}
-        coins={learner.coins}
+        coins={xp}
         trackShort={track.short}
         accent={track.color}
       />
@@ -121,4 +131,23 @@ export function RoadmapView({
       <BottomLessonPanel level={selected} trackTitle={track.title} accent={track.color} />
     </div>
   );
+}
+
+/**
+ * Re-state a track for one learner: everything they have finished is cleared,
+ * the first thing they have not is open, the rest stay locked.
+ */
+function withProgress(track: RoadmapTrack, completed: Set<string>): RoadmapTrack {
+  let currentTaken = false;
+  return {
+    ...track,
+    levels: track.levels.map((level) => {
+      if (completed.has(level.id)) return { ...level, state: "completed" as const };
+      if (!currentTaken) {
+        currentTaken = true;
+        return { ...level, state: "current" as const };
+      }
+      return { ...level, state: "locked" as const };
+    }),
+  };
 }
