@@ -99,7 +99,10 @@ export const messages = {
       "Type the email you signed up with and we will send you a link to choose a new password.",
     "auth.sendReset": "Send the reset link",
     "auth.resetSent":
-      "Check your inbox — we sent you a link to choose a new password. It can take a minute to arrive.",
+      "If that address has an account, the link is on its way. Give it a few minutes and check your spam folder.",
+    "auth.resetNothing":
+      "Nothing arrived at all? Then no account exists for that address yet — Firebase sends nothing and reports no error in that case. Create the account instead.",
+    "auth.resetCreate": "Create an account with this email",
     "auth.backToSignIn": "Back to sign in",
 
     "profile.title": "Your profile",
@@ -330,7 +333,10 @@ export const messages = {
       "Saisis l'email de ton compte et nous t'enverrons un lien pour choisir un nouveau mot de passe.",
     "auth.sendReset": "Envoyer le lien",
     "auth.resetSent":
-      "Regarde ta boîte mail — nous t'avons envoyé un lien pour choisir un nouveau mot de passe. Cela peut prendre une minute.",
+      "Si cette adresse a un compte, le lien est en route. Patiente quelques minutes et regarde tes spams.",
+    "auth.resetNothing":
+      "Rien du tout n'arrive ? Alors aucun compte n'existe encore pour cette adresse — Firebase n'envoie rien et ne signale aucune erreur dans ce cas. Crée plutôt le compte.",
+    "auth.resetCreate": "Créer un compte avec cet email",
     "auth.backToSignIn": "Retour à la connexion",
 
     "profile.title": "Ton profil",

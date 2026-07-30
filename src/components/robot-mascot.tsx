@@ -99,14 +99,23 @@ export function RobotMascot({ mood = "idle", screenText = "HELLO", className = "
           </g>
         )}
 
-        {/* head */}
-        <rect x="36" y="56" width="168" height="122" rx="26" fill="#e2e8f0" />
+        {/* Head, with the screen area MASKED OUT of it.
+            Tinting the screen alone was not enough: it sat on top of an opaque
+            head, so it could only ever show the head's own grey. Cutting the
+            hole means the page itself is what shows through the glass. */}
+        <rect
+          x="36"
+          y="56"
+          width="168"
+          height="122"
+          rx="26"
+          fill="#e2e8f0"
+          mask={`url(#axiHead-${uid})`}
+        />
         <rect x="36" y="56" width="168" height="122" rx="26" fill="none" stroke={color} strokeWidth="6" />
 
-        {/* screen -- translucent glass, not a solid black panel, so the page
-            behind shows through and it reads as a lit display rather than a
-            hole cut in the head. */}
-        <rect x="52" y="72" width="136" height="90" rx="16" fill="#0f172a" opacity="0.55" />
+        {/* screen -- a translucent pane over the page behind the robot */}
+        <rect x="52" y="72" width="136" height="90" rx="16" fill="#0f172a" opacity="0.42" />
         <rect
           x="52"
           y="72"
@@ -167,6 +176,12 @@ export function RobotMascot({ mood = "idle", screenText = "HELLO", className = "
           <clipPath id={`axiScreen-${uid}`}>
             <rect x="52" y="72" width="136" height="90" rx="16" />
           </clipPath>
+          {/* white keeps, black cuts: the screen rectangle is removed from the
+              head so nothing opaque sits behind the glass */}
+          <mask id={`axiHead-${uid}`}>
+            <rect x="36" y="56" width="168" height="122" rx="26" fill="white" />
+            <rect x="52" y="72" width="136" height="90" rx="16" fill="black" />
+          </mask>
           {/* a soft sheen across the glass, tinted by the current mood */}
           <linearGradient id={`axiGlass-${uid}`} x1="0" y1="0" x2="0.6" y2="1">
             <stop offset="0%" stopColor={color} stopOpacity="0.35" />

@@ -402,16 +402,31 @@ export default function LoginPage() {
           )}
 
           {sent && (
-            <p
-              className="rounded-xl border p-3 text-sm leading-relaxed"
-              style={{
-                borderColor: "color-mix(in srgb, var(--cleared) 40%, transparent)",
-                background: "color-mix(in srgb, var(--cleared) 10%, transparent)",
-                color: "var(--cleared)",
-              }}
-            >
-              {t("auth.resetSent")}
-            </p>
+            <div className="space-y-2">
+              <p
+                className="rounded-xl border p-3 text-sm leading-relaxed"
+                style={{
+                  borderColor: "color-mix(in srgb, var(--cleared) 40%, transparent)",
+                  background: "color-mix(in srgb, var(--cleared) 10%, transparent)",
+                  color: "var(--cleared)",
+                }}
+              >
+                {t("auth.resetSent")}
+              </p>
+              {/* The silent case: no account means no email and no error, so the
+                  only way a person finds out is by being told here. */}
+              <p className="text-[11px] leading-relaxed text-faint">
+                {t("auth.resetNothing")}
+              </p>
+              <button
+                type="button"
+                onClick={() => switchMode("up")}
+                className="w-full rounded-xl border py-2.5 text-xs font-bold text-main"
+                style={{ borderColor: "var(--border-strong)" }}
+              >
+                {t("auth.resetCreate")}
+              </button>
+            </div>
           )}
         </form>
 
