@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLocale, useT } from "@/i18n/use-t";
 import { LOCALES } from "@/i18n/messages";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Tooltip } from "@/components/tooltip";
 
 /** Top bar in the dark neon language: logo mark, language switch, account. */
 export function SiteHeader() {
@@ -73,20 +74,24 @@ export function SiteHeader() {
 
           {!loading && user ? (
             <div className="flex items-center gap-2">
-              <Link
-                href={`/${locale}/profile`}
-                className="flex items-center gap-1.5 text-sm text-main transition hover:opacity-80"
-              >
-                <UserRound className="h-4 w-4" />
-                <span className="hidden sm:inline">{profile?.displayName ?? t("nav.profile")}</span>
-              </Link>
-              <button
-                onClick={() => logout()}
-                aria-label={t("nav.signOut")}
-                className="rounded-lg p-1.5 text-faint transition hover:opacity-80"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
+              <Tooltip label={profile?.displayName ?? t("nav.profile")}>
+                <Link
+                  href={`/${locale}/profile`}
+                  className="flex items-center gap-1.5 text-sm text-main transition hover:opacity-80"
+                >
+                  <UserRound className="h-4 w-4" />
+                  <span className="hidden sm:inline">{profile?.displayName ?? t("nav.profile")}</span>
+                </Link>
+              </Tooltip>
+              <Tooltip label={t("nav.signOut")}>
+                <button
+                  onClick={() => logout()}
+                  aria-label={t("nav.signOut")}
+                  className="rounded-lg p-1.5 text-faint transition hover:opacity-80"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </Tooltip>
             </div>
           ) : (
             !loading && (

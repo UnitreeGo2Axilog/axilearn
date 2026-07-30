@@ -19,7 +19,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
-  getDocs,
+  getDocsFromServer,
   setDoc,
   updateDoc,
   writeBatch,
@@ -41,7 +41,7 @@ function clean<T>(value: T): T {
 /* --------------------------------------------------------------- tracks */
 
 export async function listTrackDocs(): Promise<TrackDoc[]> {
-  const snap = await getDocs(collection(getDb(), TRACKS));
+  const snap = await getDocsFromServer(collection(getDb(), TRACKS));
   return snap.docs
     .map((d) => ({ ...(d.data() as TrackDoc), id: d.id }))
     .sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
@@ -235,7 +235,7 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
 const CHALLENGES = "challenges";
 
 export async function listChallenges(trackId: string): Promise<ChallengeDoc[]> {
-  const snap = await getDocs(collection(getDb(), TRACKS, trackId, CHALLENGES));
+  const snap = await getDocsFromServer(collection(getDb(), TRACKS, trackId, CHALLENGES));
   return snap.docs
     .map((d) => ({ ...(d.data() as ChallengeDoc), id: d.id }))
     .sort((a, b) => (a.order ?? 99) - (b.order ?? 99));

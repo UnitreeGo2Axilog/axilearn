@@ -8,9 +8,15 @@
  * Unlike a lesson's quiz, solving a challenge gates nothing else -- it is
  * optional practice, so there is no "must pass to continue" pressure, just a
  * clean record of what has been solved.
+ *
+ * The save can fail (offline, or Firestore rules not yet published for a
+ * newly added collection), and that failure is surfaced on screen, not
+ * swallowed. Showing "Passed" for a write that never actually reached
+ * Firestore would be a lie the learner has no way to catch -- the solved
+ * count would just silently stay at zero forever, with no visible reason why.
  */
 import { useState } from "react";
-import { Check, ChevronDown, Loader2, RotateCcw, Zap } from "lucide-react";
+import { AlertTriangle, Check, ChevronDown, Loader2, RotateCcw, Zap } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useProgress } from "@/lib/progress-context";
 import { markChallengeSolved, unmarkChallengeSolved } from "@/lib/progress";
@@ -38,27 +44,32 @@ export function ChallengeCard({
   const [chosen, setChosen] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const solved = solvedChallengeIds.has(challenge.id);
   const diffColor = DIFF_COLOR[challenge.difficulty];
+  const isRight = checked && chosen === challenge.correctIndex;
 
-  async function check() {
+  async function validate() {
     if (chosen === null || !user) return;
     setChecked(true);
-    if (chosen === challenge.correctIndex) {
-      setBusy(true);
-      try {
-        await markChallengeSolved(user.uid, trackId, challenge.id, challenge.xpReward);
-        await refresh();
-      } finally {
-        setBusy(false);
-      }
+    setSaveError(null);
+    if (chosen !== challenge.correctIndex) return; // wrong -- nothing to save
+    setBusy(true);
+    try {
+      await markChallengeSolved(user.uid, trackId, challenge.id, challenge.xpReward);
+      await refresh();
+    } catch {
+      setSaveError(t("lesson.markFailed"));
+    } finally {
+      setBusy(false);
     }
   }
 
   function retry() {
     setChosen(null);
     setChecked(false);
+    setSaveError(null);
   }
 
   async function resetSolved() {
@@ -119,7 +130,12 @@ export function ChallengeCard({
           {(checked || solved) && challenge.explanation && (
             <p
               className="rounded-lg p-2.5 text-xs leading-relaxed"
-              style={{ background: "var(--bg-2)", color: "var(--text-muted)" }}
+              style={{
+                background: isRight
+                  ? "color-mix(in srgb, var(--cleared) 8%, transparent)"
+                  : "color-mix(in srgb, var(--reward) 8%, transparent)",
+                color: "var(--text-muted)",
+              }}
             >
               {challenge.explanation}
             </p>
@@ -128,7 +144,10 @@ export function ChallengeCard({
           <div className="flex flex-wrap items-center gap-3">
             {solved ? (
               <>
-                <span className="inline-flex items-center gap-1.5 text-xs font-bold" style={{ color: "var(--cleared)" }}>
+                <span
+                  className="inline-flex animate-pop items-center gap-1.5 text-xs font-bold"
+                  style={{ color: "var(--cleared)" }}
+                >
                   <Check className="h-3.5 w-3.5" />
                   {t("challenges.solved")}
                 </span>
@@ -142,32 +161,52 @@ export function ChallengeCard({
               </>
             ) : !checked ? (
               <button
-                onClick={check}
+                onClick={validate}
                 disabled={chosen === null}
-                className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-black uppercase tracking-wide disabled:opacity-40"
+                className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-black uppercase tracking-wide transition disabled:opacity-40"
                 style={{ background: diffColor, color: "var(--surface-solid)" }}
               >
-                {t("quiz.check")}
+                <Check className="h-3.5 w-3.5" />
+                {t("challenges.validate")}
               </button>
             ) : busy ? (
               <span className="inline-flex items-center gap-2 text-xs font-bold text-faint">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 {t("admin.saving")}
               </span>
-            ) : chosen === challenge.correctIndex ? (
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold" style={{ color: "var(--cleared)" }}>
-                <Check className="h-3.5 w-3.5" />
-                {t("quiz.passed")}
-              </span>
-            ) : (
+            ) : !isRight ? (
               <button
                 onClick={retry}
-                className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-black uppercase tracking-wide"
+                className="inline-flex animate-pop items-center gap-2 rounded-lg px-4 py-2 text-xs font-black uppercase tracking-wide transition"
                 style={{ background: diffColor, color: "var(--surface-solid)" }}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 {t("quiz.retry")}
               </button>
+            ) : saveError ? (
+              <>
+                <span
+                  className="inline-flex items-center gap-1.5 text-xs font-bold"
+                  style={{ color: "var(--reward)" }}
+                >
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  {saveError}
+                </span>
+                <button
+                  onClick={validate}
+                  className="rounded-lg px-3 py-1.5 text-[11px] font-black uppercase tracking-wide"
+                  style={{ background: diffColor, color: "var(--surface-solid)" }}
+                >
+                  {t("quiz.retry")}
+                </button>
+              </>
+            ) : (
+              // The write is on its way to being reflected in `solved`
+              // (via refresh()) -- a brief beat, not a stuck state.
+              <span className="inline-flex items-center gap-2 text-xs font-bold text-faint">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                {t("admin.saving")}
+              </span>
             )}
           </div>
         </div>

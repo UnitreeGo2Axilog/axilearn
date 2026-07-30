@@ -9,8 +9,10 @@
  * coins, so it was being fed the XP total: two icons showing one number. It
  * counts cleared lessons now, which is a thing that actually happens.
  */
+import Link from "next/link";
 import { Flame, Menu, Trophy } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Tooltip } from "@/components/tooltip";
 
 interface Props {
   name: string;
@@ -21,7 +23,9 @@ interface Props {
   done: number;
   trackShort: string;
   accent: string;
-  onMenu?: () => void;
+  /** Where the top-left icon goes -- the map has no other way back. */
+  homeHref: string;
+  homeLabel: string;
 }
 
 export function TopStatusBar({
@@ -33,20 +37,23 @@ export function TopStatusBar({
   done,
   trackShort,
   accent,
-  onMenu,
+  homeHref,
+  homeLabel,
 }: Props) {
   return (
     <header className="sticky top-0 z-30 border-b backdrop-blur-md"
       style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--bg) 88%, transparent)" }}>
       <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-2.5">
-        <button
-          onClick={onMenu}
-          aria-label="Menu"
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border text-main transition"
-          style={{ borderColor: "var(--border)", background: "var(--bg-2)" }}
-        >
-          <Menu className="h-4 w-4" />
-        </button>
+        <Tooltip label={homeLabel}>
+          <Link
+            href={homeHref}
+            aria-label={homeLabel}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border text-main transition hover:opacity-80"
+            style={{ borderColor: "var(--border)", background: "var(--bg-2)" }}
+          >
+            <Menu className="h-4 w-4" />
+          </Link>
+        </Tooltip>
 
         {/* avatar + level badge */}
         <div className="relative shrink-0">

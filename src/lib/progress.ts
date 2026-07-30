@@ -20,6 +20,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  getDocsFromServer,
   query,
   setDoc,
   updateDoc,
@@ -118,7 +119,7 @@ export async function fetchMyChallengeProgress(uid: string): Promise<ChallengePr
 }
 
 export async function fetchAllChallengeProgress(): Promise<ChallengeProgressRecord[]> {
-  const snap = await getDocs(collection(getDb(), CHALLENGE_PROGRESS));
+  const snap = await getDocsFromServer(collection(getDb(), CHALLENGE_PROGRESS));
   return snap.docs.map((d) => d.data() as ChallengeProgressRecord);
 }
 
@@ -141,6 +142,17 @@ export async function touchLastSeen(uid: string): Promise<void> {
 
 /* --------------------------------------------------------------- admin */
 
+/**
+ * Every admin-facing read below (fetchAll..., list...) reads with
+ * `getDocsFromServer`, not the plain `getDocs`. The Firestore JS SDK keeps a
+ * local persistence cache
+ * and, by default, `getDocs` is free to answer from it -- fine for a
+ * learner's own progress, where a few seconds of staleness is invisible, but
+ * wrong for a roster: a teacher opening the dashboard right after a student
+ * signs up needs to see that student, not whatever this browser tab's cache
+ * happened to have before the sign-up occurred. Forcing the server round-trip
+ * on every admin read is the fix.
+ */
 export interface StudentRow {
   uid: string;
   displayName: string;
@@ -152,7 +164,7 @@ export interface StudentRow {
 }
 
 export async function fetchAllStudents(): Promise<StudentRow[]> {
-  const snap = await getDocs(collection(getDb(), USERS));
+  const snap = await getDocsFromServer(collection(getDb(), USERS));
   return snap.docs.map((d) => {
     const data = d.data() as Record<string, unknown>;
     const created = data.createdAt as { toMillis?: () => number } | number | undefined;
@@ -174,7 +186,7 @@ export async function fetchAllStudents(): Promise<StudentRow[]> {
 }
 
 export async function fetchAllProgress(): Promise<ProgressRecord[]> {
-  const snap = await getDocs(collection(getDb(), PROGRESS));
+  const snap = await getDocsFromServer(collection(getDb(), PROGRESS));
   return snap.docs.map((d) => d.data() as ProgressRecord);
 }
 
@@ -195,7 +207,7 @@ export interface StaffNote {
  * person it is about.
  */
 export async function fetchAllNotes(): Promise<Record<string, StaffNote>> {
-  const snap = await getDocs(collection(getDb(), NOTES));
+  const snap = await getDocsFromServer(collection(getDb(), NOTES));
   const out: Record<string, StaffNote> = {};
   for (const d of snap.docs) {
     const data = d.data() as Partial<StaffNote>;

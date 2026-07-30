@@ -42,6 +42,7 @@ import {
   StatusToggle,
   TextInput,
 } from "@/components/admin/admin-shell";
+import { Tooltip } from "@/components/tooltip";
 import { useLocale, useT } from "@/i18n/use-t";
 
 const TYPES = ["lesson", "checkpoint", "project", "final_project"] as const;
@@ -465,22 +466,23 @@ function QuizEditor({
             <div className="space-y-2">
               {q.options.map((opt, oi) => (
                 <div key={oi} className="flex items-start gap-2">
-                  <button
-                    type="button"
-                    title={t("admin.correctAnswer")}
-                    onClick={() => updateQuestion(qi, { correctIndex: oi })}
-                    className="mt-2 grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 transition"
-                    style={{
-                      borderColor: q.correctIndex === oi ? "var(--cleared)" : "var(--border-strong)",
-                      background:
-                        q.correctIndex === oi
-                          ? "color-mix(in srgb, var(--cleared) 18%, transparent)"
-                          : "transparent",
-                      color: "var(--cleared)",
-                    }}
-                  >
-                    {q.correctIndex === oi && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
-                  </button>
+                  <Tooltip label={t("admin.correctAnswer")}>
+                    <button
+                      type="button"
+                      onClick={() => updateQuestion(qi, { correctIndex: oi })}
+                      className="mt-2 grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 transition"
+                      style={{
+                        borderColor: q.correctIndex === oi ? "var(--cleared)" : "var(--border-strong)",
+                        background:
+                          q.correctIndex === oi
+                            ? "color-mix(in srgb, var(--cleared) 18%, transparent)"
+                            : "transparent",
+                        color: "var(--cleared)",
+                      }}
+                    >
+                      {q.correctIndex === oi && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+                    </button>
+                  </Tooltip>
                   <div className="flex-1">
                     <L10nInput
                       label={`${t("admin.option")} ${String.fromCharCode(65 + oi)}`}
@@ -490,14 +492,15 @@ function QuizEditor({
                     />
                   </div>
                   {q.options.length > MIN_OPTIONS && (
-                    <button
-                      type="button"
-                      onClick={() => removeOption(qi, oi)}
-                      className="mt-2 text-faint transition hover:opacity-70"
-                      title={t("admin.remove")}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    <Tooltip label={t("admin.remove")}>
+                      <button
+                        type="button"
+                        onClick={() => removeOption(qi, oi)}
+                        className="mt-2 text-faint transition hover:opacity-70"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </Tooltip>
                   )}
                 </div>
               ))}

@@ -24,6 +24,7 @@ import {
   StatusToggle,
   TextInput,
 } from "@/components/admin/admin-shell";
+import { Tooltip } from "@/components/tooltip";
 import { useLocale, useT } from "@/i18n/use-t";
 
 const DIFFICULTIES = ["easy", "medium", "hard"] as const;
@@ -206,22 +207,23 @@ function ChallengeEditor() {
         <div className="space-y-2">
           {challenge.options.map((opt, oi) => (
             <div key={oi} className="flex items-start gap-2">
-              <button
-                type="button"
-                title={t("admin.correctAnswer")}
-                onClick={() => edit({ correctIndex: oi })}
-                className="mt-2 grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 transition"
-                style={{
-                  borderColor: challenge.correctIndex === oi ? "var(--cleared)" : "var(--border-strong)",
-                  background:
-                    challenge.correctIndex === oi
-                      ? "color-mix(in srgb, var(--cleared) 18%, transparent)"
-                      : "transparent",
-                  color: "var(--cleared)",
-                }}
-              >
-                {challenge.correctIndex === oi && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
-              </button>
+              <Tooltip label={t("admin.correctAnswer")}>
+                <button
+                  type="button"
+                  onClick={() => edit({ correctIndex: oi })}
+                  className="mt-2 grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 transition"
+                  style={{
+                    borderColor: challenge.correctIndex === oi ? "var(--cleared)" : "var(--border-strong)",
+                    background:
+                      challenge.correctIndex === oi
+                        ? "color-mix(in srgb, var(--cleared) 18%, transparent)"
+                        : "transparent",
+                    color: "var(--cleared)",
+                  }}
+                >
+                  {challenge.correctIndex === oi && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+                </button>
+              </Tooltip>
               <div className="flex-1">
                 <L10nInput
                   label={`${t("admin.option")} ${String.fromCharCode(65 + oi)}`}
@@ -231,14 +233,15 @@ function ChallengeEditor() {
                 />
               </div>
               {challenge.options.length > MIN_OPTIONS && (
-                <button
-                  type="button"
-                  onClick={() => removeOption(oi)}
-                  className="mt-2 text-faint transition hover:opacity-70"
-                  title={t("admin.remove")}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
+                <Tooltip label={t("admin.remove")}>
+                  <button
+                    type="button"
+                    onClick={() => removeOption(oi)}
+                    className="mt-2 text-faint transition hover:opacity-70"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </Tooltip>
               )}
             </div>
           ))}

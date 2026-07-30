@@ -17,6 +17,7 @@ import {
 } from "@/content/admin-content";
 import type { TrackDoc } from "@/content/schema";
 import { AdminGuard, StatusChip } from "@/components/admin/admin-shell";
+import { Tooltip } from "@/components/tooltip";
 import { useLocale, useT } from "@/i18n/use-t";
 
 export default function AdminPage() {
@@ -157,13 +158,16 @@ function Dashboard() {
       <section className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-extrabold text-strong">{t("admin.tracksHeading")}</h2>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => void load()}
-            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold text-main"
-            style={{ borderColor: "var(--border-strong)" }}
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-          </button>
+          <Tooltip label="Refresh">
+            <button
+              onClick={() => void load()}
+              aria-label="Refresh"
+              className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold text-main"
+              style={{ borderColor: "var(--border-strong)" }}
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+            </button>
+          </Tooltip>
           <Link
             href={`/${locale}/admin/track/new`}
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-black"

@@ -358,16 +358,17 @@ function Students() {
                   </span>
 
                   {stuck && (
-                    <span
-                      className="rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
-                      style={{
-                        background: "color-mix(in srgb, var(--reward) 16%, transparent)",
-                        color: "var(--reward)",
-                      }}
-                      title={t("admin.stuckHint")}
-                    >
-                      {t("admin.stuck")}
-                    </span>
+                    <Tooltip label={t("admin.stuckHint")}>
+                      <span
+                        className="rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
+                        style={{
+                          background: "color-mix(in srgb, var(--reward) 16%, transparent)",
+                          color: "var(--reward)",
+                        }}
+                      >
+                        {t("admin.stuck")}
+                      </span>
+                    </Tooltip>
                   )}
 
                   {/* progress */}

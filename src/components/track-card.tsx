@@ -15,8 +15,19 @@
  * The certificate badge in the corner reuses the exact same 100%-of-levels
  * check the certificate page itself uses, so a badge appearing here is a
  * promise the certificate page will actually keep.
+ *
+ * The challenges badge shows on EVERY track that has challenges, including a
+ * "coming soon" one -- content readiness and challenge availability are two
+ * separate facts, and gating the icon on `locked` was conflating them. It
+ * jumps straight to the "Open challenges" button on the track briefing page
+ * (an anchor, not a second click through the whole briefing) so nobody has to
+ * scroll to find it -- and it is a <button> that calls router.push rather
+ * than a nested <Link>, because on an unlocked track the whole card is
+ * already one <a>, and a real anchor inside another anchor is invalid HTML
+ * with unpredictable click behaviour.
  */
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowRight, Award, Lock, Swords } from "lucide-react";
 import type { RoadmapTrack } from "@/content/roadmap-data";
 import { useProgress } from "@/lib/progress-context";
@@ -35,11 +46,18 @@ export function TrackCard({
   challengeCount: number;
 }) {
   const t = useT();
+  const router = useRouter();
   const { completedIds } = useProgress();
 
   const done = track.levels.filter((l) => completedIds.has(l.id)).length;
   const pct = track.levels.length ? Math.round((done / track.levels.length) * 100) : 0;
   const certified = !locked && track.levels.length > 0 && pct === 100;
+
+  function openChallenges(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation(); // do not also trigger the card's own link
+    router.push(`/${locale}/track/${track.id}#challenges`);
+  }
 
   const card = (
     <div
@@ -57,14 +75,17 @@ export function TrackCard({
         style={{ background: `radial-gradient(circle at top right, ${track.color}, transparent 70%)` }}
       />
 
-      {/* corner signals: challenges (always, if any exist) and the
-          certificate (only once the track is genuinely 100% done) */}
-      {(!locked && challengeCount > 0) || certified ? (
+      {/* corner signals: challenges (any track that has any, locked or not)
+          and the certificate (only once the track is genuinely 100% done) */}
+      {challengeCount > 0 || certified ? (
         <div className="absolute right-3 top-3 z-10 flex items-center gap-1.5">
-          {!locked && challengeCount > 0 && (
-            <Tooltip label={t("challenges.entryTitle") + ` (${challengeCount})`}>
-              <span
-                className="grid h-8 w-8 place-items-center rounded-full border-2"
+          {challengeCount > 0 && (
+            <Tooltip label={`${t("challenges.entryTitle")} (${challengeCount})`}>
+              <button
+                type="button"
+                onClick={openChallenges}
+                aria-label={`${t("challenges.entryTitle")} (${challengeCount})`}
+                className="grid h-8 w-8 place-items-center rounded-full border-2 transition hover:opacity-80"
                 style={{
                   borderColor: "var(--border-strong)",
                   background: "var(--surface-solid)",
@@ -72,7 +93,7 @@ export function TrackCard({
                 }}
               >
                 <Swords className="h-4 w-4" />
-              </span>
+              </button>
             </Tooltip>
           )}
           {certified && (

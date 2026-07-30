@@ -180,10 +180,15 @@ export default async function TrackIntroPage({
         </section>
       )}
 
-      {/* --- challenges: entry point between the briefing and the map ---- */}
+      {/* --- challenges: entry point between the briefing and the map ----
+          id + scroll-mt so the home card's icon can jump straight here
+          instead of making someone scroll to find the button -- scroll-mt
+          leaves room for the sticky header (h-14) plus a little breathing
+          room, so the anchor doesn't land tucked under it. */}
       {challengeCount > 0 && (
         <section
-          className="mb-8 flex flex-wrap items-center gap-4 rounded-2xl border p-5"
+          id="challenges"
+          className="mb-8 flex scroll-mt-20 flex-wrap items-center gap-4 rounded-2xl border p-5"
           style={{
             borderColor: "color-mix(in srgb, var(--reward) 40%, transparent)",
             background: "color-mix(in srgb, var(--reward) 6%, var(--surface))",

@@ -75,6 +75,8 @@ export function RoadmapView({
         done={completedIds.size}
         trackShort={track.short}
         accent={track.color}
+        homeHref={`/${locale}`}
+        homeLabel={locale === "fr" ? "Retour à AxiLearn" : "Back to AxiLearn"}
       />
 
       {/* track bar: switcher + headline, full width */}
