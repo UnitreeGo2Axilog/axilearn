@@ -192,6 +192,42 @@ export function isOnline(lastSeenAt: number | null, now: number = Date.now()): b
   return lastSeenAt != null && now - lastSeenAt < ONLINE_WINDOW_MS;
 }
 
+/**
+ * Consecutive days with at least one completion, counting back from today.
+ *
+ * A day is only "missed" once it is over, so finishing nothing yet today does
+ * not break a streak -- it starts counting at yesterday instead. Otherwise
+ * every learner's streak would read 0 every morning, which teaches them the
+ * number is meaningless.
+ *
+ * Days are stepped with setDate rather than subtracting 86400000 so the count
+ * survives a daylight-saving change.
+ */
+export function streakFromRecords(records: ProgressRecord[], now: number): number {
+  if (!records.length || !now) return 0;
+
+  const startOf = (ms: number) => {
+    const d = new Date(ms);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  };
+  const days = new Set(records.map((r) => startOf(r.completedAt)));
+
+  const cursor = new Date(now);
+  cursor.setHours(0, 0, 0, 0);
+  if (!days.has(cursor.getTime())) {
+    cursor.setDate(cursor.getDate() - 1);
+    if (!days.has(cursor.getTime())) return 0;
+  }
+
+  let streak = 0;
+  while (days.has(cursor.getTime())) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
 /** XP -> level, so the number on a profile means something consistent. */
 export function levelFromXp(xp: number): { level: number; into: number; span: number } {
   // Each level costs 100 more than the last: 200, 300, 400 ...

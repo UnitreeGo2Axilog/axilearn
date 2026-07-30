@@ -13,10 +13,10 @@ import {
   Zap,
 } from "lucide-react";
 import { getT, isLocale } from "@/i18n/messages";
-import { trackProgress } from "@/content/roadmap-data";
 import { getTrack } from "@/content/store";
 import type { Locale } from "@/content/types";
 import { AuthGate } from "@/components/auth-gate";
+import { TrackCta } from "@/components/track-cta";
 
 /**
  * Track briefing -- the page between choosing a world and entering its map.
@@ -43,7 +43,6 @@ export default async function TrackIntroPage({
   const totalXp = track.levels.reduce((sum, l) => sum + l.xpReward, 0);
   const totalMin = track.levels.reduce((sum, l) => sum + l.durationMinutes, 0);
   const sections = track.levels.filter((l) => l.section).length;
-  const pct = trackProgress(track);
 
   return (
     <AuthGate>
@@ -208,25 +207,7 @@ export default async function TrackIntroPage({
       </section>
 
       {/* --- enter the map --------------------------------------------- */}
-      <section
-        className="flex flex-col items-center gap-4 rounded-2xl border p-6 text-center"
-        style={{
-          borderColor: `${track.color}55`,
-          background: `color-mix(in srgb, ${track.color} 7%, var(--surface))`,
-        }}
-      >
-        <p className="text-sm text-muted">
-          {pct > 0 ? `${pct}% ${t("track.alreadyDone")}` : t("track.readyToStart")}
-        </p>
-        <Link
-          href={`/${locale}/roadmap/${track.id}`}
-          className="inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-base font-black uppercase tracking-wide"
-          style={{ background: track.color, color: "var(--surface-solid)" }}
-        >
-          {pct > 0 ? t("track.continue") : t("track.enterMap")}
-          <ArrowRight className="h-5 w-5" />
-        </Link>
-      </section>
+      <TrackCta track={track} locale={locale} />
     </div>
     </AuthGate>
   );

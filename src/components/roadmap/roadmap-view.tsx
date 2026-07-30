@@ -18,6 +18,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Trophy } from "lucide-react";
 import { learner, trackProgress, type Level, type RoadmapTrack } from "@/content/roadmap-data";
 import { useProgress } from "@/lib/progress-context";
+import { useAuth } from "@/lib/auth-context";
 import { RoadmapCanvas } from "@/components/roadmap/roadmap-canvas";
 import { TopStatusBar } from "@/components/roadmap/top-status-bar";
 import { BottomLessonPanel } from "@/components/roadmap/bottom-lesson-panel";
@@ -32,7 +33,8 @@ export function RoadmapView({
   switcherTracks: RoadmapTrack[];
 }) {
   const locale = useLocale();
-  const { completedIds, xp, level: myLevel, into, span } = useProgress();
+  const { profile } = useAuth();
+  const { completedIds, level: myLevel, into, span, streak } = useProgress();
 
   // The server sends content; which nodes are cleared is this learner's
   // business, so the states are recomputed here from their own record.
@@ -65,12 +67,12 @@ export function RoadmapView({
   return (
     <div className="flex min-h-screen flex-col bg-app">
       <TopStatusBar
-        name={learner.name}
+        name={profile?.displayName ?? learner.name}
         level={myLevel}
         currentXp={into}
         nextLevelXp={span}
-        streakDays={learner.streakDays}
-        coins={xp}
+        streakDays={streak}
+        done={completedIds.size}
         trackShort={track.short}
         accent={track.color}
       />

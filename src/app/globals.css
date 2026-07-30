@@ -145,8 +145,8 @@ body::before {
   pointer-events: none;
   z-index: 0;
   background-image:
-    linear-gradient(var(--grid-app) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-app) 1px, transparent 1px);
+    linear-gradient(var(--grid-app) 2px, transparent 1px),
+    linear-gradient(90deg, var(--grid-app) 2px, transparent 1px);
   background-size: 44px 44px;
   mask-image: radial-gradient(circle at 50% 30%, black, transparent 85%);
 }

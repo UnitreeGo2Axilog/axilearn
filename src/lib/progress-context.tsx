@@ -12,7 +12,13 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "./auth-context";
-import { fetchMyProgress, levelFromXp, touchLastSeen, type ProgressRecord } from "./progress";
+import {
+  fetchMyProgress,
+  levelFromXp,
+  streakFromRecords,
+  touchLastSeen,
+  type ProgressRecord,
+} from "./progress";
 
 interface ProgressValue {
   records: ProgressRecord[];
@@ -21,6 +27,8 @@ interface ProgressValue {
   level: number;
   into: number;
   span: number;
+  /** Consecutive days with a completion. Real, not a decoration. */
+  streak: number;
   loading: boolean;
   refresh: () => Promise<void>;
 }
@@ -31,6 +39,9 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const { user, configured } = useAuth();
   const [records, setRecords] = useState<ProgressRecord[]>([]);
   const [loading, setLoading] = useState(false);
+  /** Today, as state, so the streak is not computed from a clock read during
+      render -- impure, and the React Compiler may call render twice. */
+  const [now, setNow] = useState(0);
 
   const uid = user?.uid ?? null;
 
@@ -55,6 +66,13 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     void refresh();
   }, [refresh]);
 
+  useEffect(() => {
+    setNow(Date.now());
+    // A streak only turns over at midnight; five minutes is ample.
+    const timer = setInterval(() => setNow(Date.now()), 5 * 60 * 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   // Presence: mark the learner as around now, then keep it fresh while the tab
   // lives. touchLastSeen throttles the actual write.
   useEffect(() => {
@@ -74,10 +92,11 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       level,
       into,
       span,
+      streak: streakFromRecords(records, now),
       loading,
       refresh,
     };
-  }, [records, loading, refresh]);
+  }, [records, now, loading, refresh]);
 
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;
 }

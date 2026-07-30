@@ -17,7 +17,7 @@ import { useLocale, useT } from "@/i18n/use-t";
 
 export function LearnerStrip({ tracks }: { tracks: RoadmapTrack[] }) {
   const { user, profile } = useAuth();
-  const { completedIds, xp, level, into, span } = useProgress();
+  const { completedIds, xp, level, into, span, streak } = useProgress();
   const locale = useLocale();
   const t = useT();
   if (!user) return null;
@@ -124,7 +124,7 @@ export function LearnerStrip({ tracks }: { tracks: RoadmapTrack[] }) {
             }}
           >
             <Flame className="h-4 w-4" />
-            {learner.streakDays}
+            {streak}
           </span>
           <span
             className="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-sm font-bold"

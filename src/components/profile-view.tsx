@@ -278,7 +278,7 @@ function LearnerProfile({
 }) {
   // Every number here is this learner's real record now, counted from the
   // lessons they marked done -- not the authored demo state the prototype used.
-  const { completedIds, xp, level, into, span } = useProgress();
+  const { completedIds, xp, level, into, span, streak } = useProgress();
   const pct = Math.min(100, Math.round((into / span) * 100));
 
   const badges = tracks
@@ -288,7 +288,7 @@ function LearnerProfile({
   const stats = [
     { icon: Zap, label: t("profile.xp"), value: `${xp}`, color: "var(--neon)" },
     { icon: Trophy, label: t("profile.done"), value: `${completedIds.size}`, color: "var(--cleared)" },
-    { icon: Flame, label: t("profile.streak"), value: `${learner.streakDays}`, color: "var(--reward)" },
+    { icon: Flame, label: t("profile.streak"), value: `${streak}`, color: "var(--reward)" },
     { icon: Award, label: t("profile.badges"), value: `${badges.length}`, color: "var(--advanced)" },
   ];
 

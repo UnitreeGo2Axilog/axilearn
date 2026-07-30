@@ -2,9 +2,14 @@
 
 /**
  * Fixed top HUD: who you are, what level, how much XP to the next one, your
- * streak and coins -- the "I am progressing" signal, always on screen.
+ * streak and how many lessons you have cleared -- the "I am progressing"
+ * signal, always on screen.
+ *
+ * There was a coin counter here, but nothing on the platform earns or spends
+ * coins, so it was being fed the XP total: two icons showing one number. It
+ * counts cleared lessons now, which is a thing that actually happens.
  */
-import { Coins, Flame, Menu } from "lucide-react";
+import { Flame, Menu, Trophy } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 interface Props {
@@ -13,7 +18,7 @@ interface Props {
   currentXp: number;
   nextLevelXp: number;
   streakDays: number;
-  coins: number;
+  done: number;
   trackShort: string;
   accent: string;
   onMenu?: () => void;
@@ -25,7 +30,7 @@ export function TopStatusBar({
   currentXp,
   nextLevelXp,
   streakDays,
-  coins,
+  done,
   trackShort,
   accent,
   onMenu,
@@ -72,16 +77,23 @@ export function TopStatusBar({
               tracks -- see components/learner-strip.tsx */}
         </div>
 
-        {/* streak + coins */}
+        {/* streak + lessons cleared */}
         <div className="flex shrink-0 items-center gap-1.5">
           <ThemeToggle />
           <span className="inline-flex items-center gap-1 rounded-lg border border-orange-400/25 bg-orange-400/10 px-2 py-1 text-xs font-bold text-orange-300">
             <Flame className="h-3.5 w-3.5" />
             {streakDays}
           </span>
-          <span className="inline-flex items-center gap-1 rounded-lg border border-amber-300/25 bg-amber-300/10 px-2 py-1 text-xs font-bold text-amber-300">
-            <Coins className="h-3.5 w-3.5" />
-            {coins}
+          <span
+            className="inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-bold"
+            style={{
+              borderColor: "color-mix(in srgb, var(--cleared) 30%, transparent)",
+              background: "color-mix(in srgb, var(--cleared) 12%, transparent)",
+              color: "var(--cleared)",
+            }}
+          >
+            <Trophy className="h-3.5 w-3.5" />
+            {done}
           </span>
         </div>
       </div>
