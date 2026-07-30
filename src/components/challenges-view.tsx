@@ -133,8 +133,19 @@ function DifficultyPicker({
 
   return (
     <div
-      className="panel panel-glow mx-auto max-w-md overflow-hidden rounded-3xl border p-6 text-center"
-      style={{ borderColor: `${accent}55` }}
+      className="panel-glow mx-auto max-w-md overflow-hidden rounded-3xl border p-6 text-center"
+      style={{
+        borderColor: `${accent}55`,
+        // Deliberately more see-through than the site's default .panel glass
+        // (~55-68% fill) -- this card sits directly over the animated
+        // background, and the whole point of building that background was
+        // for it to be visible through the UI, not hidden behind another
+        // card. The blur is what keeps the level names readable against the
+        // moving lines rather than fighting them for attention.
+        background: "color-mix(in srgb, var(--bg-2) 30%, transparent)",
+        backdropFilter: "blur(16px) saturate(140%)",
+        WebkitBackdropFilter: "blur(16px) saturate(140%)",
+      }}
     >
       <span
         className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl"
@@ -150,6 +161,9 @@ function DifficultyPicker({
           const group = challenges.filter((c) => c.difficulty === key);
           const solved = group.filter((c) => solvedChallengeIds.has(c.id)).length;
           const empty = group.length === 0;
+          const restBackground = empty
+            ? "color-mix(in srgb, var(--bg-2) 22%, transparent)"
+            : "color-mix(in srgb, var(--surface-solid) 16%, transparent)";
 
           return (
             <button
@@ -159,14 +173,14 @@ function DifficultyPicker({
               onClick={() => onPick(key)}
               className="flex w-full items-center gap-3 px-4 py-4 text-left transition disabled:cursor-not-allowed"
               style={{
-                background: empty ? "var(--bg-2)" : "var(--surface)",
+                background: restBackground,
                 opacity: empty ? 0.55 : 1,
               }}
               onMouseEnter={(e) => {
-                if (!empty) e.currentTarget.style.background = `color-mix(in srgb, ${color} 10%, var(--surface))`;
+                if (!empty) e.currentTarget.style.background = `color-mix(in srgb, ${color} 16%, transparent)`;
               }}
               onMouseLeave={(e) => {
-                if (!empty) e.currentTarget.style.background = "var(--surface)";
+                if (!empty) e.currentTarget.style.background = restBackground;
               }}
             >
               <Icon className="h-5 w-5 shrink-0" style={{ color: empty ? "var(--text-faint)" : color }} />
