@@ -391,38 +391,70 @@ function challengeOf(id: string, raw: Record<string, unknown>): ChallengeDoc | n
  * the same reason it goes through unstable_cache rather than Next's fetch
  * cache: a filtered query is a POST, which plain fetch caching does not cover.
  */
-const fetchChallenges = unstable_cache(
-  async (trackId: string): Promise<ChallengeDoc[]> => {
-    const res = await fetch(`${BASE}/tracks/${trackId}/challenges:runQuery?key=${KEY}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        structuredQuery: {
-          from: [{ collectionId: "challenges" }],
-          where: {
-            fieldFilter: {
-              field: { fieldPath: "status" },
-              op: "EQUAL",
-              value: { stringValue: "published" },
+/**
+ * One track's published challenges, cached.
+ *
+ * TWO THINGS HERE ARE EASY TO GET WRONG, AND BOTH WERE.
+ *
+ * 1. THE PARENT PATH. A subcollection query's parent is the DOCUMENT that
+ *    owns it -- `documents/tracks/{trackId}:runQuery` with `from.collectionId`
+ *    naming the subcollection. Pointing it at `tracks/{trackId}/challenges`
+ *    instead makes the parent a COLLECTION, which Firestore rejects with a
+ *    400. It failed silently too, because a non-ok response falls back to the
+ *    repo bundle -- so every challenge an admin imported was invisible while
+ *    the page looked perfectly fine.
+ *
+ * 2. THE CACHE KEY MUST INCLUDE THE TRACK. The cached function is built per
+ *    track so `trackId` is part of the key itself, rather than trusting the
+ *    argument to be folded in. Get this wrong and every track shares one cache
+ *    entry: whichever track is fetched first wins, and the Python warm-up ends
+ *    up serving the Physical AI problems. Nothing about that failure looks
+ *    like a caching bug from the outside -- it just looks like the content is
+ *    wrong.
+ *
+ * The filter on `status == "published"` is required, not decorative: the
+ * challenges rule hides drafts by inspecting `resource.data.status`, and
+ * Firestore rejects any list query that has not already constrained that
+ * field. Verified directly against the live project -- unfiltered returns
+ * nothing, filtered returns the six.
+ */
+function challengeLoader(trackId: string) {
+  return unstable_cache(
+    async (): Promise<ChallengeDoc[]> => {
+      const res = await fetch(`${BASE}/tracks/${trackId}:runQuery?key=${KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          structuredQuery: {
+            from: [{ collectionId: "challenges" }],
+            where: {
+              fieldFilter: {
+                field: { fieldPath: "status" },
+                op: "EQUAL",
+                value: { stringValue: "published" },
+              },
             },
+            limit: 100,
           },
-          limit: 100,
-        },
-      }),
-    });
-    if (!res.ok) return [];
-    const rows = (await res.json()) as {
-      document?: { name: string; fields?: Record<string, RestValue> };
-    }[];
-    return (Array.isArray(rows) ? rows : [])
-      .filter((r) => r.document)
-      .map((r) => challengeOf(docId(r.document!.name), decodeFields(r.document!.fields ?? {})))
-      .filter((c): c is ChallengeDoc => c !== null)
-      .sort((a, b) => a.order - b.order);
-  },
-  ["axilearn-published-challenges"],
-  { revalidate: CONTENT_TTL_SECONDS, tags: ["content"] },
-);
+        }),
+      });
+      if (!res.ok) {
+        warnOnce(`Firestore returned ${res.status} for ${trackId}'s challenges`);
+        return [];
+      }
+      const rows = (await res.json()) as {
+        document?: { name: string; fields?: Record<string, RestValue> };
+      }[];
+      return (Array.isArray(rows) ? rows : [])
+        .filter((r) => r.document)
+        .map((r) => challengeOf(docId(r.document!.name), decodeFields(r.document!.fields ?? {})))
+        .filter((c): c is ChallengeDoc => c !== null)
+        .sort((a, b) => a.order - b.order);
+    },
+    ["axilearn-challenges", trackId],
+    { revalidate: CONTENT_TTL_SECONDS, tags: ["content"] },
+  );
+}
 
 export async function getChallenges(trackId: string, locale: Locale): Promise<ResolvedChallenge[]> {
   const repoFallback = () =>
@@ -433,7 +465,7 @@ export async function getChallenges(trackId: string, locale: Locale): Promise<Re
 
   if (!BASE || !KEY) return repoFallback();
   try {
-    const docs = await fetchChallenges(trackId);
+    const docs = await challengeLoader(trackId)();
     return docs.length ? docs.map((c) => resolveChallenge(c, locale)) : repoFallback();
   } catch {
     return repoFallback();

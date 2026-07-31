@@ -112,6 +112,12 @@ export function ChallengesView({
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-strong">
             {t("challenges.title")}
           </h1>
+          {/* Name the track outright. Every track's challenge screen otherwise
+              looks identical, and "which set am I even looking at" is not a
+              question a learner should have to work out from the colour. */}
+          <p className="mt-1 text-sm font-bold" style={{ color: track.color }}>
+            {track.title}
+          </p>
           {challenges.length > 0 && (
             <p className="mt-2 text-sm font-bold" style={{ color: track.color }}>
               {t("challenges.solvedCount")
