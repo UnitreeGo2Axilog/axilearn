@@ -10,7 +10,10 @@ import { TrackCard } from "@/components/track-card";
  *
  * Same dark neon language as the mission map, so the site feels like one
  * product. Each track is a glowing "mission select" card that says in one
- * word what it is -- ROBOTICS / AI / GAMES -- before any reading happens.
+ * word what it is -- PYTHON / ROBOTICS / ML / GAMES -- before any reading
+ * happens. Four of them now that Python is a track rather than a warm-up
+ * tucked inside the robotics one, so the grid pairs up on a tablet instead of
+ * leaving one card stranded on its own row.
  */
 export default async function HomePage({
   params,
@@ -51,7 +54,7 @@ export default async function HomePage({
       <LearnerStrip tracks={trackList} />
 
       {/* mission select */}
-      <section className="grid gap-5 md:grid-cols-3">
+      <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         {trackList.map((track) => {
           // "coming soon" is a content decision now, editable in the CMS.
           const locked = track.comingSoon === true || track.levels.length === 0;

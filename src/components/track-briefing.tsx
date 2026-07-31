@@ -73,12 +73,10 @@ export function TrackBriefing({
               body={overview.primer.why}
               meta={`~${overview.primer.minutes} min`}
               cta={t("track.takePrimer")}
-              // Its own track page, not straight to its lesson map. The warm-up
-              // is a track in its own right -- it has its own lessons AND its
-              // own challenges -- and jumping past its briefing was what made
-              // those challenges unreachable: hidden from the home page, and
-              // skipped here, the only challenge entry point a learner could
-              // actually see was this track's own.
+              // Its own track page, not straight to its lesson map -- Python
+              // is a full track on the home page now, so this card is a
+              // recommendation between siblings and should land where any
+              // other track link lands: on its briefing.
               href={`/${locale}/track/${overview.primer.trackId ?? "python-primer"}`}
             />
           )}

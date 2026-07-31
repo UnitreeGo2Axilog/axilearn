@@ -145,6 +145,11 @@ function Dashboard() {
                 {t("admin.importBodies")} {result.bodiesWritten.length}
               </p>
             )}
+            {result.tracksRefreshed.length > 0 && (
+              <p style={{ color: "var(--advanced)" }}>
+                {t("admin.importRefreshed")} {result.tracksRefreshed.join(", ")}
+              </p>
+            )}
             {result.challengesMoved.length > 0 && (
               <p className="text-faint">
                 {t("admin.importMoved")} {result.challengesMoved.length}

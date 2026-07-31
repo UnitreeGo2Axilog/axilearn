@@ -260,6 +260,9 @@ export interface TrackDoc {
   hidden?: boolean;
   /** Visible on the home page but not enterable yet. */
   comingSoon?: boolean;
+  /** Which revision of the repo's copy this document was written from.
+   *  Absent means 1 -- everything imported before revisions existed. */
+  repoRevision?: number;
   short: string;
   color: string;
   glow: string;

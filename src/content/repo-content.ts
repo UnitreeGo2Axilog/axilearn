@@ -28,6 +28,7 @@ export const repoTrackDocs: TrackDoc[] = tracks.map((track, ti) => ({
   order: ti,
   status: "published",
   ...(track.hidden ? { hidden: true } : {}),
+  ...(track.repoRevision ? { repoRevision: track.repoRevision } : {}),
   ...(track.comingSoon ? { comingSoon: true } : {}),
   short: track.short,
   color: track.color,

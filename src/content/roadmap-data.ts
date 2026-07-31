@@ -37,14 +37,21 @@ export interface Level {
 }
 
 /** Optional warm-up module offered before a track starts. */
+/**
+ * A pointer from one track to a SIBLING track that is worth doing first.
+ *
+ * It used to describe a sub-course living inside its parent -- which is what
+ * "primer" meant. Python is a track of its own now, on the home page next to
+ * the others, so this is a recommendation between equals rather than a
+ * component of the track that names it.
+ */
 export interface Primer {
   title: string;
   why: string;
   lessons: string[];
   minutes: number;
-  /** The track the primer actually IS -- it has its own lessons, its own
-   *  challenges and its own briefing page, so the link has to be able to
-   *  point at it rather than assuming an id. */
+  /** The recommended track's id. Required in spirit; optional in the type
+   *  only because Firestore documents written before it existed lack it. */
   trackId?: string;
 }
 
@@ -67,6 +74,9 @@ export interface RoadmapTrack {
   icon: string;
   /** Hidden from the main track switcher (e.g. an optional sub-course). */
   hidden?: boolean;
+  /** Bumped when the repo's own copy for this track must overwrite whatever
+   *  Firestore holds -- see importStarterContent. Absent means revision 1. */
+  repoRevision?: number;
   /** Shown but not enterable yet -- the supervisor decides this per track. */
   comingSoon?: boolean;
   overview: TrackOverview;
@@ -165,9 +175,43 @@ const primerLevels = build([
 ]);
 
 export const tracks: RoadmapTrack[] = [
+
+  {
+    id: "python-primer",
+    title: "Python Basics",
+    short: "PYTHON",
+    description: "Write your first real code -- the foundation the other tracks are built on.",
+    // Its own hue. It shared violet with the ML track back when it was hidden
+    // and the two could never appear side by side; on the home page they now
+    // always do, and two tracks the same colour is two tracks you have to
+    // read to tell apart.
+    color: "#fb923c",
+    glow: "251,146,60",
+    icon: "Code",
+    repoRevision: 2,
+    overview: {
+      tagline: "Four short lessons and twelve problems. By the end you can write code that decides, repeats and remembers.",
+      forWho:
+        "For anyone who has never written a line of code. If you can type, you can start here -- and everything else on AxiLearn assumes only what this track teaches.",
+      outcomes: [
+        "Write and run a real Python program, and read the error when it breaks",
+        "Store numbers and text in variables, and build new values out of them",
+        "Make a program decide with if/else, and repeat work with loops",
+        "Write your own functions and work with lists -- what every AI and robot program leans on",
+      ],
+      advice: [
+        "Type every example instead of copying it. Your hands remember what your eyes skip over.",
+        "Break it on purpose, then fix it. That is the fastest way to learn what a line actually does.",
+        "One lesson a day is plenty. Spend the time you save on the challenges -- that is where it sticks.",
+        "Stuck on a challenge? Read the failing case. It tells you exactly what your code gave and what it owed.",
+      ],
+    },
+    levels: primerLevels,
+  },
   {
     id: "physical-ai",
     title: "Physical AI",
+    repoRevision: 2,
     short: "ROBOTICS",
     description: "Teach a real robot to see, walk and work.",
     color: "#22d3ee",
@@ -193,9 +237,9 @@ export const tracks: RoadmapTrack[] = [
         "Do a little every day rather than everything on Sunday -- your streak is on the map for a reason.",
       ],
       primer: {
-        title: "New to programming? Start with Python (optional)",
+        title: "New to code? Start with Python Basics",
         why:
-          "This track uses a little Python to talk to the robot. If you have never written code, take these four short lessons first -- about an hour in total. Already comfortable with Python? Skip straight to the robot.",
+          "This track writes a little Python to talk to the robot. Python Basics is a full track of its own -- four lessons and twelve challenges, about an hour of reading. Never written code? Take it first. Already comfortable? Go straight to the robot.",
         minutes: 60,
         lessons: [
           "Your first line of code: print and comments",
@@ -264,32 +308,6 @@ export const tracks: RoadmapTrack[] = [
     levels: gameLevels,
   },
 
-  {
-    id: "python-primer",
-    title: "Python Warm-up",
-    short: "PYTHON",
-    description: "The optional hour of Python you need before the robot track.",
-    color: "#a78bfa",
-    glow: "167,139,250",
-    icon: "Code",
-    hidden: true,
-    overview: {
-      tagline: "One hour of Python, just enough to start talking to a robot.",
-      forWho: "For anyone who has never written code. Completely optional -- skip it if you already have.",
-      outcomes: [
-        "Write and run your own Python program",
-        "Use variables to store numbers and text",
-        "Make your program decide with if/else and repeat with loops",
-        "Write functions and use lists -- the two things robot code leans on most",
-      ],
-      advice: [
-        "Type every example instead of copying it.",
-        "Break it on purpose, then fix it. That is the fastest way to understand it.",
-        "One lesson a day is plenty -- this is a warm-up, not a race.",
-      ],
-    },
-    levels: primerLevels,
-  },
 ];
 
 /** Tracks shown in the main switcher (sub-courses stay out of it). */

@@ -158,6 +158,8 @@ export interface ImportResult {
   challengesMoved: string[];
   /** Lesson ids that gained a field the repo has but Firestore lacked. */
   fieldsBackfilled: string[];
+  /** Track ids whose stored copy was refreshed from a newer repo revision. */
+  tracksRefreshed: string[];
 }
 
 /**
@@ -196,6 +198,52 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
   }
 
   if (written.length) await batch.commit();
+
+  // Let the repo overwrite a track's own copy, ONCE, when it says so.
+  //
+  // Existing tracks are skipped above, which is right: it stops a second
+  // press of the button from wiping text the supervisor wrote in the CMS.
+  // But it also means a track can never be RESTRUCTURED from the repo. Python
+  // was the case that proved it -- shipped as a hidden warm-up belonging to
+  // the robotics track, promoted later to a track of its own. The repo said
+  // so; Firestore went on hiding it and describing it as "the optional hour
+  // you need before the robot track", and no amount of re-importing could
+  // change either, because the whole document was skipped.
+  //
+  // So a track carries a revision. Bump it in roadmap-data.ts and the next
+  // import rewrites that track's presentation from the repo, once -- the
+  // stored revision then matches and it never fires again. Deliberately not
+  // rewritten: `lessons` (the CMS owns those, and bodies/quizzes have their
+  // own rules below), `status`, and `comingSoon` -- publishing and scheduling
+  // are the supervisor's call per track, not something a content revision
+  // should quietly reverse. `hidden` IS rewritten, because whether a thing is
+  // a track at all is exactly the kind of structural fact a bump asserts.
+  const tracksRefreshed: string[] = [];
+  for (const track of repoTrackDocs) {
+    if (!existing.has(track.id) || overwrite) continue; // just written fresh
+    const live = await readTrackDoc(track.id);
+    if (!live || (live.repoRevision ?? 1) >= (track.repoRevision ?? 1)) continue;
+
+    // Listed field by field rather than spread-minus-omissions, so what the
+    // repo is allowed to take back is readable here instead of inferred from
+    // what is missing. repoRevision has to be among them: forget it and the
+    // stored revision never catches up and this runs on every single import.
+    const copy = clean(track);
+    await updateDoc(doc(getDb(), TRACKS, track.id), {
+      order: copy.order,
+      short: copy.short,
+      color: copy.color,
+      glow: copy.glow,
+      icon: copy.icon,
+      title: copy.title,
+      description: copy.description,
+      overview: copy.overview,
+      hidden: track.hidden ?? false,
+      repoRevision: track.repoRevision ?? 1,
+      updatedAt: Date.now(),
+    });
+    tracksRefreshed.push(track.id);
+  }
 
   // Backfill lesson fields added to the repo AFTER a track was first
   // imported. Without this, a field like starterCode is permanently
@@ -293,7 +341,15 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
     }
   }
 
-  return { written, skipped, bodiesWritten, challengesWritten, challengesMoved, fieldsBackfilled };
+  return {
+    written,
+    skipped,
+    bodiesWritten,
+    challengesWritten,
+    challengesMoved,
+    fieldsBackfilled,
+    tracksRefreshed,
+  };
 }
 
 /* ------------------------------------------------------------ challenges */
