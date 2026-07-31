@@ -131,7 +131,7 @@ function ChallengesList() {
               <StatusChip status={c.status} />
               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-faint">
                 <Zap className="h-3 w-3" />
-                {c.xpReward} XP
+                {c.kind === "code" ? `${(c.tests ?? []).length} tests` : "QCM"}
               </span>
               <span className="flex items-center gap-1">
                 <IconButton

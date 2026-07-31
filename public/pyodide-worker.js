@@ -42,9 +42,51 @@ function getPyodide() {
   return pyodidePromise;
 }
 
+/**
+ * The grading harness appended after a learner's code when checking a
+ * challenge.
+ *
+ * Both sides of a test are Python EXPRESSIONS that get evaluated, not strings
+ * compared -- so `[1, 2]` genuinely equals `[1, 2]`, and a test can check a
+ * list, tuple, dict or float without any special handling here.
+ *
+ * Every name is prefixed `__axi_` because this shares one namespace with
+ * whatever the learner wrote; a plain `results` or `tests` would collide with
+ * an ordinary variable and produce a baffling failure in their own code.
+ *
+ * Each case is caught individually: one raising case reports as that case
+ * failing, and the remaining cases still run. A learner deserves to see "3 of
+ * 4 passed", not just the first thing that broke.
+ */
+function gradingHarness(tests) {
+  const payload = JSON.stringify(JSON.stringify(tests));
+  return `
+import json as __axi_json
+
+__axi_results = []
+for __axi_t in __axi_json.loads(${payload}):
+    try:
+        __axi_actual = eval(__axi_t["call"])
+        __axi_expected = eval(__axi_t["expected"])
+        __axi_results.append({
+            "ok": bool(__axi_actual == __axi_expected),
+            "actual": repr(__axi_actual),
+            "error": None,
+        })
+    except Exception as __axi_err:
+        __axi_results.append({
+            "ok": False,
+            "actual": None,
+            "error": type(__axi_err).__name__ + ": " + str(__axi_err),
+        })
+
+__axi_json.dumps(__axi_results)
+`;
+}
+
 self.onmessage = async (event) => {
-  const { type, id, code } = event.data ?? {};
-  if (type !== "run") return;
+  const { type, id, code, tests } = event.data ?? {};
+  if (type !== "run" && type !== "grade") return;
 
   let pyodide;
   try {
@@ -76,6 +118,15 @@ self.onmessage = async (event) => {
   // what runs is exactly what is in the editor.
   const namespace = pyodide.toPy({});
   try {
+    if (type === "grade") {
+      // The learner's code and the harness run together in ONE namespace, so
+      // the harness can call the function they just defined.
+      const raw = await pyodide.runPythonAsync(code + "\n" + gradingHarness(tests ?? []), {
+        globals: namespace,
+      });
+      self.postMessage({ type: "result", id, stdout, error: null, cases: JSON.parse(raw) });
+      return;
+    }
     await pyodide.runPythonAsync(code, { globals: namespace });
     self.postMessage({ type: "result", id, stdout, error: null });
   } catch (err) {
@@ -86,7 +137,7 @@ self.onmessage = async (event) => {
     const message = String(err?.message ?? err);
     const lines = message.trim().split("\n");
     const summary = lines[lines.length - 1] || message;
-    self.postMessage({ type: "result", id, stdout, error: summary });
+    self.postMessage({ type: "result", id, stdout, error: summary, cases: null });
   } finally {
     // PyProxy objects are not garbage collected from JS -- an undestroyed
     // namespace leaks the whole run's Python objects on the WASM heap.

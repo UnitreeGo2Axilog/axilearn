@@ -85,11 +85,15 @@ export async function fetchMyProgress(uid: string): Promise<ProgressRecord[]> {
  * at once cannot clobber each other and the admin roster is one more
  * collection read, not N.
  */
+/**
+ * A solved challenge. Note there is no `xp` here: XP comes from lessons only.
+ * Challenges are optional practice, and giving them a second currency made
+ * one score into two competing ones.
+ */
 export interface ChallengeProgressRecord {
   uid: string;
   challengeId: string;
   trackId: string;
-  xp: number;
   completedAt: number;
 }
 
@@ -101,9 +105,8 @@ export async function markChallengeSolved(
   uid: string,
   trackId: string,
   challengeId: string,
-  xp: number,
 ): Promise<void> {
-  const record: ChallengeProgressRecord = { uid, trackId, challengeId, xp, completedAt: Date.now() };
+  const record: ChallengeProgressRecord = { uid, trackId, challengeId, completedAt: Date.now() };
   await setDoc(doc(getDb(), CHALLENGE_PROGRESS, challengeIdFor(uid, challengeId)), record);
 }
 

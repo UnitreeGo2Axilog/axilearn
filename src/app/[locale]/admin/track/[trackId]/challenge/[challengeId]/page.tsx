@@ -14,7 +14,7 @@ import {
   readChallenge,
   saveChallenge,
 } from "@/content/admin-content";
-import { emptyChallengeDoc, type ChallengeDoc } from "@/content/schema";
+import { emptyChallengeDoc, type ChallengeDoc, type ChallengeTest } from "@/content/schema";
 import {
   AdminBack,
   AdminGuard,
@@ -22,6 +22,7 @@ import {
   L10nInput,
   SaveState,
   StatusToggle,
+  TextArea,
   TextInput,
 } from "@/components/admin/admin-shell";
 import { Tooltip } from "@/components/tooltip";
@@ -100,8 +101,13 @@ function ChallengeEditor() {
       return;
     }
     const options = challenge.options.filter((o) => o.en.trim());
-    if (options.length < MIN_OPTIONS) {
+    const tests = (challenge.tests ?? []).filter((x) => x.call.trim() && x.expected.trim());
+    if (challenge.kind === "mcq" && options.length < MIN_OPTIONS) {
       setError(t("admin.needTwoOptions"));
+      return;
+    }
+    if (challenge.kind === "code" && tests.length === 0) {
+      setError(t("admin.needOneTest"));
       return;
     }
 
@@ -112,7 +118,8 @@ function ChallengeEditor() {
         ...challenge,
         id,
         options,
-        correctIndex: Math.min(challenge.correctIndex, options.length - 1),
+        tests,
+        correctIndex: options.length ? Math.min(challenge.correctIndex, options.length - 1) : 0,
       });
       setState("saved");
       if (isNew) router.replace(`/${locale}/admin/track/${trackId}/challenge/${id}`);
@@ -189,17 +196,45 @@ function ChallengeEditor() {
               ))}
             </select>
           </Field>
-          <Field label={t("admin.xp")}>
-            <TextInput
-              type="number"
-              min={0}
-              value={challenge.xpReward}
-              onChange={(e) => edit({ xpReward: Number(e.target.value) || 0 })}
-            />
+          <Field label={t("admin.challengeKind")} hint={t("admin.challengeKindHint")}>
+            <select
+              value={challenge.kind}
+              onChange={(e) => edit({ kind: e.target.value as ChallengeDoc["kind"] })}
+              className="field w-full rounded-xl px-3 py-2.5 text-sm"
+            >
+              <option value="code">{t("admin.kindCode")}</option>
+              <option value="mcq">{t("admin.kindMcq")}</option>
+            </select>
           </Field>
         </div>
       </section>
 
+      {challenge.kind === "code" && (
+        <section className="panel mb-5 space-y-4 rounded-2xl p-5">
+          <h2 className="text-sm font-extrabold uppercase tracking-wide text-faint">
+            {t("admin.starterCode")}
+          </h2>
+          <p className="text-[11px] text-faint">{t("admin.challengeStarterHint")}</p>
+          <TextArea
+            rows={7}
+            value={challenge.starterCode ?? ""}
+            spellCheck={false}
+            onChange={(e) => edit({ starterCode: e.target.value })}
+            style={{ fontFamily: "ui-monospace, monospace" }}
+          />
+
+          <h2 className="pt-2 text-sm font-extrabold uppercase tracking-wide text-faint">
+            {t("admin.tests")}
+          </h2>
+          <p className="text-[11px] text-faint">{t("admin.testsHint")}</p>
+          <TestEditor
+            tests={challenge.tests ?? []}
+            onChange={(tests) => edit({ tests })}
+          />
+        </section>
+      )}
+
+      {challenge.kind === "mcq" && (
       <section className="panel mb-5 space-y-3 rounded-2xl p-5">
         <h2 className="text-sm font-extrabold uppercase tracking-wide text-faint">
           {t("admin.options")}
@@ -257,6 +292,10 @@ function ChallengeEditor() {
           </button>
         )}
 
+      </section>
+      )}
+
+      <section className="panel mb-5 rounded-2xl p-5">
         <L10nInput
           label={t("admin.explanation")}
           value={challenge.explanation ?? { en: "" }}
@@ -288,6 +327,92 @@ function ChallengeEditor() {
           </button>
         )}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Test cases as two expression fields. Both sides are Python expressions,
+ * which keeps this honest: an author writes exactly the call they would type
+ * to check the answer themselves, and exactly what it should equal. `hidden`
+ * withholds a case from the learner so the solution cannot be reverse
+ * engineered from the visible examples.
+ */
+function TestEditor({
+  tests,
+  onChange,
+}: {
+  tests: ChallengeTest[];
+  onChange: (next: ChallengeTest[]) => void;
+}) {
+  const t = useT();
+  function patch(i: number, next: Partial<ChallengeTest>) {
+    onChange(tests.map((x, j) => (j === i ? { ...x, ...next } : x)));
+  }
+  return (
+    <div>
+      <div className="space-y-2">
+        {tests.map((test, i) => (
+          <div
+            key={i}
+            className="rounded-xl border p-3"
+            style={{ borderColor: "var(--border)", background: "var(--bg-2)" }}
+          >
+            <div className="mb-2 flex items-center justify-between">
+              <span className="font-robot text-[11px] font-bold text-faint">#{i + 1}</span>
+              <div className="flex items-center gap-3">
+                <label className="inline-flex cursor-pointer items-center gap-1.5 text-[11px] font-bold text-faint">
+                  <input
+                    type="checkbox"
+                    checked={test.hidden === true}
+                    onChange={(e) => patch(i, { hidden: e.target.checked })}
+                    className="h-3.5 w-3.5 cursor-pointer accent-[var(--neon)]"
+                  />
+                  {t("admin.testHidden")}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => onChange(tests.filter((_, j) => j !== i))}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold"
+                  style={{ color: "var(--reward)" }}
+                >
+                  <Trash2 className="h-3 w-3" />
+                  {t("admin.remove")}
+                </button>
+              </div>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Field label={t("admin.testCall")}>
+                <TextInput
+                  value={test.call}
+                  placeholder="add(2, 3)"
+                  spellCheck={false}
+                  style={{ fontFamily: "ui-monospace, monospace" }}
+                  onChange={(e) => patch(i, { call: e.target.value })}
+                />
+              </Field>
+              <Field label={t("admin.testExpected")}>
+                <TextInput
+                  value={test.expected}
+                  placeholder="5"
+                  spellCheck={false}
+                  style={{ fontFamily: "ui-monospace, monospace" }}
+                  onChange={(e) => patch(i, { expected: e.target.value })}
+                />
+              </Field>
+            </div>
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={() => onChange([...tests, { call: "", expected: "" }])}
+        className="mt-2 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold text-main"
+        style={{ borderColor: "var(--border-strong)" }}
+      >
+        <Plus className="h-3.5 w-3.5" />
+        {t("admin.addTest")}
+      </button>
     </div>
   );
 }

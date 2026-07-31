@@ -120,51 +120,94 @@ export function emptyQuizQuestion(): QuizQuestion {
 }
 
 /**
- * A challenge: one multiple-choice question, tagged by difficulty, that lives
- * on its own rather than at the end of a specific lesson.
+ * A challenge: a standalone practice problem for a whole track, tagged by
+ * difficulty, separate from any one lesson.
  *
  * Where a lesson's quiz checks whether someone read THAT lesson, a challenge
- * is optional extra practice for a whole track -- something to come back to,
- * grouped by how hard it is, with its own solved/unsolved state. Reuses the
- * same question/options/correctIndex/explanation shape as a lesson's quiz
- * question on purpose: it's the same interaction, just not gating anything.
+ * asks them to actually write code -- something to come back to, grouped by
+ * how hard it is, with its own solved/unsolved state.
  */
 export type ChallengeDifficulty = "easy" | "medium" | "hard";
+
+/**
+ * Challenges are CODE problems: write a function, submit, get graded against
+ * test cases -- the HackerRank shape, run in our own in-browser Python.
+ *
+ * `kind` still exists because earlier challenges were multiple-choice and may
+ * already be sitting in somebody's Firestore. Those keep rendering as MCQ
+ * rather than breaking; the importer upgrades the ones it shipped (see
+ * admin-content.ts). New challenges are code by default.
+ *
+ * There is deliberately NO xpReward here any more: XP is earned from lessons
+ * only. A challenge is optional practice, and giving it its own currency made
+ * two competing scores out of one idea.
+ */
+export type ChallengeKind = "mcq" | "code";
+
+/**
+ * One graded case. `call` and `expected` are both Python EXPRESSIONS, so a
+ * test reads exactly like the line you would type to check it yourself:
+ *
+ *     call: "add(2, 3)"      expected: "5"
+ *
+ * Anything Python can compare works -- lists, strings, tuples -- because both
+ * sides are evaluated, not string-matched.
+ */
+export interface ChallengeTest {
+  call: string;
+  expected: string;
+  /** Graded, but not shown before submitting -- stops answer-shaped guessing. */
+  hidden?: boolean;
+}
 
 export interface ChallengeDoc {
   id: string;
   order: number;
   status: PublishStatus;
   difficulty: ChallengeDifficulty;
-  xpReward: number;
+  kind: ChallengeKind;
   title: L10n;
   prompt: L10n;
-  options: L10n[];
-  correctIndex: number;
   explanation?: L10n;
+  /** MCQ only. */
+  options: L10n[];
+  /** MCQ only. */
+  correctIndex: number;
+  /** Code only: the stub the learner starts from. */
+  starterCode?: string;
+  /** Code only: what "solved" means. */
+  tests?: ChallengeTest[];
 }
 
 export interface ResolvedChallenge {
   id: string;
   difficulty: ChallengeDifficulty;
-  xpReward: number;
+  kind: ChallengeKind;
   title: string;
   prompt: string;
+  explanation?: string;
   options: string[];
   correctIndex: number;
-  explanation?: string;
+  starterCode: string;
+  tests: ChallengeTest[];
 }
 
 export function resolveChallenge(c: ChallengeDoc, locale: Locale): ResolvedChallenge {
   const explanation = c.explanation ? pick(c.explanation, locale) : undefined;
+  const tests = c.tests ?? [];
+  // A challenge with tests is a code challenge whatever the stored kind says:
+  // data that actually has graded cases should never render as a quiz.
+  const kind: ChallengeKind = c.kind === "code" || tests.length > 0 ? "code" : "mcq";
   return {
     id: c.id,
     difficulty: c.difficulty,
-    xpReward: c.xpReward,
+    kind,
     title: pick(c.title, locale),
     prompt: pick(c.prompt, locale),
     options: c.options.map((o) => pick(o, locale)),
     correctIndex: c.correctIndex,
+    starterCode: c.starterCode ?? "",
+    tests,
     ...(explanation ? { explanation } : {}),
   };
 }
@@ -175,11 +218,13 @@ export function emptyChallengeDoc(id: string, order: number): ChallengeDoc {
     order,
     status: "draft",
     difficulty: "easy",
-    xpReward: 30,
+    kind: "code",
     title: { en: "" },
     prompt: { en: "" },
     options: [{ en: "" }, { en: "" }],
     correctIndex: 0,
+    starterCode: "def solve():\n    # your code here\n    pass\n",
+    tests: [{ call: "solve()", expected: "None" }],
   };
 }
 

@@ -7,13 +7,11 @@
  * Fetching it in each of them would triple the read count on every navigation
  * for no benefit, so it is fetched here and handed down.
  *
- * Lesson completions and solved challenges are fetched together and combined
- * into ONE xp/level total -- two disconnected XP numbers on the same profile
- * would just be confusing ("why do I have two scores?"), so a solved
- * challenge counts toward the same level as a finished lesson. The two are
- * still tracked separately underneath (`completedIds` vs
- * `solvedChallengeIds`), because the map needs "which lessons" and the
- * challenge page needs "which challenges", not a merged blob.
+ * Lesson completions and solved challenges are fetched together but stay
+ * separate: XP and level come from LESSONS ONLY. Challenges are optional
+ * practice and award none -- one score for progress through the course is
+ * clearer than two competing currencies. Solved challenges are still tracked
+ * (the profile and the admin roster both report them), just not as XP.
  *
  * `refresh` exists so marking a lesson done (or solving a challenge) updates
  * the map/page behind it without a page reload.
@@ -35,7 +33,6 @@ interface ProgressValue {
   completedIds: Set<string>;
   challengeRecords: ChallengeProgressRecord[];
   solvedChallengeIds: Set<string>;
-  challengeXp: number;
   xp: number;
   level: number;
   into: number;
@@ -104,16 +101,13 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   }, [uid, configured]);
 
   const value = useMemo<ProgressValue>(() => {
-    const lessonXp = records.reduce((sum, r) => sum + (r.xp ?? 0), 0);
-    const challengeXp = challengeRecords.reduce((sum, r) => sum + (r.xp ?? 0), 0);
-    const xp = lessonXp + challengeXp;
+    const xp = records.reduce((sum, r) => sum + (r.xp ?? 0), 0);
     const { level, into, span } = levelFromXp(xp);
     return {
       records,
       completedIds: new Set(records.map((r) => r.lessonId)),
       challengeRecords,
       solvedChallengeIds: new Set(challengeRecords.map((r) => r.challengeId)),
-      challengeXp,
       xp,
       level,
       into,

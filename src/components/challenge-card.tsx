@@ -1,13 +1,15 @@
 "use client";
 
 /**
- * One challenge: collapsed to a title, difficulty pill, XP and a solved
- * badge; expands into the same answer-and-reveal interaction as a lesson
- * quiz question, via the shared QuizOptions.
+ * One challenge, collapsed to a title and a solved badge.
  *
- * Unlike a lesson's quiz, solving a challenge gates nothing else -- it is
- * optional practice, so there is no "must pass to continue" pressure, just a
- * clean record of what has been solved.
+ * Expands into one of two things depending on its kind: a CODE challenge
+ * (write a function, submit, graded against test cases -- the normal case
+ * now) or a legacy multiple-choice one, kept working so challenges already
+ * sitting in Firestore from before the change do not break.
+ *
+ * Solving a challenge gates nothing and awards no XP -- it is optional
+ * practice, and XP belongs to lessons. All it records is that it was solved.
  *
  * The save can fail (offline, or Firestore rules not yet published for a
  * newly added collection), and that failure is surfaced on screen, not
@@ -16,11 +18,13 @@
  * count would just silently stay at zero forever, with no visible reason why.
  */
 import { useState } from "react";
-import { AlertTriangle, Check, ChevronDown, Loader2, RotateCcw, Zap } from "lucide-react";
+import { AlertTriangle, Check, ChevronDown, Code2, Loader2, RotateCcw, Zap } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useProgress } from "@/lib/progress-context";
 import { markChallengeSolved, unmarkChallengeSolved } from "@/lib/progress";
 import { QuizOptions } from "@/components/quiz-options";
+import { ChallengeCode } from "@/components/challenge-code";
+import type { PythonRunner } from "@/lib/python-runner";
 import { useT } from "@/i18n/use-t";
 import type { ResolvedChallenge } from "@/content/schema";
 
@@ -33,9 +37,13 @@ const DIFF_COLOR: Record<ResolvedChallenge["difficulty"], string> = {
 export function ChallengeCard({
   trackId,
   challenge,
+  runner,
 }: {
   trackId: string;
   challenge: ResolvedChallenge;
+  /** Shared across every card on the page -- one Python runtime, not one per
+   *  challenge, which would mean N copies of a 10MB download. */
+  runner: PythonRunner | null;
 }) {
   const t = useT();
   const { user } = useAuth();
@@ -57,7 +65,7 @@ export function ChallengeCard({
     if (chosen !== challenge.correctIndex) return; // wrong -- nothing to save
     setBusy(true);
     try {
-      await markChallengeSolved(user.uid, trackId, challenge.id, challenge.xpReward);
+      await markChallengeSolved(user.uid, trackId, challenge.id);
       await refresh();
     } catch {
       setSaveError(t("lesson.markFailed"));
@@ -102,19 +110,33 @@ export function ChallengeCard({
           {solved ? <Check className="h-4 w-4" strokeWidth={3} /> : <Zap className="h-4 w-4" />}
         </span>
         <span className="min-w-[140px] flex-1 text-sm font-bold text-main">{challenge.title}</span>
-        <span
-          className="rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
-          style={{ background: "color-mix(in srgb, var(--reward) 14%, transparent)", color: "var(--reward)" }}
-        >
-          +{challenge.xpReward} XP
-        </span>
+        {challenge.kind === "code" && (
+          <span
+            className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
+            style={{ background: "color-mix(in srgb, var(--neon) 14%, transparent)", color: "var(--neon)" }}
+          >
+            <Code2 className="h-3 w-3" />
+            {t("challenges.codeTag")}
+          </span>
+        )}
         <ChevronDown
           className={`h-4 w-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
           style={{ color: "var(--text-faint)" }}
         />
       </button>
 
-      {open && (
+      {open && challenge.kind === "code" && (
+        <div className="border-t p-4" style={{ borderColor: "var(--border)" }}>
+          <ChallengeCode
+            trackId={trackId}
+            challenge={challenge}
+            runner={runner}
+            accent={diffColor}
+          />
+        </div>
+      )}
+
+      {open && challenge.kind === "mcq" && (
         <div className="space-y-3 border-t p-4" style={{ borderColor: "var(--border)" }}>
           <p className="text-sm leading-relaxed text-main">{challenge.prompt}</p>
 

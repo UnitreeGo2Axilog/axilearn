@@ -343,7 +343,18 @@ export async function getLessonLocation(
 /** Turn a decoded Firestore challenge document into the stored shape. */
 function challengeOf(id: string, raw: Record<string, unknown>): ChallengeDoc | null {
   const options = l10nList(raw.options);
-  if (options.length < 2) return null; // not a usable question
+  const tests = Array.isArray(raw.tests)
+    ? (raw.tests as Record<string, unknown>[])
+        .map((t) => ({
+          call: str(t.call),
+          expected: str(t.expected),
+          ...(t.hidden === true ? { hidden: true } : {}),
+        }))
+        .filter((t) => t.call && t.expected)
+    : [];
+  // Usable either as a code challenge (has graded cases) or as a legacy
+  // multiple-choice one (has options). Neither means there is nothing to show.
+  if (tests.length === 0 && options.length < 2) return null;
   const explanation = l10nOf(raw.explanation);
   const difficulty =
     raw.difficulty === "medium" || raw.difficulty === "hard" ? raw.difficulty : "easy";
@@ -352,11 +363,16 @@ function challengeOf(id: string, raw: Record<string, unknown>): ChallengeDoc | n
     order: num(raw.order, 99),
     status: raw.status === "draft" ? "draft" : "published",
     difficulty,
-    xpReward: num(raw.xpReward, 30),
+    kind: raw.kind === "code" ? "code" : "mcq",
     title: l10nOf(raw.title),
     prompt: l10nOf(raw.prompt),
     options,
-    correctIndex: Math.min(Math.max(num(raw.correctIndex, 0), 0), options.length - 1),
+    correctIndex:
+      options.length > 0
+        ? Math.min(Math.max(num(raw.correctIndex, 0), 0), options.length - 1)
+        : 0,
+    ...(str(raw.starterCode) ? { starterCode: str(raw.starterCode) } : {}),
+    ...(tests.length ? { tests } : {}),
     ...(explanation.en.trim() ? { explanation } : {}),
   };
 }

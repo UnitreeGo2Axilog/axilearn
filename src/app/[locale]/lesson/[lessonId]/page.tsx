@@ -2,11 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, Clock, Zap } from "lucide-react";
 import { getT, isLocale } from "@/i18n/messages";
-import { getLessonContent, getLessonLocation } from "@/content/store";
+import { getChallenges, getLessonContent, getLessonLocation } from "@/content/store";
 import type { Locale } from "@/content/types";
 import { AuthGate } from "@/components/auth-gate";
 import { LessonComplete } from "@/components/lesson-complete";
 import { LessonQuiz } from "@/components/lesson-quiz";
+import { LessonExercisePrompt } from "@/components/lesson-exercise-prompt";
 import { CodeSandbox } from "@/components/code-sandbox";
 
 /**
@@ -37,6 +38,9 @@ export default async function LessonPage({
 
   const { track, level, next } = found;
   const { body, quiz } = await getLessonContent(track.id, level.id, locale);
+  // Only offer the exercise nudge when there is actually something to send
+  // them to -- a prompt that leads to an empty page is worse than no prompt.
+  const hasChallenges = (await getChallenges(track.id, locale)).length > 0;
 
   return (
     <AuthGate>
@@ -171,6 +175,15 @@ export default async function LessonPage({
             />
           )}
         </div>
+
+        {hasChallenges && (
+          <LessonExercisePrompt
+            trackId={track.id}
+            trackTitle={track.title}
+            accent={track.color}
+            lessonId={level.id}
+          />
+        )}
 
         {next && (
           <div className="mt-6 flex justify-end">

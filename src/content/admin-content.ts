@@ -253,7 +253,16 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
     if (!repoList?.length) continue;
     for (const challenge of repoList) {
       const exists = await readChallenge(track.id, challenge.id);
-      if (exists) continue; // an admin-authored or previously-imported challenge
+      // Upgrade in place when Firestore still holds the OLD multiple-choice
+      // version of a challenge the repo now ships as a code problem. Skipping
+      // it (the usual rule) would strand anyone who imported before the
+      // change on quiz versions forever, with no way to get the code ones
+      // short of deleting each by hand. The check is narrow on purpose: it
+      // only replaces a stored challenge that has no test cases with a repo
+      // one that does, so an admin's own code challenge is never touched.
+      const isLegacyMcq = exists !== null && (exists.tests ?? []).length === 0;
+      const upgrading = isLegacyMcq && (challenge.tests ?? []).length > 0;
+      if (exists && !upgrading) continue;
       await saveChallenge(track.id, challenge);
       challengesWritten.push(challenge.id);
     }

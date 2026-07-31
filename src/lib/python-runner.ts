@@ -25,10 +25,21 @@
  * for that from a standing start.
  */
 
+import type { ChallengeTest } from "@/content/schema";
+
 /** How long a learner's program may run before it is assumed to be stuck. */
 export const RUN_TIMEOUT_MS = 10_000;
 /** How long the one-off Python download may take before we call it failed. */
 export const LOAD_TIMEOUT_MS = 120_000;
+
+/** One graded test case coming back from a challenge submission. */
+export interface TestCaseResult {
+  ok: boolean;
+  /** repr() of what the learner's code returned, or null if it raised. */
+  actual: string | null;
+  /** The exception for this case, if it raised. */
+  error: string | null;
+}
 
 export interface RunResult {
   stdout: string;
@@ -37,6 +48,11 @@ export interface RunResult {
   timedOut: boolean;
   /** Python itself never started: offline, blocked CDN, or a worker failure. */
   loadFailed: boolean;
+  /** Per-case results for a graded submission; null for a plain run, and also
+   *  null when the code failed before any case could be reached (a syntax
+   *  error, say) -- "no cases ran" and "every case failed" are different
+   *  outcomes and the UI needs to tell them apart. */
+  cases: TestCaseResult[] | null;
 }
 
 type Pending = {
@@ -101,6 +117,7 @@ export class PythonRunner {
         error: data.error ?? null,
         timedOut: false,
         loadFailed: false,
+        cases: data.cases ?? null,
       });
     };
 
@@ -117,7 +134,7 @@ export class PythonRunner {
   private failAllPending(message: string) {
     this.pending.forEach(({ resolve, timer }) => {
       clearTimeout(timer);
-      resolve({ stdout: "", error: message, timedOut: false, loadFailed: true });
+      resolve({ stdout: "", error: message, timedOut: false, loadFailed: true, cases: null });
     });
     this.pending.clear();
   }
@@ -151,7 +168,17 @@ export class PythonRunner {
     ]);
   }
 
-  async run(code: string): Promise<RunResult> {
+  /** Just run it and show what it printed. */
+  run(code: string): Promise<RunResult> {
+    return this.send({ type: "run", code });
+  }
+
+  /** Run it, then check it against a challenge's test cases. */
+  grade(code: string, tests: ChallengeTest[]): Promise<RunResult> {
+    return this.send({ type: "grade", code, tests });
+  }
+
+  private async send(payload: { type: "run" | "grade"; code: string; tests?: ChallengeTest[] }) {
     if (!this.worker) this.spawn();
 
     // Wait for the runtime BEFORE the execution clock starts, so a slow
@@ -164,6 +191,7 @@ export class PythonRunner {
         error: (err as Error).message,
         timedOut: false,
         loadFailed: true,
+        cases: null,
       };
     }
 
@@ -172,11 +200,11 @@ export class PythonRunner {
       const timer = setTimeout(() => {
         this.pending.delete(id);
         this.restart();
-        resolve({ stdout: "", error: null, timedOut: true, loadFailed: false });
+        resolve({ stdout: "", error: null, timedOut: true, loadFailed: false, cases: null });
       }, RUN_TIMEOUT_MS);
 
       this.pending.set(id, { resolve, timer });
-      this.worker!.postMessage({ type: "run", id, code });
+      this.worker!.postMessage({ ...payload, id });
     });
   }
 

@@ -10,7 +10,7 @@
  * rather than being re-mounted per step, so switching between "picking" and
  * "solving" feels like one continuous scene, not two different pages.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { AlertTriangle, ArrowLeft, Award, ChevronRight, Flame, Zap } from "lucide-react";
@@ -19,6 +19,7 @@ import type { RoadmapTrack } from "@/content/roadmap-data";
 import { useProgress } from "@/lib/progress-context";
 import { useLocale, useT } from "@/i18n/use-t";
 import { ChallengeCard } from "@/components/challenge-card";
+import { PythonRunner } from "@/lib/python-runner";
 
 // Three.js needs a real <canvas> and `window`, so it can only run in the
 // browser -- and there is no reason for any other route to pay for this
@@ -45,6 +46,28 @@ export function ChallengesView({
   const locale = useLocale();
   const { solvedChallengeIds } = useProgress();
   const [level, setLevel] = useState<ChallengeDifficulty | null>(null);
+
+  // ONE Python runtime for the whole page. A runner per card would mean each
+  // card downloading its own ~10MB copy of Python, so it is created here and
+  // handed to every card. Created lazily on first expand rather than on
+  // mount: someone who only browses the difficulty picker should not pay for
+  // a Python download they never use.
+  const runnerRef = useRef<PythonRunner | null>(null);
+  const [runner, setRunner] = useState<PythonRunner | null>(null);
+  useEffect(() => {
+    if (level === null) return; // nothing expanded yet
+    if (!runnerRef.current) {
+      runnerRef.current = new PythonRunner();
+      setRunner(runnerRef.current);
+    }
+  }, [level]);
+  useEffect(
+    () => () => {
+      runnerRef.current?.dispose();
+      runnerRef.current = null;
+    },
+    [],
+  );
 
   const solvedCount = challenges.filter((c) => solvedChallengeIds.has(c.id)).length;
   const inLevel = level ? challenges.filter((c) => c.difficulty === level) : [];
@@ -102,7 +125,7 @@ export function ChallengesView({
             </button>
             <div className="space-y-2">
               {inLevel.map((c) => (
-                <ChallengeCard key={c.id} trackId={track.id} challenge={c} />
+                <ChallengeCard key={c.id} trackId={track.id} challenge={c} runner={runner} />
               ))}
             </div>
           </div>
