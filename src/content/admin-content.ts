@@ -153,6 +153,9 @@ export interface ImportResult {
   bodiesWritten: string[];
   /** Challenge ids created, on this run. */
   challengesWritten: string[];
+  /** Challenge ids deleted from a track because the repo moved them to
+   *  another one -- reported so a relocation is never silent. */
+  challengesMoved: string[];
   /** Lesson ids that gained a field the repo has but Firestore lacked. */
   fieldsBackfilled: string[];
 }
@@ -247,6 +250,28 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
     }
   }
 
+  // A challenge that MOVED between tracks would otherwise be duplicated
+  // forever: import writes it under its new track and never touches the copy
+  // sitting under the old one, so the old track keeps serving a challenge the
+  // repo no longer assigns to it. This deletes exactly those -- a stored
+  // challenge whose id the repo now gives to a DIFFERENT track -- and nothing
+  // else. An admin's own challenge has no repo owner at all, so it can never
+  // match and can never be removed by this.
+  const owner = new Map<string, string>();
+  for (const [trackId, list] of Object.entries(repoChallenges)) {
+    for (const c of list) owner.set(c.id, trackId);
+  }
+  const challengesMoved: string[] = [];
+  for (const track of repoTrackDocs) {
+    for (const stored of await listChallenges(track.id)) {
+      const belongsTo = owner.get(stored.id);
+      if (belongsTo && belongsTo !== track.id) {
+        await deleteChallenge(track.id, stored.id);
+        challengesMoved.push(stored.id);
+      }
+    }
+  }
+
   const challengesWritten: string[] = [];
   for (const track of repoTrackDocs) {
     const repoList = repoChallenges[track.id];
@@ -268,7 +293,7 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
     }
   }
 
-  return { written, skipped, bodiesWritten, challengesWritten, fieldsBackfilled };
+  return { written, skipped, bodiesWritten, challengesWritten, challengesMoved, fieldsBackfilled };
 }
 
 /* ------------------------------------------------------------ challenges */

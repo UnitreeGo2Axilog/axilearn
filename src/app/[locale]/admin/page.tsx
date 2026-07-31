@@ -145,6 +145,11 @@ function Dashboard() {
                 {t("admin.importBodies")} {result.bodiesWritten.length}
               </p>
             )}
+            {result.challengesMoved.length > 0 && (
+              <p className="text-faint">
+                {t("admin.importMoved")} {result.challengesMoved.length}
+              </p>
+            )}
             {result.challengesWritten.length > 0 && (
               <p style={{ color: "var(--reward)" }}>
                 {t("admin.importChallenges")} {result.challengesWritten.length}
