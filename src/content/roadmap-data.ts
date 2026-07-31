@@ -42,6 +42,10 @@ export interface Primer {
   why: string;
   lessons: string[];
   minutes: number;
+  /** The track the primer actually IS -- it has its own lessons, its own
+   *  challenges and its own briefing page, so the link has to be able to
+   *  point at it rather than assuming an id. */
+  trackId?: string;
 }
 
 /** The "before you start" briefing shown on a track's intro page. */

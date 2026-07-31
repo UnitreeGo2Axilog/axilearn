@@ -351,6 +351,9 @@ export function toRoadmapTrack(
               why: pick(doc.overview.primer.why, locale),
               minutes: doc.overview.primer.minutes,
               lessons: (doc.overview.primer.lessons ?? []).map((l) => pick(l, locale)),
+              ...(doc.overview.primer.trackId
+                ? { trackId: doc.overview.primer.trackId }
+                : {}),
             },
           }
         : {}),
