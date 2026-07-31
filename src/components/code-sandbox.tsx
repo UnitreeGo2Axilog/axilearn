@@ -136,10 +136,15 @@ export function CodeSandbox({ starterCode }: { starterCode: string }) {
           {running ? (
             <span className="inline-flex items-center gap-2 text-faint">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              {t("lesson.running")}
+              {ready ? t("lesson.running") : t("lesson.pythonLoading")}
             </span>
           ) : !result ? (
             <span className="text-faint">{t("lesson.outputEmpty")}</span>
+          ) : result.loadFailed ? (
+            <span className="inline-flex items-start gap-2" style={{ color: "var(--reward)" }}>
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span className="font-sans">{t("lesson.pythonFailed")}</span>
+            </span>
           ) : result.timedOut ? (
             <span className="inline-flex items-start gap-2" style={{ color: "var(--reward)" }}>
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />

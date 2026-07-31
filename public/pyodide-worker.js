@@ -76,9 +76,11 @@ self.onmessage = async (event) => {
   }
 };
 
-// Warm the runtime as soon as the worker exists, so the first Run is not
-// also the first 10MB download.
+// Warm the runtime as soon as the worker exists, so the first Run is not also
+// the first 10MB download. A failure here has to be reported, not swallowed:
+// if the CDN is blocked or the network is down, the main thread would
+// otherwise wait forever for a "ready" that is never coming.
 getPyodide().then(
   () => self.postMessage({ type: "ready" }),
-  () => {},
+  (err) => self.postMessage({ type: "load-error", message: String(err?.message ?? err) }),
 );
