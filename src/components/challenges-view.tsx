@@ -19,6 +19,7 @@ import type { RoadmapTrack } from "@/content/roadmap-data";
 import { useProgress } from "@/lib/progress-context";
 import { useLocale, useT } from "@/i18n/use-t";
 import { ChallengeCard } from "@/components/challenge-card";
+import { ChallengeWorkspace } from "@/components/challenge-workspace";
 import { PythonRunner } from "@/lib/python-runner";
 
 // Three.js needs a real <canvas> and `window`, so it can only run in the
@@ -44,8 +45,12 @@ export function ChallengesView({
 }) {
   const t = useT();
   const locale = useLocale();
-  const { solvedChallengeIds } = useProgress();
+  const { countedChallengeIds } = useProgress();
   const [level, setLevel] = useState<ChallengeDifficulty | null>(null);
+  /** The one being solved. While set, NOTHING else is on screen -- picking a
+      challenge should hand over the whole page, not unfold a row while five
+      others keep competing for attention. */
+  const [openId, setOpenId] = useState<string | null>(null);
 
   // ONE Python runtime for the whole page. A runner per card would mean each
   // card downloading its own ~10MB copy of Python, so it is created here and
@@ -55,7 +60,7 @@ export function ChallengesView({
   const runnerRef = useRef<PythonRunner | null>(null);
   const [runner, setRunner] = useState<PythonRunner | null>(null);
   useEffect(() => {
-    if (level === null) return; // nothing expanded yet
+    if (level === null) return; // nothing opened yet
     if (!runnerRef.current) {
       runnerRef.current = new PythonRunner();
       setRunner(runnerRef.current);
@@ -69,22 +74,30 @@ export function ChallengesView({
     [],
   );
 
-  const solvedCount = challenges.filter((c) => solvedChallengeIds.has(c.id)).length;
+  // The counter reports challenges solved WITHOUT the editorial, which is
+  // exactly what the unlock warning promises.
+  const solvedCount = challenges.filter((c) => countedChallengeIds.has(c.id)).length;
   const inLevel = level ? challenges.filter((c) => c.difficulty === level) : [];
+  const open = openId ? (challenges.find((c) => c.id === openId) ?? null) : null;
 
   return (
     <>
       <PlexusBackground />
 
-      <div className="relative z-10 mx-auto max-w-2xl px-4 pb-20 pt-8">
-        <Link
-          href={`/${locale}/track/${track.id}`}
-          className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted transition hover:opacity-80"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t("challenges.backToTrack")}
-        </Link>
+      <div
+        className={`relative z-10 mx-auto px-4 pb-20 pt-8 ${open ? "max-w-7xl" : "max-w-2xl"}`}
+      >
+        {!open && (
+          <Link
+            href={`/${locale}/track/${track.id}`}
+            className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted transition hover:opacity-80"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {t("challenges.backToTrack")}
+          </Link>
+        )}
 
+        {!open && (
         <header className="mb-6 text-center">
           <span
             className="inline-block rounded-md border px-2.5 py-1 font-robot text-[11px] font-bold tracking-[0.22em]"
@@ -107,8 +120,16 @@ export function ChallengesView({
             </p>
           )}
         </header>
+        )}
 
-        {challenges.length === 0 ? (
+        {open ? (
+          <ChallengeWorkspace
+            trackId={track.id}
+            challenge={open}
+            runner={runner}
+            onBack={() => setOpenId(null)}
+          />
+        ) : challenges.length === 0 ? (
           <p className="panel rounded-2xl p-5 text-center text-sm text-muted">
             {t("challenges.noneYet")}
           </p>
@@ -125,7 +146,7 @@ export function ChallengesView({
             </button>
             <div className="space-y-2">
               {inLevel.map((c) => (
-                <ChallengeCard key={c.id} trackId={track.id} challenge={c} runner={runner} />
+                <ChallengeCard key={c.id} challenge={c} onOpen={() => setOpenId(c.id)} />
               ))}
             </div>
           </div>

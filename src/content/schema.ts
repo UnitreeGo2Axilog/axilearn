@@ -177,6 +177,17 @@ export interface ChallengeDoc {
   starterCode?: string;
   /** Code only: what "solved" means. */
   tests?: ChallengeTest[];
+  /**
+   * The worked solution. Kept behind an explicit unlock the learner has to
+   * choose, because a visible answer is not a hint -- it ends the exercise.
+   */
+  editorial?: L10n;
+  /**
+   * How to approach it, WITHOUT the answer. Freely readable: someone stuck at
+   * "I have no idea where to start" should not have to burn the solution to
+   * get moving, which is the gap a tutorial fills and an editorial does not.
+   */
+  tutorial?: L10n;
 }
 
 export interface ResolvedChallenge {
@@ -190,6 +201,8 @@ export interface ResolvedChallenge {
   correctIndex: number;
   starterCode: string;
   tests: ChallengeTest[];
+  editorial: string;
+  tutorial: string;
 }
 
 export function resolveChallenge(c: ChallengeDoc, locale: Locale): ResolvedChallenge {
@@ -208,6 +221,8 @@ export function resolveChallenge(c: ChallengeDoc, locale: Locale): ResolvedChall
     correctIndex: c.correctIndex,
     starterCode: c.starterCode ?? "",
     tests,
+    editorial: c.editorial ? pick(c.editorial, locale) : "",
+    tutorial: c.tutorial ? pick(c.tutorial, locale) : "",
     ...(explanation ? { explanation } : {}),
   };
 }

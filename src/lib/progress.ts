@@ -86,15 +86,34 @@ export async function fetchMyProgress(uid: string): Promise<ProgressRecord[]> {
  * collection read, not N.
  */
 /**
- * A solved challenge. Note there is no `xp` here: XP comes from lessons only.
- * Challenges are optional practice, and giving them a second currency made
- * one score into two competing ones.
+ * What a learner has done with one challenge. No `xp` here: XP comes from
+ * lessons only -- giving challenges a second currency made one score into two
+ * competing ones.
+ *
+ * A document can exist WITHOUT being solved, because unlocking the editorial
+ * is itself worth recording. `solved` is optional so that documents written
+ * before this field existed still read as solved -- back then the document
+ * only ever existed because someone had solved it.
  */
 export interface ChallengeProgressRecord {
   uid: string;
   challengeId: string;
   trackId: string;
   completedAt: number;
+  solved?: boolean;
+  /** They read the worked solution, so this one does not count toward the
+   *  solved total -- exactly what the unlock warning promised. */
+  usedEditorial?: boolean;
+}
+
+/** Legacy documents predate the field and only ever meant "solved". */
+export function isSolved(r: ChallengeProgressRecord): boolean {
+  return r.solved !== false;
+}
+
+/** Solved on their own -- what the visible counter reports. */
+export function countsTowardScore(r: ChallengeProgressRecord): boolean {
+  return isSolved(r) && r.usedEditorial !== true;
 }
 
 function challengeIdFor(uid: string, challengeId: string): string {
@@ -106,8 +125,30 @@ export async function markChallengeSolved(
   trackId: string,
   challengeId: string,
 ): Promise<void> {
-  const record: ChallengeProgressRecord = { uid, trackId, challengeId, completedAt: Date.now() };
-  await setDoc(doc(getDb(), CHALLENGE_PROGRESS, challengeIdFor(uid, challengeId)), record);
+  // merge, never overwrite: an unlocked editorial was recorded on this same
+  // document, and solving afterwards must not quietly erase that fact.
+  await setDoc(
+    doc(getDb(), CHALLENGE_PROGRESS, challengeIdFor(uid, challengeId)),
+    { uid, trackId, challengeId, solved: true, completedAt: Date.now() },
+    { merge: true },
+  );
+}
+
+/**
+ * Record that the worked solution was revealed. Written before the editorial
+ * is shown, not after -- the whole point is that the cost is paid up front,
+ * and a learner who reads it then closes the tab has still read it.
+ */
+export async function unlockEditorial(
+  uid: string,
+  trackId: string,
+  challengeId: string,
+): Promise<void> {
+  await setDoc(
+    doc(getDb(), CHALLENGE_PROGRESS, challengeIdFor(uid, challengeId)),
+    { uid, trackId, challengeId, usedEditorial: true, completedAt: Date.now() },
+    { merge: true },
+  );
 }
 
 export async function unmarkChallengeSolved(uid: string, challengeId: string): Promise<void> {

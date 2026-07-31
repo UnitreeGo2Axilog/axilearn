@@ -3,7 +3,7 @@
 /**
  * One mission-select card on the home page.
  *
- * Client-rendered for the same reason TrackCta and LearnerStrip already are:
+ * Client-rendered for the same reason TrackBriefing and LearnerStrip are:
  * progress is per-learner, and the track object arriving from the server has
  * no completed lessons applied (getMainTracks builds it with an empty
  * completed-set, since the server render isn't personalized). Before this,
@@ -18,13 +18,13 @@
  *
  * The challenges badge shows on EVERY track that has challenges, including a
  * "coming soon" one -- content readiness and challenge availability are two
- * separate facts, and gating the icon on `locked` was conflating them. It
- * jumps straight to the "Open challenges" button on the track briefing page
- * (an anchor, not a second click through the whole briefing) so nobody has to
- * scroll to find it -- and it is a <button> that calls router.push rather
- * than a nested <Link>, because on an unlocked track the whole card is
- * already one <a>, and a real anchor inside another anchor is invalid HTML
- * with unpredictable click behaviour.
+ * separate facts, and gating the icon on `locked` was conflating them. It goes
+ * straight to the challenges themselves rather than to an anchor on the
+ * briefing page: the briefing now surfaces challenges in its top action row,
+ * so there is nothing left to scroll past and the extra hop earned nothing.
+ * It is a <button> calling router.push rather than a nested <Link>, because on
+ * an unlocked track the whole card is already one <a>, and a real anchor
+ * inside another anchor is invalid HTML with unpredictable click behaviour.
  */
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -56,7 +56,7 @@ export function TrackCard({
   function openChallenges(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation(); // do not also trigger the card's own link
-    router.push(`/${locale}/track/${track.id}#challenges`);
+    router.push(`/${locale}/challenges/${track.id}`);
   }
 
   const card = (

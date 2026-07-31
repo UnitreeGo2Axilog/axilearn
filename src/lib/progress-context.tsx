@@ -19,8 +19,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "./auth-context";
 import {
+  countsTowardScore,
   fetchMyChallengeProgress,
   fetchMyProgress,
+  isSolved,
   levelFromXp,
   streakFromRecords,
   touchLastSeen,
@@ -32,7 +34,12 @@ interface ProgressValue {
   records: ProgressRecord[];
   completedIds: Set<string>;
   challengeRecords: ChallengeProgressRecord[];
+  /** Solved at all -- what puts a tick on a challenge. */
   solvedChallengeIds: Set<string>;
+  /** Solved without revealing the editorial -- what the counter reports. */
+  countedChallengeIds: Set<string>;
+  /** Editorial revealed, so this one is excluded from the counter. */
+  editorialUnlockedIds: Set<string>;
   xp: number;
   level: number;
   into: number;
@@ -107,7 +114,15 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       records,
       completedIds: new Set(records.map((r) => r.lessonId)),
       challengeRecords,
-      solvedChallengeIds: new Set(challengeRecords.map((r) => r.challengeId)),
+      solvedChallengeIds: new Set(
+        challengeRecords.filter(isSolved).map((r) => r.challengeId),
+      ),
+      countedChallengeIds: new Set(
+        challengeRecords.filter(countsTowardScore).map((r) => r.challengeId),
+      ),
+      editorialUnlockedIds: new Set(
+        challengeRecords.filter((r) => r.usedEditorial === true).map((r) => r.challengeId),
+      ),
       xp,
       level,
       into,

@@ -295,7 +295,7 @@ function ChallengeEditor() {
       </section>
       )}
 
-      <section className="panel mb-5 rounded-2xl p-5">
+      <section className="panel mb-5 space-y-4 rounded-2xl p-5">
         <L10nInput
           label={t("admin.explanation")}
           value={challenge.explanation ?? { en: "" }}
@@ -303,6 +303,31 @@ function ChallengeEditor() {
           required={false}
           onChange={(explanation) => edit({ explanation })}
         />
+
+        {challenge.kind === "code" && (
+          <>
+            <div>
+              <p className="mb-1.5 text-[11px] text-faint">{t("admin.tutorialHint")}</p>
+              <L10nInput
+                label={t("challenges.tabTutorial")}
+                value={challenge.tutorial ?? { en: "" }}
+                rows={6}
+                required={false}
+                onChange={(tutorial) => edit({ tutorial })}
+              />
+            </div>
+            <div>
+              <p className="mb-1.5 text-[11px] text-faint">{t("admin.editorialHint")}</p>
+              <L10nInput
+                label={t("challenges.tabEditorial")}
+                value={challenge.editorial ?? { en: "" }}
+                rows={8}
+                required={false}
+                onChange={(editorial) => edit({ editorial })}
+              />
+            </div>
+          </>
+        )}
       </section>
 
       <div className="flex flex-wrap items-center gap-3">
