@@ -18,6 +18,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Trophy } from "lucide-react";
 import { learner, trackProgress, type Level, type RoadmapTrack } from "@/content/roadmap-data";
 import { useProgress } from "@/lib/progress-context";
+import { certificateStatus } from "@/lib/certificate";
 import { useAuth } from "@/lib/auth-context";
 import { RoadmapCanvas } from "@/components/roadmap/roadmap-canvas";
 import { TopStatusBar } from "@/components/roadmap/top-status-bar";
@@ -136,7 +137,7 @@ export function RoadmapView({
         level={selected}
         trackId={track.id}
         trackTitle={track.title}
-        trackComplete={pct === 100}
+        trackComplete={certificateStatus(track, completedIds).earned}
         accent={track.color}
       />
     </div>

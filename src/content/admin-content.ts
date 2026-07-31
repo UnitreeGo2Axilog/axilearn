@@ -222,26 +222,45 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
   for (const track of repoTrackDocs) {
     if (!existing.has(track.id) || overwrite) continue; // just written fresh
     const live = await readTrackDoc(track.id);
-    if (!live || (live.repoRevision ?? 1) >= (track.repoRevision ?? 1)) continue;
+    if (!live) continue;
 
+    const patch: Record<string, unknown> = {};
+
+    // ORDER is repo-owned outright, refresh or no refresh. Nothing in the CMS
+    // sets it -- there is no move-track control -- so the repo's sequence is
+    // the only opinion that exists, and a stored value that disagrees is
+    // simply stale. It cannot ride on the revision check either: revisions
+    // are per track, but INSERTING one shifts every track after it. Python
+    // going to the front proved that the hard way. Only python-primer and
+    // physical-ai carried a bump, so only those two learned their new places;
+    // ml-ai kept the 1 it was given when robotics held 0, and ended up tied
+    // with the track that had just moved into 1. A tie is not a small bug --
+    // it means the home page's order is whatever the sort happens to do, and
+    // it showed ML ahead of Robotics.
+    if (live.order !== track.order) patch.order = track.order;
+
+    // PRESENTATION only moves when the repo says so, by bumping the revision.
     // Listed field by field rather than spread-minus-omissions, so what the
     // repo is allowed to take back is readable here instead of inferred from
     // what is missing. repoRevision has to be among them: forget it and the
     // stored revision never catches up and this runs on every single import.
-    const copy = clean(track);
-    await updateDoc(doc(getDb(), TRACKS, track.id), {
-      order: copy.order,
-      short: copy.short,
-      color: copy.color,
-      glow: copy.glow,
-      icon: copy.icon,
-      title: copy.title,
-      description: copy.description,
-      overview: copy.overview,
-      hidden: track.hidden ?? false,
-      repoRevision: track.repoRevision ?? 1,
-      updatedAt: Date.now(),
-    });
+    if ((live.repoRevision ?? 1) < (track.repoRevision ?? 1)) {
+      const copy = clean(track);
+      Object.assign(patch, {
+        short: copy.short,
+        color: copy.color,
+        glow: copy.glow,
+        icon: copy.icon,
+        title: copy.title,
+        description: copy.description,
+        overview: copy.overview,
+        hidden: track.hidden ?? false,
+        repoRevision: track.repoRevision ?? 1,
+      });
+    }
+
+    if (Object.keys(patch).length === 0) continue;
+    await updateDoc(doc(getDb(), TRACKS, track.id), { ...patch, updatedAt: Date.now() });
     tracksRefreshed.push(track.id);
   }
 

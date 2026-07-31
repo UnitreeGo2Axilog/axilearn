@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { learner, type RoadmapTrack } from "@/content/roadmap-data";
 import { useProgress } from "@/lib/progress-context";
+import { certificateStatus } from "@/lib/certificate";
 import { useAuth } from "@/lib/auth-context";
 import { useLocale, useT } from "@/i18n/use-t";
 import type { Profile } from "@/lib/auth-context";
@@ -287,9 +288,7 @@ function LearnerProfile({
     .flatMap((tr) => tr.levels.map((l) => ({ level: l, color: tr.color })))
     .filter((x) => x.level.badge && completedIds.has(x.level.id));
 
-  const earnedCerts = mainTracks.filter(
-    (tr) => tr.levels.length > 0 && tr.levels.every((l) => completedIds.has(l.id)),
-  );
+  const earnedCerts = mainTracks.filter((tr) => certificateStatus(tr, completedIds).earned);
   // The next track worth pointing an empty-state CTA at: the one still in
   // progress, or the first available if nothing has been started yet.
   const nextTrack =
@@ -387,16 +386,15 @@ function LearnerProfile({
         </h2>
         <div className="space-y-4">
           {mainTracks.map((track) => {
-            const done = track.levels.filter((l) => completedIds.has(l.id)).length;
-            const p = track.levels.length ? Math.round((done / track.levels.length) * 100) : 0;
-            const complete = track.levels.length > 0 && p === 100;
+            const { total, done, earned: complete } = certificateStatus(track, completedIds);
+            const p = total ? Math.round((done / total) * 100) : 0;
             return (
               <div key={track.id}>
                 <Link href={`/${locale}/track/${track.id}`} className="block">
                   <div className="mb-1.5 flex items-baseline justify-between">
                     <span className="text-sm font-bold text-main">{track.title}</span>
                     <span className="text-xs font-bold" style={{ color: track.color }}>
-                      {done}/{track.levels.length} · {p}%
+                      {done}/{total} · {p}%
                     </span>
                   </div>
                   <div

@@ -18,6 +18,7 @@ import { Award, ArrowLeft, Lock, Printer } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useProgress } from "@/lib/progress-context";
 import { useLocale, useT } from "@/i18n/use-t";
+import { certificateStatus } from "@/lib/certificate";
 import type { RoadmapTrack } from "@/content/roadmap-data";
 
 export function CertificateView({ track }: { track: RoadmapTrack }) {
@@ -26,12 +27,9 @@ export function CertificateView({ track }: { track: RoadmapTrack }) {
   const { profile } = useAuth();
   const { records, completedIds } = useProgress();
 
-  const total = track.levels.length;
-  const done = track.levels.filter((l) => completedIds.has(l.id)).length;
-  const remaining = total - done;
-  const eligible = total > 0 && remaining === 0;
+  const { total, done, remaining, earned } = certificateStatus(track, completedIds);
 
-  if (!eligible) {
+  if (!earned) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">
         <span
@@ -41,7 +39,9 @@ export function CertificateView({ track }: { track: RoadmapTrack }) {
           <Lock className="h-7 w-7" />
         </span>
         <h1 className="mb-2 text-xl font-extrabold text-strong">{t("cert.lockedTitle")}</h1>
-        <p className="mb-1 text-sm leading-relaxed text-muted">{t("cert.lockedBody")}</p>
+        <p className="mb-1 text-sm leading-relaxed text-muted">
+          {t("cert.lockedBody").replace("{track}", track.title)}
+        </p>
         <p className="mb-6 text-sm font-bold" style={{ color: track.color }}>
           {done}/{total} · {remaining} {remaining === 1 ? t("cert.oneLeft") : t("cert.moreLeft")}
         </p>

@@ -140,7 +140,9 @@ export function BottomLessonPanel({ level, trackId, trackTitle, trackComplete, a
                     className="flex-1 text-xs font-semibold leading-snug"
                     style={{ color: trackComplete ? "var(--reward)" : "var(--text-muted)" }}
                   >
-                    {trackComplete ? t("cert.available") : t("cert.lockedBody")}
+                    {trackComplete
+                      ? t("cert.available")
+                      : t("cert.lockedBody").replace("{track}", trackTitle)}
                   </p>
                   {trackComplete && (
                     <Link
