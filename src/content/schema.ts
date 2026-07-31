@@ -66,6 +66,9 @@ export interface LessonEntry {
   section?: string;
   /** YouTube video ID only -- we embed, we never host video files. */
   videoId?: string;
+  /** Seeds the in-browser Python editor. Presence is what turns a lesson
+   *  into an interactive one. */
+  starterCode?: string;
 }
 
 /**
@@ -263,6 +266,7 @@ export function toRoadmapTrack(
     ...(l.badge ? { badge: l.badge } : {}),
     ...(l.section ? { section: l.section } : {}),
     ...(l.videoId ? { videoId: l.videoId } : {}),
+    ...(l.starterCode ? { starterCode: l.starterCode } : {}),
   }));
 
   return {

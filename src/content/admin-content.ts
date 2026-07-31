@@ -153,6 +153,8 @@ export interface ImportResult {
   bodiesWritten: string[];
   /** Challenge ids created, on this run. */
   challengesWritten: string[];
+  /** Lesson ids that gained a field the repo has but Firestore lacked. */
+  fieldsBackfilled: string[];
 }
 
 /**
@@ -192,6 +194,36 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
 
   if (written.length) await batch.commit();
 
+  // Backfill lesson fields added to the repo AFTER a track was first
+  // imported. Without this, a field like starterCode is permanently
+  // invisible on any project that imported earlier: Firestore is the source
+  // of truth, its lesson entries predate the field, and the track-level skip
+  // above means a re-import never touches them. Per-lesson and only where
+  // Firestore is missing the value, so nothing an admin wrote is overwritten
+  // -- the same rule the bodies and quizzes below follow.
+  const fieldsBackfilled: string[] = [];
+  for (const track of repoTrackDocs) {
+    if (!existing.has(track.id) || overwrite) continue; // just written fresh
+    const live = await readTrackDoc(track.id);
+    if (!live) continue;
+
+    let changed = false;
+    const merged = (live.lessons ?? []).map((liveLesson) => {
+      const repoLesson = track.lessons.find((l) => l.id === liveLesson.id);
+      if (!repoLesson?.starterCode || liveLesson.starterCode) return liveLesson;
+      changed = true;
+      fieldsBackfilled.push(liveLesson.id);
+      return { ...liveLesson, starterCode: repoLesson.starterCode };
+    });
+
+    if (changed) {
+      await updateDoc(doc(getDb(), TRACKS, track.id), {
+        lessons: clean(merged),
+        updatedAt: Date.now(),
+      });
+    }
+  }
+
   const bodiesWritten: string[] = [];
   for (const track of repoTrackDocs) {
     for (const lesson of track.lessons) {
@@ -227,7 +259,7 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
     }
   }
 
-  return { written, skipped, bodiesWritten, challengesWritten };
+  return { written, skipped, bodiesWritten, challengesWritten, fieldsBackfilled };
 }
 
 /* ------------------------------------------------------------ challenges */

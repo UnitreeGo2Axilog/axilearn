@@ -31,6 +31,9 @@ export interface Level {
   section?: string;
   /** YouTube id, when the lesson has a video. */
   videoId?: string;
+  /** Seeds the code editor. A lesson with this gets an interactive sandbox;
+   *  one without keeps a plain reading page. */
+  starterCode?: string;
 }
 
 /** Optional warm-up module offered before a track starts. */
@@ -151,10 +154,10 @@ const gameLevels = build([
 ]);
 
 const primerLevels = build([
-  { id: "pp-1", title: "Your First Line of Code", shortDescription: "Say hello with print(), and learn what a comment is for.", type: "lesson", state: "current", xpReward: 30, durationMinutes: 15, difficulty: "easy", skills: ["print"], section: "Python Warm-up" },
-  { id: "pp-2", title: "Variables, Numbers & Text", shortDescription: "Store values, do maths, and join words together.", type: "lesson", state: "locked", xpReward: 30, durationMinutes: 15, difficulty: "easy", skills: ["variables"] },
-  { id: "pp-3", title: "If, Else & Loops", shortDescription: "Let your program decide, and repeat work without retyping it.", type: "lesson", state: "locked", xpReward: 40, durationMinutes: 15, difficulty: "easy", skills: ["if", "loops"] },
-  { id: "pp-4", title: "Functions & Lists", shortDescription: "Package code you reuse, and hold many values at once.", type: "final_project", state: "locked", xpReward: 60, durationMinutes: 15, difficulty: "easy", skills: ["functions", "lists"], badge: "Python Ready" },
+  { id: "pp-1", title: "Your First Line of Code", shortDescription: "Say hello with print(), and learn what a comment is for.", type: "lesson", state: "current", xpReward: 30, durationMinutes: 15, difficulty: "easy", skills: ["print"], section: "Python Warm-up", starterCode: "# Anything after a # is a comment -- Python ignores it.\n# print() shows a value on the screen. Press Run and see.\n\nprint(\"Hello from my first program!\")\n" },
+  { id: "pp-2", title: "Variables, Numbers & Text", shortDescription: "Store values, do maths, and join words together.", type: "lesson", state: "locked", xpReward: 30, durationMinutes: 15, difficulty: "easy", skills: ["variables"], starterCode: "# A variable stores a value under a name you choose.\nname = \"Axi\"\nlegs = 4\n\n# f\" ... \" lets you drop a variable straight into text.\nprint(f\"{name} has {legs} legs.\")\nprint(f\"With two more, that is {legs + 2}.\")\n" },
+  { id: "pp-3", title: "If, Else & Loops", shortDescription: "Let your program decide, and repeat work without retyping it.", type: "lesson", state: "locked", xpReward: 40, durationMinutes: 15, difficulty: "easy", skills: ["if", "loops"], starterCode: "# A loop repeats work without retyping it.\nfor step in range(1, 5):\n    print(f\"Step {step}\")\n\n# An if decides which branch to take.\ndistance = 15\nif distance < 20:\n    print(\"Too close -- stop!\")\nelse:\n    print(\"Clear ahead.\")\n" },
+  { id: "pp-4", title: "Functions & Lists", shortDescription: "Package code you reuse, and hold many values at once.", type: "final_project", state: "locked", xpReward: 60, durationMinutes: 15, difficulty: "easy", skills: ["functions", "lists"], badge: "Python Ready", starterCode: "# A function packages code you want to reuse.\ndef describe(part, count):\n    return f\"The robot has {count} {part}.\"\n\n# A list holds many values at once.\nparts = [\"leg\", \"motor\", \"sensor\"]\ncounts = [4, 12, 3]\n\nfor part, count in zip(parts, counts):\n    print(describe(part, count))\n" },
 ]);
 
 export const tracks: RoadmapTrack[] = [

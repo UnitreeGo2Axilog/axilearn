@@ -155,6 +155,7 @@ function asTrackDoc(id: string, raw: Record<string, unknown>): TrackDoc {
       ...(l.badge ? { badge: str(l.badge) } : {}),
       ...(l.section ? { section: str(l.section) } : {}),
       ...(l.videoId ? { videoId: str(l.videoId) } : {}),
+      ...(l.starterCode ? { starterCode: str(l.starterCode) } : {}),
     })),
   };
 }

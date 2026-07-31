@@ -1,18 +1,23 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, Clock, Play, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock, Zap } from "lucide-react";
 import { getT, isLocale } from "@/i18n/messages";
 import { getLessonContent, getLessonLocation } from "@/content/store";
 import type { Locale } from "@/content/types";
 import { AuthGate } from "@/components/auth-gate";
 import { LessonComplete } from "@/components/lesson-complete";
 import { LessonQuiz } from "@/components/lesson-quiz";
+import { CodeSandbox } from "@/components/code-sandbox";
 
 /**
- * The Learning Studio shell, in the three-pane shape the tech spec describes:
- * instructions on the left, workspace in the middle, result on the right. The
- * editor and in-browser Python arrive in Phase 3; the reading, the video and
- * the navigation are real now.
+ * The Learning Studio, in the three-pane shape the tech spec describes:
+ * instructions on the left, the code editor in the middle, its output on the
+ * right. Python runs in the learner's own browser (see code-sandbox.tsx), so
+ * no server ever executes anybody's code.
+ *
+ * A lesson only gets the editor if it carries `starterCode`. The rest stay
+ * reading-and-quiz pages, which is right -- "What is Physical AI?" has nothing
+ * to run, and two dead panels there would just look broken.
  *
  * The lesson comes from the same content store as the maps, so a lesson the
  * supervisor writes in the CMS appears here with no code change. There is no
@@ -123,43 +128,24 @@ export default async function LessonPage({
             )}
           </section>
 
-          {/* workspace */}
-          <section className="panel panel-glow rounded-xl p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+          {/* workspace + output -- a real Python sandbox when the lesson has
+              starter code, otherwise an honest "this one is reading only"
+              rather than two dead panels implying something is broken. */}
+          {level.starterCode ? (
+            <CodeSandbox starterCode={level.starterCode} />
+          ) : (
+            <section className="panel rounded-xl p-4 lg:col-span-2">
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
                 {t("lesson.workspace")}
               </h2>
-              <span
-                className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium"
-                style={{ background: "var(--bg-2)", color: "var(--text-faint)" }}
+              <div
+                className="grid min-h-[220px] place-items-center rounded-lg border p-3 text-center text-sm text-muted"
+                style={{ borderColor: "var(--border)", background: "var(--bg)" }}
               >
-                <Play className="h-3 w-3" />
-                {t("lesson.run")}
-              </span>
-            </div>
-            <pre
-              className="min-h-[220px] whitespace-pre-wrap rounded-lg p-3 font-mono text-xs text-main"
-              style={{ background: "var(--bg)" }}
-            >
-              {`# ${t("lesson.comingSoon")}`}
-            </pre>
-          </section>
-
-          {/* output */}
-          <section className="panel rounded-xl p-4">
-            <h2
-              className="mb-3 text-sm font-semibold uppercase tracking-wide"
-              style={{ color: "var(--neon)" }}
-            >
-              {t("lesson.output")}
-            </h2>
-            <div
-              className="grid min-h-[220px] place-items-center rounded-lg border p-3 text-center text-sm text-muted"
-              style={{ borderColor: "var(--border)", background: "var(--bg)" }}
-            >
-              {t("lesson.comingSoon")}
-            </div>
-          </section>
+                {t("lesson.readingOnly")}
+              </div>
+            </section>
+          )}
         </div>
 
         {/* completion -- the only write a learner makes, and what every

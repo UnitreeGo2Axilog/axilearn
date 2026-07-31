@@ -150,6 +150,11 @@ function Dashboard() {
                 {t("admin.importChallenges")} {result.challengesWritten.length}
               </p>
             )}
+            {result.fieldsBackfilled.length > 0 && (
+              <p style={{ color: "var(--neon)" }}>
+                {t("admin.importBackfilled")} {result.fieldsBackfilled.length}
+              </p>
+            )}
           </div>
         )}
       </section>

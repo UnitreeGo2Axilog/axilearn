@@ -66,6 +66,7 @@ export const repoTrackDocs: TrackDoc[] = tracks.map((track, ti) => ({
       shortDescription: { en: level.shortDescription },
       ...(level.badge ? { badge: level.badge } : {}),
       ...(level.section ? { section: level.section } : {}),
+      ...(level.starterCode ? { starterCode: level.starterCode } : {}),
     }),
   ),
 }));

@@ -16,7 +16,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Check, Plus, PlayCircle, Save, Trash2 } from "lucide-react";
+import { Check, Code2, Plus, PlayCircle, Save, Trash2 } from "lucide-react";
 import {
   deleteLesson,
   readLessonBody,
@@ -136,6 +136,9 @@ function LessonEditor() {
     try {
       const entry: LessonEntry = { ...lesson, id, ...(videoId ? { videoId } : {}) };
       if (!videoId) delete entry.videoId;
+      // An all-whitespace box means "no sandbox", not "a sandbox with blank
+      // code" -- the lesson page keys the editor's existence off this field.
+      if (!entry.starterCode?.trim()) delete entry.starterCode;
       await saveLesson(trackId, entry);
       await saveLessonBody(trackId, id, body, cleanQuiz(quiz), entry.status);
       setState("saved");
@@ -324,6 +327,23 @@ function LessonEditor() {
             setBody(next);
             setState("idle");
           }}
+        />
+      </section>
+
+      {/* starter code ---------------------------------------------------- */}
+      <section className="panel mb-5 space-y-3 rounded-2xl p-5">
+        <h2 className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide text-faint">
+          <Code2 className="h-4 w-4" />
+          {t("admin.starterCode")}
+        </h2>
+        <p className="text-[11px] leading-relaxed text-faint">{t("admin.starterCodeHint")}</p>
+        <textarea
+          rows={8}
+          value={lesson.starterCode ?? ""}
+          spellCheck={false}
+          placeholder={'print("Hello!")'}
+          onChange={(e) => edit({ starterCode: e.target.value })}
+          className="field w-full rounded-xl px-3 py-2.5 font-mono text-xs"
         />
       </section>
 

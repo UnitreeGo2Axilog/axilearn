@@ -58,6 +58,14 @@ export const messages = {
     "lesson.workspace": "Workspace",
     "lesson.output": "Result",
     "lesson.run": "Run",
+    "lesson.readingOnly": "This lesson is reading and a quiz — there is no code to run here.",
+    "lesson.reset": "Reset code",
+    "lesson.running": "Running…",
+    "lesson.pythonLoading": "Loading Python… (first time only, it is then cached)",
+    "lesson.outputEmpty": "Press Run to see what your code does.",
+    "lesson.ranNoOutput": "It ran, but printed nothing. Try adding print(...) to see a value.",
+    "lesson.tooLong":
+      "Your program ran longer than {seconds} seconds and was stopped. That usually means a loop never ends — check your while condition.",
     "lesson.next": "Next lesson",
     "lesson.complete": "Mark as done",
     "lesson.comingSoon": "This part arrives in the next phase.",
@@ -191,6 +199,9 @@ export const messages = {
     "admin.details": "Details",
     "admin.progressNote":
       "Progress counts lessons a learner has marked as done.",
+    "admin.starterCode": "Starter code",
+    "admin.starterCodeHint":
+      "Python that pre-fills the editor. Leave empty for a reading-only lesson — a lesson only gets the code sandbox if this has something in it. It runs in the learner's own browser, so keep it self-contained (no file or network access).",
     "admin.quiz": "Quiz",
     "admin.quizHint":
       "A short check shown at the end of the lesson. If it has questions, a learner must answer them all correctly to mark the lesson done and earn its XP — an empty quiz leaves the lesson on the plain \"mark as done\" button.",
@@ -217,6 +228,7 @@ export const messages = {
     "cert.view": "View your certificate",
     "cert.earnedFor": "Certificate earned — {track}",
     "admin.importChallenges": "Challenges created:",
+    "admin.importBackfilled": "Lessons updated with new starter code:",
     "admin.challenges": "Challenges",
     "admin.newChallenge": "New challenge",
     "admin.editChallenge": "Edit challenge",
@@ -363,6 +375,14 @@ export const messages = {
     "lesson.workspace": "Espace de travail",
     "lesson.output": "Résultat",
     "lesson.run": "Exécuter",
+    "lesson.readingOnly": "Cette leçon est de la lecture et un quiz — il n’y a pas de code à exécuter ici.",
+    "lesson.reset": "Réinitialiser",
+    "lesson.running": "Exécution…",
+    "lesson.pythonLoading": "Chargement de Python… (seulement la première fois, ensuite c'est en cache)",
+    "lesson.outputEmpty": "Appuie sur Exécuter pour voir ce que fait ton code.",
+    "lesson.ranNoOutput": "Ça a fonctionné, mais rien n'a été affiché. Ajoute print(...) pour voir une valeur.",
+    "lesson.tooLong":
+      "Ton programme a dépassé {seconds} secondes et a été arrêté. En général, une boucle ne se termine jamais — vérifie ta condition while.",
     "lesson.next": "Leçon suivante",
     "lesson.complete": "Marquer comme terminé",
     "lesson.comingSoon": "Cette partie arrive à la prochaine phase.",
@@ -496,6 +516,9 @@ export const messages = {
     "admin.details": "Détails",
     "admin.progressNote":
       "La progression compte les leçons que l'élève a marquées comme terminées.",
+    "admin.starterCode": "Code de départ",
+    "admin.starterCodeHint":
+      "Le Python qui pré-remplit l'éditeur. Laisse vide pour une leçon de lecture seule — une leçon n'a le bac à sable que si ce champ contient quelque chose. Il s'exécute dans le navigateur de l'élève, donc garde-le autonome (pas d'accès fichier ni réseau).",
     "admin.quiz": "Quiz",
     "admin.quizHint":
       "Un petit contrôle affiché à la fin de la leçon. S'il a des questions, l'élève doit toutes les répondre correctement pour marquer la leçon terminée et gagner son XP — un quiz vide laisse la leçon sur le simple bouton \"marquer comme terminé\".",
@@ -522,6 +545,7 @@ export const messages = {
     "cert.view": "Voir ton certificat",
     "cert.earnedFor": "Certificat obtenu — {track}",
     "admin.importChallenges": "Défis créés :",
+    "admin.importBackfilled": "Leçons mises à jour avec le nouveau code de départ :",
     "admin.challenges": "Défis",
     "admin.newChallenge": "Nouveau défi",
     "admin.editChallenge": "Modifier le défi",
