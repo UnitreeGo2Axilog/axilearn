@@ -2,19 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, Shield, UserRound } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useLocale, useT } from "@/i18n/use-t";
 import { LOCALES } from "@/i18n/messages";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Tooltip } from "@/components/tooltip";
+import { AccountMenu } from "@/components/account-menu";
 
-/** Top bar in the dark neon language: logo mark, language switch, account. */
+/**
+ * Top bar: logo mark, theme, language, and the account menu.
+ *
+ * The account area used to be loose links -- profile, admin, sign out -- which
+ * is fine at three and breaks at nine. It all lives under the avatar now, so
+ * the platform can grow pages without the header growing with it.
+ */
 export function SiteHeader() {
   const locale = useLocale();
   const t = useT();
   const pathname = usePathname();
-  const { user, profile, logout, loading } = useAuth();
+  const { user, loading } = useAuth();
 
   // The mission map has its own HUD -- don't stack two headers on it.
   if (pathname?.includes("/roadmap")) return null;
@@ -62,37 +67,8 @@ export function SiteHeader() {
             ))}
           </div>
 
-          {!loading && profile?.role === "admin" && (
-            <Link
-              href={`/${locale}/admin`}
-              className="hidden items-center gap-1.5 text-sm text-muted transition hover:opacity-80 sm:flex"
-            >
-              <Shield className="h-4 w-4" />
-              {t("nav.admin")}
-            </Link>
-          )}
-
           {!loading && user ? (
-            <div className="flex items-center gap-2">
-              <Tooltip label={profile?.displayName ?? t("nav.profile")}>
-                <Link
-                  href={`/${locale}/profile`}
-                  className="flex items-center gap-1.5 text-sm text-main transition hover:opacity-80"
-                >
-                  <UserRound className="h-4 w-4" />
-                  <span className="hidden sm:inline">{profile?.displayName ?? t("nav.profile")}</span>
-                </Link>
-              </Tooltip>
-              <Tooltip label={t("nav.signOut")}>
-                <button
-                  onClick={() => logout()}
-                  aria-label={t("nav.signOut")}
-                  className="rounded-lg p-1.5 text-faint transition hover:opacity-80"
-                >
-                  <LogOut className="h-4 w-4" />
-                </button>
-              </Tooltip>
-            </div>
+            <AccountMenu />
           ) : (
             !loading && (
               <Link

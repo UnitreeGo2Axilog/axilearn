@@ -11,6 +11,7 @@ import { LessonExercisePrompt } from "@/components/lesson-exercise-prompt";
 import { CodeSandbox } from "@/components/code-sandbox";
 import { LessonSteps } from "@/components/lesson-steps";
 import { LessonNav } from "@/components/lesson-nav";
+import { BookmarkButton } from "@/components/bookmark-button";
 
 /**
  * The Learning Studio, in the three-pane shape the tech spec describes:
@@ -55,15 +56,18 @@ export default async function LessonPage({
             <ArrowLeft className="h-4 w-4" />
             {t("lesson.backToMap")}
           </Link>
-          <span
-            className="rounded-md px-2.5 py-1 font-robot text-[11px] font-bold tracking-[0.16em]"
-            style={{
-              background: `color-mix(in srgb, ${track.color} 14%, transparent)`,
-              color: track.color,
-            }}
-          >
-            {level.section ?? track.short}
-          </span>
+          <div className="flex items-center gap-2">
+            <span
+              className="rounded-md px-2.5 py-1 font-robot text-[11px] font-bold tracking-[0.16em]"
+              style={{
+                background: `color-mix(in srgb, ${track.color} 14%, transparent)`,
+                color: track.color,
+              }}
+            >
+              {level.section ?? track.short}
+            </span>
+            <BookmarkButton lessonId={level.id} accent={track.color} />
+          </div>
         </div>
 
         <LessonSteps

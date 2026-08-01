@@ -2,7 +2,6 @@ import { getT, isLocale } from "@/i18n/messages";
 import { getChallenges, getMainTracks } from "@/content/store";
 import type { Locale } from "@/content/types";
 import { RobotMascot } from "@/components/robot-mascot";
-import { LearnerStrip } from "@/components/learner-strip";
 import { TrackCard } from "@/components/track-card";
 import { HomeSurface } from "@/components/home-surface";
 
@@ -51,8 +50,6 @@ export default async function HomePage({
           className="mx-auto h-44 w-44 md:h-56 md:w-56"
         />
       </section>
-
-      <LearnerStrip tracks={trackList} />
 
       {/* mission select -- for a student. An admin gets their two work
           surfaces instead, and these cards behind a preview switch. */}

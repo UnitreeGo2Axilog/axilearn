@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { AuthProvider } from "@/lib/auth-context";
 import { ProgressProvider } from "@/lib/progress-context";
+import { BookmarksProvider } from "@/lib/bookmarks-context";
 import { ThemeProvider } from "@/lib/theme";
 import { LocaleProvider } from "@/i18n/use-t";
 import { isLocale, LOCALES } from "@/i18n/messages";
@@ -26,8 +27,10 @@ export default async function LocaleLayout({
       <LocaleProvider locale={locale as Locale}>
         <AuthProvider locale={locale as Locale}>
           <ProgressProvider>
+            <BookmarksProvider>
             <SiteHeader />
             <main className="flex-1">{children}</main>
+            </BookmarksProvider>
           </ProgressProvider>
         </AuthProvider>
       </LocaleProvider>
