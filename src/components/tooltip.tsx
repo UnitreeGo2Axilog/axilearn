@@ -47,9 +47,22 @@ interface Position {
 export function Tooltip({
   label,
   children,
+  className,
 }: {
   label: string;
   children: React.ReactElement;
+  /**
+   * Extra classes for the WRAPPER span, not the child.
+   *
+   * The wrapper is a real element in the layout, and that is easy to forget
+   * because it is invisible. A `flex-1` trigger sizes itself against this
+   * span rather than against the row the caller put it in -- and the span is
+   * an `inline-flex` containing only that trigger, so the two collapse into
+   * each other and the control disappears. That is precisely how the lesson
+   * step bar vanished. Callers laying out inside a flex or grid pass their
+   * sizing here.
+   */
+  className?: string;
 }) {
   const [show, setShow] = useState(false);
   const [pos, setPos] = useState<Position | null>(null);
@@ -82,7 +95,7 @@ export function Tooltip({
   return (
     <span
       ref={wrapRef}
-      className="relative inline-flex"
+      className={`relative inline-flex${className ? ` ${className}` : ""}`}
       onMouseEnter={schedule}
       onMouseLeave={cancel}
       onFocus={open}

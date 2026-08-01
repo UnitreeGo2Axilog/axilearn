@@ -61,9 +61,9 @@ export function BottomLessonPanel({ level, trackId, trackTitle, trackComplete, a
           transition={{ type: "spring", stiffness: 320, damping: 32 }}
           className="fixed inset-x-0 bottom-0 z-40"
         >
-          <div className="mx-auto max-w-3xl px-3 pb-3">
+          <div className="mx-auto max-w-xl px-3 pb-3">
             <div
-              className="relative overflow-hidden rounded-2xl border p-4 backdrop-blur-md"
+              className="relative overflow-hidden rounded-2xl border p-3.5 backdrop-blur-md"
               style={{ borderColor: `${accent}66`, background: "color-mix(in srgb, var(--surface-solid) 95%, transparent)", boxShadow: "var(--glow-soft)" }}
             >
               {/* sweeping highlight along the top edge */}
@@ -90,28 +90,28 @@ export function BottomLessonPanel({ level, trackId, trackTitle, trackComplete, a
                 </span>
               </div>
 
-              <h2 className="text-lg font-extrabold leading-tight text-strong">{level.title}</h2>
-              <p className="mt-1 line-clamp-2 text-sm leading-snug text-muted">
+              <h2 className="text-base font-extrabold leading-tight text-strong">{level.title}</h2>
+              <p className="mt-0.5 line-clamp-2 text-xs leading-snug text-muted">
                 {level.shortDescription}
               </p>
 
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-main"
+              <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-main"
                   style={{ background: "var(--bg-2)" }}>
                   <Clock className="h-3 w-3" />
                   {level.durationMinutes} min
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-main"
+                <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-main"
                   style={{ background: "var(--bg-2)" }}>
                   <Sparkles className="h-3 w-3" />
                   {DIFF_LABEL[level.difficulty]}
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold"
+                <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold"
                   style={{ background: "color-mix(in srgb, var(--reward) 14%, transparent)", color: "var(--reward)" }}>
                   <Zap className="h-3 w-3" />+{level.xpReward} XP
                 </span>
                 {level.badge && (
-                  <span className="rounded-lg px-2 py-1 text-[11px] font-bold"
+                  <span className="rounded-md px-1.5 py-0.5 text-[10px] font-bold"
                     style={{ background: "color-mix(in srgb, var(--advanced) 14%, transparent)", color: "var(--advanced)" }}>
                     {level.badge}
                   </span>
@@ -122,7 +122,7 @@ export function BottomLessonPanel({ level, trackId, trackTitle, trackComplete, a
                   in the track -- not just this one -- is actually done */}
               {isFinal && (
                 <div
-                  className="mt-3 flex items-center gap-2.5 rounded-xl border p-3"
+                  className="mt-2.5 flex items-center gap-2 rounded-lg border p-2.5"
                   style={{
                     borderColor: trackComplete
                       ? "color-mix(in srgb, var(--reward) 45%, transparent)"
@@ -137,7 +137,7 @@ export function BottomLessonPanel({ level, trackId, trackTitle, trackComplete, a
                     style={{ color: trackComplete ? "var(--reward)" : "var(--text-faint)" }}
                   />
                   <p
-                    className="flex-1 text-xs font-semibold leading-snug"
+                    className="flex-1 text-[11px] font-semibold leading-snug"
                     style={{ color: trackComplete ? "var(--reward)" : "var(--text-muted)" }}
                   >
                     {trackComplete
@@ -159,7 +159,7 @@ export function BottomLessonPanel({ level, trackId, trackTitle, trackComplete, a
               {(() => {
                 const c = cta(level);
                 const CtaIcon = c.icon;
-                const shape = `mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-black uppercase tracking-wide transition active:translate-y-0.5 disabled:cursor-not-allowed ${c.classes}`;
+                const shape = `mt-2.5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-black uppercase tracking-wide transition active:translate-y-0.5 disabled:cursor-not-allowed ${c.classes}`;
                 // A locked mission stays a dead button; an open one opens the
                 // lesson, which is what makes the map navigable at all.
                 return c.disabled ? (

@@ -58,7 +58,11 @@ export function LessonSteps({
           const locked = states.get(l.id) === "locked" && !here;
           const fill =
             done || here ? accent : "color-mix(in srgb, var(--text) 14%, transparent)";
-          const shape = "h-1.5 flex-1 rounded-full transition";
+          // Width comes from the Tooltip wrapper, which is the real flex item
+          // here; the segment simply fills it. Putting flex-1 on the segment
+          // instead sizes it against a wrapper that has no width of its own,
+          // and the whole bar collapses to nothing.
+          const shape = "block h-1.5 w-full rounded-full transition";
           const paint = {
             // The step you are on is solid even unfinished -- being here is a
             // different fact from having done it.
@@ -69,6 +73,7 @@ export function LessonSteps({
           return (
             <Tooltip
               key={l.id}
+              className="flex-1"
               label={locked ? `${i + 1}. ${t("lesson.stepLocked")}` : `${i + 1}. ${l.title}`}
             >
               {locked ? (
