@@ -35,6 +35,7 @@ import {
   type SubmissionDoc,
 } from "@/content/schema";
 import { AdminGuard, L10nInput, StatusToggle } from "@/components/admin/admin-shell";
+import { CollapsibleCard } from "@/components/admin/collapsible-card";
 
 /** A Firestore document caps at 1 MiB and base64 adds a third on top. */
 const MAX_FILE_BYTES = 600 * 1024;
@@ -164,8 +165,27 @@ function Board() {
         <p className="panel rounded-2xl p-5 text-sm text-muted">{t("hw.adminEmpty")}</p>
       ) : (
         <div className="space-y-3">
-          {items.map((a) => (
-            <div key={a.id} className="panel rounded-2xl p-4">
+          {items.map((a, i) => (
+            <CollapsibleCard
+              key={a.id}
+              defaultOpen={i === 0}
+              title={a.title.en}
+              subtitle={a.dueAt === null ? t("hw.noDeadline") : new Date(a.dueAt).toLocaleString()}
+              badge={
+                <span
+                  className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider"
+                  style={{
+                    background:
+                      a.status === "published"
+                        ? "color-mix(in srgb, var(--cleared) 16%, transparent)"
+                        : "var(--bg-2)",
+                    color: a.status === "published" ? "var(--cleared)" : "var(--text-faint)",
+                  }}
+                >
+                  {a.status}
+                </span>
+              }
+            >
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <span className="font-robot text-[11px] font-bold text-faint">{a.id}</span>
                 <div className="ml-auto flex items-center gap-1.5">
@@ -311,7 +331,7 @@ function Board() {
                   )}
                 </div>
               )}
-            </div>
+            </CollapsibleCard>
           ))}
         </div>
       )}

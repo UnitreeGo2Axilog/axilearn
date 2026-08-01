@@ -209,12 +209,28 @@ export function DiscussionView() {
               </button>
             </div>
           )}
+          {/* One line to start, growing to five as you type. A three-row
+              box permanently eats a third of a phone screen to hold two
+              words, and a chat message is usually two words. */}
           <textarea
-            rows={3}
+            rows={1}
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              setText(e.target.value);
+              const el = e.currentTarget;
+              el.style.height = "auto";
+              el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+            }}
+            onKeyDown={(e) => {
+              // Enter sends, Shift+Enter breaks the line -- what every chat
+              // does, and what fingers already expect.
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                void send();
+              }
+            }}
             placeholder={t("disc.placeholder")}
-            className="field w-full rounded-xl px-3 py-2.5 text-sm"
+            className="field w-full resize-none rounded-xl px-3 py-2 text-sm"
           />
           <div className="mt-2 flex items-center justify-between gap-3">
             <span className="text-[11px] text-faint">{t("disc.codeHint")}</span>

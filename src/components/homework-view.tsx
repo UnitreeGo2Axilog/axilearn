@@ -57,18 +57,34 @@ export function HomeworkView() {
     setNow(Date.now());
   }, []);
 
+  /**
+   * The two reads settle INDEPENDENTLY, not through Promise.all.
+   *
+   * Coupling them is its own way for homework to "not reach the student":
+   * the assignments read succeeds, the submissions read fails, and because
+   * one rejection rejects the whole Promise.all, the assignment list is
+   * blanked along with it. A learner with nothing handed in yet would see an
+   * empty page even though the work was published and perfectly readable.
+   *
+   * Knowing which side failed is also what lets the message below say
+   * something a person can act on.
+   */
   const load = useCallback(async () => {
     if (!uid) return;
-    try {
-      const [list, subs] = await Promise.all([fetchAssignments(), fetchMySubmissions(uid)]);
-      setItems(list);
-      setMine(subs);
+    const [list, subs] = await Promise.allSettled([fetchAssignments(), fetchMySubmissions(uid)]);
+
+    if (list.status === "fulfilled") {
+      setItems(list.value);
       setError(null);
-    } catch (err) {
-      setError((err as Error).message);
+    } else {
       setItems([]);
+      setError(describeReadFailure(list.reason, t));
     }
-  }, [uid]);
+
+    // Losing this costs the "sent" badges and nothing else. It must not take
+    // the assignments down with it.
+    setMine(subs.status === "fulfilled" ? subs.value : []);
+  }, [uid, t]);
 
   useEffect(() => {
     void load();
@@ -298,4 +314,22 @@ function Deadline({
       <span className="font-semibold text-faint">· {t("hw.lateNote")}</span>
     </p>
   );
+}
+
+/**
+ * Turn a Firestore rejection into something the reader can act on.
+ *
+ * "Missing or insufficient permissions" is accurate and useless: it is the
+ * same string whether the rules were never published, the collection does
+ * not exist, or somebody is genuinely not allowed. On this platform the
+ * overwhelmingly likely cause is the first, and the fix belongs to the
+ * teacher, so say that instead of showing a learner a stack-trace phrase.
+ */
+function describeReadFailure(reason: unknown, t: ReturnType<typeof useT>): string {
+  const code = (reason as { code?: string } | null)?.code ?? "";
+  const message = (reason as Error | null)?.message ?? String(reason);
+  if (code === "permission-denied" || /insufficient permissions/i.test(message)) {
+    return t("hw.notReady");
+  }
+  return message;
 }

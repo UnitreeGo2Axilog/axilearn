@@ -26,6 +26,7 @@ import {
   L10nInput,
   StatusToggle,
 } from "@/components/admin/admin-shell";
+import { CollapsibleCard } from "@/components/admin/collapsible-card";
 import { isoDay } from "@/lib/notification-schedule";
 import { useT } from "@/i18n/use-t";
 
@@ -59,7 +60,8 @@ function Editor() {
 
   const load = useCallback(async () => {
     try {
-      setItems(await listNotifications());
+      // Newest first: the one you just wrote is the one you are working on.
+      setItems((await listNotifications()).slice().reverse());
       setError(null);
     } catch (err) {
       setError((err as Error).message);
@@ -106,7 +108,7 @@ function Editor() {
       title: { en: "" },
       body: { en: "" },
     };
-    setItems([...(items ?? []), n]);
+    setItems([n, ...(items ?? [])]);
   }
 
   function patch(id: string, changes: Partial<NotificationDoc>) {
@@ -154,8 +156,27 @@ function Editor() {
         <p className="panel rounded-2xl p-5 text-sm text-muted">{t("notif.adminEmpty")}</p>
       ) : (
         <div className="space-y-3">
-          {items.map((n) => (
-            <div key={n.id} className="panel rounded-2xl p-4">
+          {items.map((n, i) => (
+            <CollapsibleCard
+              key={n.id}
+              defaultOpen={i === 0}
+              title={n.title.en}
+              subtitle={`${n.category} · ${n.schedule.kind}`}
+              badge={
+                <span
+                  className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider"
+                  style={{
+                    background:
+                      n.status === "published"
+                        ? "color-mix(in srgb, var(--cleared) 16%, transparent)"
+                        : "var(--bg-2)",
+                    color: n.status === "published" ? "var(--cleared)" : "var(--text-faint)",
+                  }}
+                >
+                  {n.status}
+                </span>
+              }
+            >
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <span className="font-robot text-[11px] font-bold text-faint">{n.id}</span>
                 <div className="ml-auto flex items-center gap-1.5">
@@ -249,7 +270,7 @@ function Editor() {
                   onChange={(status) => patch(n.id, { status })}
                 />
               </div>
-            </div>
+            </CollapsibleCard>
           ))}
         </div>
       )}

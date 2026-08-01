@@ -43,6 +43,7 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { useBookmarks } from "@/lib/bookmarks-context";
 import { useActivity } from "@/lib/activity-context";
+import { useNotifications } from "@/lib/notifications-context";
 import { useTheme } from "@/lib/theme";
 import { Avatar } from "@/components/avatar";
 import { useLocale, useT } from "@/i18n/use-t";
@@ -67,6 +68,7 @@ export function AccountMenu() {
   const locale = useLocale();
   const { user, profile, logout } = useAuth();
   const { ids: bookmarkIds } = useBookmarks();
+  const { messageAlerts } = useNotifications();
   const { newDiscussion, newHomework } = useActivity();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
@@ -104,19 +106,19 @@ export function AccountMenu() {
     { key: "nav.home", href: `/${locale}`, icon: Home },
     { key: "nav.progress", href: `/${locale}/progress`, icon: TrendingUp },
     { key: "nav.homework", href: `/${locale}/homework`, icon: ClipboardList, dot: newHomework },
-    { key: "nav.discussion", href: `/${locale}/discussion`, icon: MessagesSquare },
+    { key: "nav.discussion", href: `/${locale}/discussion`, icon: MessagesSquare, dot: newDiscussion },
     { key: "nav.certificates", href: `/${locale}/certificates`, icon: Award },
     { key: "nav.bookmarks", href: `/${locale}/bookmarks`, icon: BookMarked, badge: bookmarkIds.size },
     { key: "nav.info", href: `/${locale}/info`, icon: Info, separated: true },
-    { key: "nav.contact", href: `/${locale}/contact`, icon: Mail },
+    { key: "nav.contact", href: `/${locale}/contact`, icon: Mail, dot: messageAlerts.length > 0 },
   ];
 
   const adminEntries: Entry[] = [
     { key: "nav.dashboard", href: `/${locale}/admin`, icon: LayoutDashboard },
     { key: "nav.students", href: `/${locale}/admin/students`, icon: Users },
-    { key: "nav.messages", href: `/${locale}/admin/messages`, icon: Mail },
+    { key: "nav.messages", href: `/${locale}/admin/messages`, icon: Mail, dot: messageAlerts.length > 0 },
     { key: "nav.homeworkReview", href: `/${locale}/admin/homework`, icon: ClipboardList },
-    { key: "nav.discussion", href: `/${locale}/discussion`, icon: MessagesSquare },
+    { key: "nav.discussion", href: `/${locale}/discussion`, icon: MessagesSquare, dot: newDiscussion },
     { key: "nav.notifications", href: `/${locale}/admin/notifications`, icon: Bell },
     { key: "nav.info", href: `/${locale}/info`, icon: Info, separated: true },
   ];
@@ -137,7 +139,7 @@ export function AccountMenu() {
           <Avatar uid={user.uid} displayName={profile?.displayName} email={user.email} size={32} />
           {/* Without this the dot is invisible until the menu is opened,
               which is the one moment it is no longer needed. */}
-          {(newDiscussion || newHomework) && (
+          {(newDiscussion || newHomework || messageAlerts.length > 0) && (
             <span
               aria-hidden
               className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full"
@@ -315,15 +317,22 @@ function MenuRow({
 
   const body = (
     <>
-      <Icon className="h-4 w-4 shrink-0" />
+      {/* On the icon, not after the label. A dot at the end of a row reads
+          as punctuation; a dot on the icon reads as "this one". */}
+      <span className="relative shrink-0">
+        <Icon className="h-4 w-4" />
+        {entry.dot && (
+          <span
+            aria-hidden
+            className="absolute -right-1 -top-1 h-2 w-2 rounded-full"
+            style={{
+              background: "var(--reward)",
+              border: "1.5px solid var(--surface-solid)",
+            }}
+          />
+        )}
+      </span>
       <span className="flex-1 truncate">{t(entry.key)}</span>
-      {entry.dot && (
-        <span
-          aria-hidden
-          className="h-2 w-2 shrink-0 rounded-full"
-          style={{ background: "var(--reward)" }}
-        />
-      )}
       {entry.soon && (
         <span
           className="shrink-0 rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider"
