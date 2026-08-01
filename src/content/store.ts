@@ -330,11 +330,29 @@ export async function getLessonContent(
 export async function getLessonLocation(
   locale: Locale,
   lessonId: string,
-): Promise<{ track: RoadmapTrack; level: Level; next: Level | null } | null> {
+): Promise<{
+  track: RoadmapTrack;
+  level: Level;
+  prev: Level | null;
+  next: Level | null;
+  /** 0-based position of this lesson within its track. */
+  index: number;
+  total: number;
+} | null> {
   for (const track of await getTracks(locale)) {
     const i = track.levels.findIndex((l) => l.id === lessonId);
     if (i >= 0) {
-      return { track, level: track.levels[i], next: track.levels[i + 1] ?? null };
+      // The index was always known here; only `next` was handed back. So a
+      // lesson could say where you were going, but not where you had been,
+      // nor how far through the track you were.
+      return {
+        track,
+        level: track.levels[i],
+        prev: track.levels[i - 1] ?? null,
+        next: track.levels[i + 1] ?? null,
+        index: i,
+        total: track.levels.length,
+      };
     }
   }
   return null;

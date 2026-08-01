@@ -69,6 +69,8 @@ export const messages = {
     "lesson.tooLong":
       "Your program ran longer than {seconds} seconds and was stopped. That usually means a loop never ends — check your while condition.",
     "lesson.next": "Next lesson",
+    "lesson.prev": "Previous lesson",
+    "lesson.stepOf": "Lesson {n} of {total}",
     "lesson.complete": "Mark as done",
     "lesson.comingSoon": "This part arrives in the next phase.",
     "lesson.backToMap": "Back to the map",
@@ -148,6 +150,9 @@ export const messages = {
     "profile.adminAccount": "Account",
     "home.adminHello": "Admin dashboard",
     "home.adminHint": "You manage the content of these tracks.",
+    "home.adminSurfaceHint": "This is the management side of AxiLearn. The tracks are for your students — open the preview below if you want to see what they see.",
+    "home.previewAsStudent": "Preview as student",
+    "home.exitPreview": "Exit preview",
 
     "admin.title": "Content admin",
     "admin.soon":
@@ -437,6 +442,8 @@ export const messages = {
     "lesson.tooLong":
       "Ton programme a dépassé {seconds} secondes et a été arrêté. En général, une boucle ne se termine jamais — vérifie ta condition while.",
     "lesson.next": "Leçon suivante",
+    "lesson.prev": "Leçon précédente",
+    "lesson.stepOf": "Leçon {n} sur {total}",
     "lesson.complete": "Marquer comme terminé",
     "lesson.comingSoon": "Cette partie arrive à la prochaine phase.",
     "lesson.backToMap": "Retour à la carte",
@@ -516,6 +523,9 @@ export const messages = {
     "profile.adminAccount": "Compte",
     "home.adminHello": "Tableau de bord admin",
     "home.adminHint": "Tu gères le contenu de ces parcours.",
+    "home.adminSurfaceHint": "Voici la partie gestion d'AxiLearn. Les parcours sont pour tes élèves — ouvre l'aperçu ci-dessous pour voir ce qu'ils voient.",
+    "home.previewAsStudent": "Aperçu élève",
+    "home.exitPreview": "Quitter l'aperçu",
 
     "admin.title": "Administration du contenu",
     "admin.soon":

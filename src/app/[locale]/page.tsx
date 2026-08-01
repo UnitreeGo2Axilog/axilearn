@@ -4,6 +4,7 @@ import type { Locale } from "@/content/types";
 import { RobotMascot } from "@/components/robot-mascot";
 import { LearnerStrip } from "@/components/learner-strip";
 import { TrackCard } from "@/components/track-card";
+import { HomeSurface } from "@/components/home-surface";
 
 /**
  * Home: pick your world.
@@ -53,8 +54,10 @@ export default async function HomePage({
 
       <LearnerStrip tracks={trackList} />
 
-      {/* mission select */}
-      <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      {/* mission select -- for a student. An admin gets their two work
+          surfaces instead, and these cards behind a preview switch. */}
+      <HomeSurface>
+        <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         {trackList.map((track) => {
           // "coming soon" is a content decision now, editable in the CMS.
           const locked = track.comingSoon === true || track.levels.length === 0;
@@ -66,9 +69,10 @@ export default async function HomePage({
               locked={locked}
               challengeCount={challengeCounts[track.id] ?? 0}
             />
-          );
-        })}
-      </section>
+            );
+          })}
+        </section>
+      </HomeSurface>
     </div>
   );
 }

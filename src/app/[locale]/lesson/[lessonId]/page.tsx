@@ -9,6 +9,7 @@ import { LessonComplete } from "@/components/lesson-complete";
 import { LessonQuiz } from "@/components/lesson-quiz";
 import { LessonExercisePrompt } from "@/components/lesson-exercise-prompt";
 import { CodeSandbox } from "@/components/code-sandbox";
+import { LessonSteps } from "@/components/lesson-steps";
 
 /**
  * The Learning Studio, in the three-pane shape the tech spec describes:
@@ -36,7 +37,7 @@ export default async function LessonPage({
   const found = await getLessonLocation(locale, lessonId);
   if (!found) notFound();
 
-  const { track, level, next } = found;
+  const { track, level, prev, next, index } = found;
   const { body, quiz } = await getLessonContent(track.id, level.id, locale);
   // Only offer the exercise nudge when there is actually something to send
   // them to -- a prompt that leads to an empty page is worse than no prompt.
@@ -63,6 +64,14 @@ export default async function LessonPage({
             {level.section ?? track.short}
           </span>
         </div>
+
+        <LessonSteps
+          levels={track.levels}
+          index={index}
+          locale={locale}
+          accent={track.color}
+          trackTitle={track.title}
+        />
 
         <h1 className="mb-1 text-2xl font-extrabold text-strong">{level.title}</h1>
         <p className="mb-2 text-sm text-muted">{level.shortDescription}</p>
@@ -185,15 +194,34 @@ export default async function LessonPage({
           />
         )}
 
-        {next && (
-          <div className="mt-6 flex justify-end">
-            <Link
-              href={`/${locale}/lesson/${next.id}`}
-              className="btn-neon inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-bold"
-            >
-              {t("lesson.next")}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+        {/* Both directions. Forward was the only way through a track before,
+            which is fine until you want to re-read the thing the current
+            lesson assumes you remember. The row keeps its shape when either
+            end is missing, so the Next button does not slide to the left on
+            the first lesson. */}
+        {(prev || next) && (
+          <div className="mt-6 flex items-center justify-between gap-3">
+            {prev ? (
+              <Link
+                href={`/${locale}/lesson/${prev.id}`}
+                className="inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-bold text-main transition hover:opacity-80"
+                style={{ borderColor: "var(--border-strong)" }}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                {t("lesson.prev")}
+              </Link>
+            ) : (
+              <span />
+            )}
+            {next && (
+              <Link
+                href={`/${locale}/lesson/${next.id}`}
+                className="btn-neon inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-bold"
+              >
+                {t("lesson.next")}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
           </div>
         )}
       </div>
