@@ -39,6 +39,7 @@ import { CollapsibleCard } from "@/components/admin/collapsible-card";
 
 /** A Firestore document caps at 1 MiB and base64 adds a third on top. */
 const MAX_FILE_BYTES = 600 * 1024;
+import { useActivity } from "@/lib/activity-context";
 import { useT } from "@/i18n/use-t";
 
 export default function AdminHomeworkPage() {
@@ -51,15 +52,17 @@ export default function AdminHomeworkPage() {
 
 function Board() {
   const t = useT();
+  const { see } = useActivity();
   const [items, setItems] = useState<AssignmentDoc[] | null>(null);
   const [subs, setSubs] = useState<Record<string, SubmissionDoc[]>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [now, setNow] = useState(0);
 
+  // Arriving at the marking screen is what clears the teacher's dot -- the
+  // same rule the learner's page follows.
   useEffect(() => {
-    setNow(Date.now());
-  }, []);
+    void see("homework");
+  }, [see]);
 
   const load = useCallback(async () => {
     try {
@@ -76,14 +79,17 @@ function Board() {
   }, [load]);
 
   function addNew() {
-    if (!now) return;
+    // Date.now() at click, not the `now` captured when this page mounted --
+    // a tab left open all afternoon was stamping new assignments with the
+    // time it was opened.
+    const at = Date.now();
     const a: AssignmentDoc = {
-      id: `hw-${now}`,
+      id: `hw-${at}`,
       status: "draft",
       title: { en: "" },
       brief: { en: "" },
-      createdAt: now,
-      dueAt: now + DEFAULT_HOMEWORK_WINDOW_MS,
+      createdAt: at,
+      dueAt: at + DEFAULT_HOMEWORK_WINDOW_MS,
     };
     setItems([a, ...(items ?? [])]);
   }
@@ -228,7 +234,20 @@ function Board() {
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                <StatusToggle status={a.status} onChange={(status) => patch(a.id, { status })} />
+                <StatusToggle
+                  status={a.status}
+                  onChange={(status) =>
+                    patch(a.id, {
+                      status,
+                      // Stamped here, once, because this is the only place
+                      // that knows the transition is happening. Re-publishing
+                      // something already published leaves it alone.
+                      ...(status === "published" && !a.publishedAt
+                        ? { publishedAt: Date.now() }
+                        : {}),
+                    })
+                  }
+                />
                 {a.status !== "published" && (
                   <span className="text-[11px] font-bold" style={{ color: "var(--reward)" }}>
                     {t("hw.draftWarning")}
@@ -243,7 +262,7 @@ function Board() {
                     checked={a.dueAt !== null}
                     onChange={(e) =>
                       patch(a.id, {
-                        dueAt: e.target.checked ? (now || Date.now()) + DEFAULT_HOMEWORK_WINDOW_MS : null,
+                        dueAt: e.target.checked ? Date.now() + DEFAULT_HOMEWORK_WINDOW_MS : null,
                       })
                     }
                   />

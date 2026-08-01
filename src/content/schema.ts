@@ -548,6 +548,19 @@ export interface AssignmentDoc {
   createdAt: number;
   /** Absolute deadline in ms, or null when the teacher has turned it off. */
   dueAt: number | null;
+  /**
+   * When this was first made visible to learners.
+   *
+   * Separate from createdAt because they are different events and the gap
+   * between them is usually days: a teacher writes a draft on Monday and
+   * shares it on Thursday. The unread dot has to watch THIS one -- watching
+   * createdAt meant publishing moved nothing the dot compared against, so
+   * sharing an assignment never lit anything up.
+   *
+   * Stamped once, when the status first flips to published, so fixing a typo
+   * afterwards does not re-notify the whole class.
+   */
+  publishedAt?: number;
   updatedAt?: number;
 }
 

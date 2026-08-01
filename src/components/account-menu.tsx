@@ -117,7 +117,7 @@ export function AccountMenu() {
     { key: "nav.dashboard", href: `/${locale}/admin`, icon: LayoutDashboard },
     { key: "nav.students", href: `/${locale}/admin/students`, icon: Users },
     { key: "nav.messages", href: `/${locale}/admin/messages`, icon: Mail, dot: messageAlerts.length > 0 },
-    { key: "nav.homeworkReview", href: `/${locale}/admin/homework`, icon: ClipboardList },
+    { key: "nav.homeworkReview", href: `/${locale}/admin/homework`, icon: ClipboardList, dot: newHomework },
     { key: "nav.discussion", href: `/${locale}/discussion`, icon: MessagesSquare, dot: newDiscussion },
     { key: "nav.notifications", href: `/${locale}/admin/notifications`, icon: Bell },
     { key: "nav.info", href: `/${locale}/info`, icon: Info, separated: true },
