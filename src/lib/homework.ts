@@ -11,7 +11,6 @@ import {
   collection,
   deleteDoc,
   doc,
-  getDoc,
   getDocs,
   getDocsFromServer,
   query,
@@ -76,10 +75,8 @@ export async function submitWork(
   note: string,
 ): Promise<void> {
   const at = Date.now();
-  const id = submissionId(assignment.id, uid);
-  const existing = await getDoc(doc(getDb(), SUBMISSIONS, id));
   await setDoc(
-    doc(getDb(), SUBMISSIONS, id),
+    doc(getDb(), SUBMISSIONS, submissionId(assignment.id, uid)),
     {
       assignmentId: assignment.id,
       uid,
@@ -88,9 +85,20 @@ export async function submitWork(
       note: note.trim(),
       submittedAt: at,
       late: isLateAt(assignment.dueAt, at),
-      // Carried through untouched on a resubmission. The rule insists on it,
-      // so that a learner answering again cannot wipe the teacher's reply.
-      feedback: existing.exists() ? ((existing.data() as SubmissionDoc).feedback ?? "") : "",
+      // `feedback` is deliberately NOT in this payload.
+      //
+      // The first version read the existing submission first, to carry the
+      // teacher's reply through untouched. That read was the bug that broke
+      // every FIRST submission: the read rule requires `resource != null`,
+      // so reading a submission that does not exist yet is denied, the get
+      // threw permission-denied, and the write never happened. Nobody could
+      // ever hand in anything.
+      //
+      // Omitting the field does the same job without the read. This is a
+      // merge, so a field that is not sent is left exactly as it was -- on a
+      // resubmission the teacher's reply survives, and on a first submission
+      // there is nothing to survive. The rule's keepsFeedback() check sees
+      // the post-merge document, so it agrees either way.
     },
     { merge: true },
   );

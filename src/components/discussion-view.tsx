@@ -18,10 +18,18 @@
  * A moderation tool you have to go somewhere else to use is a moderation tool
  * nobody uses.
  */
+import { LiveBackground } from "@/components/live-background";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Ban, Loader2, MessagesSquare, Reply, Send, Trash2, X } from "lucide-react";
+import { Ban, Eraser, Loader2, MessagesSquare, Reply, Send, Trash2, X } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { deleteMessage, postMessage, setBlocked, watchDiscussion } from "@/lib/discussion";
+import { useActivity } from "@/lib/activity-context";
+import {
+  clearDiscussion,
+  deleteMessage,
+  postMessage,
+  setBlocked,
+  watchDiscussion,
+} from "@/lib/discussion";
 import { Avatar } from "@/components/avatar";
 import type { DiscussionMessage } from "@/content/schema";
 import { useT } from "@/i18n/use-t";
@@ -29,15 +37,21 @@ import { useT } from "@/i18n/use-t";
 export function DiscussionView() {
   const t = useT();
   const { user, profile } = useAuth();
+  const { see } = useActivity();
   const [messages, setMessages] = useState<DiscussionMessage[] | null>(null);
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<DiscussionMessage | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   const isAdmin = profile?.role === "admin";
   const blocked = profile?.blocked === true;
+
+  useEffect(() => {
+    void see("discussion");
+  }, [see]);
 
   useEffect(() => {
     if (!user) return;
@@ -77,6 +91,8 @@ export function DiscussionView() {
   if (!user) return null;
 
   return (
+    <>
+      <LiveBackground />
     <div className="relative z-10 mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-3xl flex-col px-4 pb-6 pt-8">
       <header className="mb-4">
         <h1 className="flex items-center gap-2.5 text-3xl font-extrabold tracking-tight text-strong">
@@ -84,6 +100,34 @@ export function DiscussionView() {
           {t("nav.discussion")}
         </h1>
         <p className="mt-1.5 text-sm leading-relaxed text-muted">{t("disc.intro")}</p>
+
+        {isAdmin && (messages?.length ?? 0) > 0 && (
+          // Two steps, like blocking. Emptying a room is not undoable and it
+          // takes everybody's messages with it, not just the one that was
+          // annoying.
+          <button
+            onClick={async () => {
+              if (!confirmClear) {
+                setConfirmClear(true);
+                return;
+              }
+              try {
+                await clearDiscussion();
+                setConfirmClear(false);
+              } catch (err) {
+                setError((err as Error).message);
+              }
+            }}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold transition hover:opacity-80"
+            style={{
+              borderColor: confirmClear ? "var(--reward)" : "var(--border-strong)",
+              color: confirmClear ? "var(--reward)" : "var(--text-muted)",
+            }}
+          >
+            <Eraser className="h-3.5 w-3.5" />
+            {confirmClear ? t("disc.clearConfirm") : t("disc.clear")}
+          </button>
+        )}
       </header>
 
       {error && (
@@ -187,6 +231,7 @@ export function DiscussionView() {
         </div>
       )}
     </div>
+    </>
   );
 }
 

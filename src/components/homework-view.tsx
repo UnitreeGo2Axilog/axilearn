@@ -8,12 +8,23 @@
  * a threat; "due in 3 hours -- after that it still sends, marked late" is
  * information. Nobody has to guess whether it is worth finishing.
  */
+import { LiveBackground } from "@/components/live-background";
 import { useCallback, useEffect, useState } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
 import { oneDark } from "@codemirror/theme-one-dark";
-import { AlertTriangle, CheckCircle2, ClipboardList, Clock, Loader2, Send, ShieldCheck } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ClipboardList,
+  Clock,
+  Loader2,
+  Paperclip,
+  Send,
+  ShieldCheck,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { useActivity } from "@/lib/activity-context";
 import { useTheme } from "@/lib/theme";
 import { fetchAssignments, fetchMySubmissions, submitWork, submissionId } from "@/lib/homework";
 import { isLateAt, pick, type AssignmentDoc, type SubmissionDoc } from "@/content/schema";
@@ -24,6 +35,7 @@ export function HomeworkView() {
   const t = useT();
   const locale = useLocale() as Locale;
   const { user, profile } = useAuth();
+  const { see } = useActivity();
   const { theme } = useTheme();
   const [items, setItems] = useState<AssignmentDoc[] | null>(null);
   const [mine, setMine] = useState<SubmissionDoc[]>([]);
@@ -36,6 +48,10 @@ export function HomeworkView() {
   const [now, setNow] = useState(0);
 
   const uid = user?.uid ?? null;
+
+  useEffect(() => {
+    void see("homework");
+  }, [see]);
 
   useEffect(() => {
     setNow(Date.now());
@@ -87,6 +103,8 @@ export function HomeworkView() {
   }
 
   return (
+    <>
+      <LiveBackground />
     <div className="relative z-10 mx-auto max-w-3xl px-4 pb-20 pt-8">
       <header className="mb-6">
         <h1 className="flex items-center gap-2.5 text-3xl font-extrabold tracking-tight text-strong">
@@ -121,6 +139,18 @@ export function HomeworkView() {
           <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-muted">
             {pick(open.brief, locale)}
           </p>
+
+          {open.file && (
+            <a
+              href={open.file.dataUrl}
+              download={open.file.name}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold text-main transition hover:opacity-80"
+              style={{ borderColor: "var(--border-strong)" }}
+            >
+              <Paperclip className="h-3.5 w-3.5" />
+              {open.file.name}
+            </a>
+          )}
 
           <Deadline dueAt={open.dueAt} now={now} t={t} />
 
@@ -221,6 +251,7 @@ export function HomeworkView() {
         </div>
       )}
     </div>
+    </>
   );
 }
 

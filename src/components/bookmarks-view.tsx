@@ -9,6 +9,7 @@
  * resolves, and it is simply dropped rather than rendering a row that leads
  * nowhere.
  */
+import { LiveBackground } from "@/components/live-background";
 import Link from "next/link";
 import { BookMarked } from "lucide-react";
 import type { Level, RoadmapTrack } from "@/content/roadmap-data";
@@ -30,6 +31,8 @@ export function BookmarksView({ tracks }: { tracks: RoadmapTrack[] }) {
   }
 
   return (
+    <>
+      <LiveBackground />
     <div className="relative z-10 mx-auto max-w-3xl px-4 pb-20 pt-8">
       <header className="mb-6">
         <h1 className="flex items-center gap-2.5 text-3xl font-extrabold tracking-tight text-strong">
@@ -82,5 +85,6 @@ export function BookmarksView({ tracks }: { tracks: RoadmapTrack[] }) {
         </div>
       )}
     </div>
+    </>
   );
 }

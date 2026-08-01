@@ -18,7 +18,9 @@ import {
   Save,
   Send,
   Trash2,
+  Paperclip,
   Users,
+  X,
 } from "lucide-react";
 import {
   deleteAssignment,
@@ -33,6 +35,9 @@ import {
   type SubmissionDoc,
 } from "@/content/schema";
 import { AdminGuard, L10nInput, StatusToggle } from "@/components/admin/admin-shell";
+
+/** A Firestore document caps at 1 MiB and base64 adds a third on top. */
+const MAX_FILE_BYTES = 600 * 1024;
 import { useT } from "@/i18n/use-t";
 
 export default function AdminHomeworkPage() {
@@ -204,6 +209,11 @@ function Board() {
 
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <StatusToggle status={a.status} onChange={(status) => patch(a.id, { status })} />
+                {a.status !== "published" && (
+                  <span className="text-[11px] font-bold" style={{ color: "var(--reward)" }}>
+                    {t("hw.draftWarning")}
+                  </span>
+                )}
 
                 {/* The switch the brief called for: on by default at 24h,
                     off means nothing is ever marked late. */}
@@ -231,6 +241,54 @@ function Board() {
                     className="field rounded-xl px-3 py-2 text-xs"
                   />
                 )}
+              </div>
+
+              {/* An attached brief. Held on the document as a data URL --
+                  this project has no Cloud Storage bucket, and adding one
+                  means rules and a billing decision for what is usually a
+                  one-page PDF. The size cap is the price of that. */}
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <label
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold text-main"
+                  style={{ borderColor: "var(--border-strong)" }}
+                >
+                  <Paperclip className="h-3.5 w-3.5" />
+                  {a.file ? t("hw.fileReplace") : t("hw.fileAttach")}
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const f = e.target.files?.[0];
+                      e.target.value = "";
+                      if (!f) return;
+                      if (f.size > MAX_FILE_BYTES) {
+                        setError(t("hw.fileTooBig"));
+                        return;
+                      }
+                      const dataUrl = await new Promise<string>((resolve, reject) => {
+                        const r = new FileReader();
+                        r.onload = () => resolve(String(r.result));
+                        r.onerror = () => reject(new Error("read failed"));
+                        r.readAsDataURL(f);
+                      });
+                      setError(null);
+                      patch(a.id, { file: { name: f.name, type: f.type, dataUrl } });
+                    }}
+                  />
+                </label>
+                {a.file && (
+                  <span className="inline-flex items-center gap-1.5 text-xs text-muted">
+                    {a.file.name}
+                    <button
+                      onClick={() => patch(a.id, { file: undefined })}
+                      aria-label={t("admin.remove")}
+                      className="text-faint"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                <span className="text-[11px] text-faint">{t("hw.fileHint")}</span>
               </div>
 
               <button

@@ -12,6 +12,7 @@
  * There is no sort control either. It exists on sites with forty languages;
  * with four tracks it is furniture.
  */
+import { LiveBackground } from "@/components/live-background";
 import Link from "next/link";
 import { Award, BookOpen, Flame, Swords, Zap } from "lucide-react";
 import type { RoadmapTrack } from "@/content/roadmap-data";
@@ -38,6 +39,8 @@ export function ProgressView({ tracks }: { tracks: RoadmapTrack[] }) {
   ];
 
   return (
+    <>
+      <LiveBackground />
     <div className="relative z-10 mx-auto max-w-4xl px-4 pb-20 pt-8">
       <header className="mb-6">
         <h1 className="text-3xl font-extrabold tracking-tight text-strong">{t("progress.title")}</h1>
@@ -134,5 +137,6 @@ export function ProgressView({ tracks }: { tracks: RoadmapTrack[] }) {
         })}
       </div>
     </div>
+    </>
   );
 }

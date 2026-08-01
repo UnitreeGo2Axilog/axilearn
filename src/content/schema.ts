@@ -534,6 +534,17 @@ export interface AssignmentDoc {
   trackId?: string;
   /** Optional stub the learner starts from. */
   starterCode?: string;
+  /**
+   * An attached brief -- a PDF, an image, a starter file.
+   *
+   * Held as a data URL on the document rather than in Cloud Storage, which
+   * this project does not use and would need rules, a bucket and a billing
+   * decision of its own. The cost of that choice is a hard size limit: a
+   * Firestore document is capped at 1 MiB and base64 inflates by a third, so
+   * anything over ~600 KB is refused at the point of choosing it rather than
+   * failing on save.
+   */
+  file?: { name: string; type: string; dataUrl: string };
   createdAt: number;
   /** Absolute deadline in ms, or null when the teacher has turned it off. */
   dueAt: number | null;

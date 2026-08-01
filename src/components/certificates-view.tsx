@@ -7,6 +7,7 @@
  * page listing only what you have already achieved is empty on the day it
  * matters most -- the first one -- and says nothing about how to change that.
  */
+import { LiveBackground } from "@/components/live-background";
 import Link from "next/link";
 import { Award, Lock } from "lucide-react";
 import type { RoadmapTrack } from "@/content/roadmap-data";
@@ -25,6 +26,8 @@ export function CertificatesView({ tracks }: { tracks: RoadmapTrack[] }) {
   const earned = withStatus.filter(({ status }) => status.earned).length;
 
   return (
+    <>
+      <LiveBackground />
     <div className="relative z-10 mx-auto max-w-3xl px-4 pb-20 pt-8">
       <header className="mb-6">
         <h1 className="flex items-center gap-2.5 text-3xl font-extrabold tracking-tight text-strong">
@@ -98,5 +101,6 @@ export function CertificatesView({ tracks }: { tracks: RoadmapTrack[] }) {
         })}
       </div>
     </div>
+    </>
   );
 }

@@ -11,6 +11,7 @@
  * It is deliberately not a forum. Every thread is between one learner and the
  * staff -- no classmate can read it, and there is nothing to moderate.
  */
+import { LiveBackground } from "@/components/live-background";
 import { useCallback, useEffect, useState } from "react";
 import { Loader2, MessageCircle, Send, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
@@ -106,6 +107,8 @@ export function ContactView() {
   if (!user) return null;
 
   return (
+    <>
+      <LiveBackground />
     <div className="relative z-10 mx-auto max-w-2xl px-4 pb-20 pt-8">
       <header className="mb-6">
         <h1 className="flex items-center gap-2.5 text-3xl font-extrabold tracking-tight text-strong">
@@ -247,5 +250,6 @@ export function ContactView() {
         </>
       )}
     </div>
+    </>
   );
 }

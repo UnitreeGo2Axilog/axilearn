@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useBookmarks } from "@/lib/bookmarks-context";
+import { useActivity } from "@/lib/activity-context";
 import { useTheme } from "@/lib/theme";
 import { Avatar } from "@/components/avatar";
 import { useLocale, useT } from "@/i18n/use-t";
@@ -55,6 +56,8 @@ interface Entry {
   soon?: boolean;
   /** A count badge, e.g. saved lessons. */
   badge?: number;
+  /** A plain red dot -- "something happened here" without a number. */
+  dot?: boolean;
   /** Draws the divider above this entry. */
   separated?: boolean;
 }
@@ -64,6 +67,7 @@ export function AccountMenu() {
   const locale = useLocale();
   const { user, profile, logout } = useAuth();
   const { ids: bookmarkIds } = useBookmarks();
+  const { newDiscussion, newHomework } = useActivity();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
@@ -99,7 +103,7 @@ export function AccountMenu() {
   const studentEntries: Entry[] = [
     { key: "nav.home", href: `/${locale}`, icon: Home },
     { key: "nav.progress", href: `/${locale}/progress`, icon: TrendingUp },
-    { key: "nav.homework", href: `/${locale}/homework`, icon: ClipboardList },
+    { key: "nav.homework", href: `/${locale}/homework`, icon: ClipboardList, dot: newHomework },
     { key: "nav.discussion", href: `/${locale}/discussion`, icon: MessagesSquare },
     { key: "nav.certificates", href: `/${locale}/certificates`, icon: Award },
     { key: "nav.bookmarks", href: `/${locale}/bookmarks`, icon: BookMarked, badge: bookmarkIds.size },
@@ -129,7 +133,18 @@ export function AccountMenu() {
         aria-label={profile?.displayName ?? t("nav.profile")}
         className="flex items-center gap-1 rounded-full transition hover:opacity-80"
       >
-        <Avatar uid={user.uid} displayName={profile?.displayName} email={user.email} size={32} />
+        <span className="relative">
+          <Avatar uid={user.uid} displayName={profile?.displayName} email={user.email} size={32} />
+          {/* Without this the dot is invisible until the menu is opened,
+              which is the one moment it is no longer needed. */}
+          {(newDiscussion || newHomework) && (
+            <span
+              aria-hidden
+              className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full"
+              style={{ background: "var(--reward)", border: "2px solid var(--bg)" }}
+            />
+          )}
+        </span>
         <ChevronDown
           className="h-3.5 w-3.5 text-faint transition-transform"
           style={{ transform: open ? "rotate(180deg)" : "none" }}
@@ -302,6 +317,13 @@ function MenuRow({
     <>
       <Icon className="h-4 w-4 shrink-0" />
       <span className="flex-1 truncate">{t(entry.key)}</span>
+      {entry.dot && (
+        <span
+          aria-hidden
+          className="h-2 w-2 shrink-0 rounded-full"
+          style={{ background: "var(--reward)" }}
+        />
+      )}
       {entry.soon && (
         <span
           className="shrink-0 rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider"

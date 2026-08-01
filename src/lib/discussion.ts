@@ -12,6 +12,8 @@
  */
 import {
   addDoc,
+  getDocs,
+  writeBatch,
   collection,
   deleteDoc,
   doc,
@@ -100,4 +102,23 @@ export async function deleteMessage(id: string): Promise<void> {
  */
 export async function setBlocked(uid: string, blocked: boolean): Promise<void> {
   await updateDoc(doc(getDb(), "users", uid), { blocked });
+}
+
+/**
+ * Empty the room. Admin only -- the rule allows an admin to delete any
+ * message, and this is that, applied to all of them.
+ *
+ * Batched in chunks because Firestore caps a batch at 500 writes, and a room
+ * that has been running a term will have more than that. Deleting one at a
+ * time would work too and would take a minute of round trips.
+ */
+export async function clearDiscussion(): Promise<number> {
+  const snap = await getDocs(collection(getDb(), COLLECTION));
+  const docs = snap.docs;
+  for (let i = 0; i < docs.length; i += 400) {
+    const batch = writeBatch(getDb());
+    for (const d of docs.slice(i, i + 400)) batch.delete(d.ref);
+    await batch.commit();
+  }
+  return docs.length;
 }
