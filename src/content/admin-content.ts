@@ -215,12 +215,23 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
   //
   // So a track carries a revision. Bump it in roadmap-data.ts and the next
   // import rewrites that track's presentation from the repo, once -- the
-  // stored revision then matches and it never fires again. Deliberately not
-  // rewritten: `lessons` (the CMS owns those, and bodies/quizzes have their
-  // own rules below), `status`, and `comingSoon` -- publishing and scheduling
-  // are the supervisor's call per track, not something a content revision
-  // should quietly reverse. `hidden` IS rewritten, because whether a thing is
-  // a track at all is exactly the kind of structural fact a bump asserts.
+  // stored revision then matches and it never fires again.
+  //
+  // A bump rewrites the track's SKELETON, and that now includes `lessons`.
+  // It did not, and the consequence only showed up when the Python track grew
+  // from four lessons to nine: the repo had nine, Firestore kept four, and no
+  // amount of importing could add the other five. A track that can never gain
+  // a chapter is not a curriculum, it is a snapshot.
+  //
+  // What a bump does NOT touch is the writing. Lesson text and quizzes live
+  // in the `bodies` subcollection with their own rule below -- written only
+  // where Firestore is still empty -- so a lesson the supervisor wrote in the
+  // CMS survives every bump. The skeleton is the repo's; the prose is theirs.
+  //
+  // `status` and `comingSoon` stay out of it as well: publishing and
+  // scheduling are the supervisor's call per track, not something a content
+  // revision should quietly reverse. `hidden` IS rewritten, because whether a
+  // thing is a track at all is the kind of structural fact a bump asserts.
   const tracksRefreshed: string[] = [];
   for (const track of repoTrackDocs) {
     if (!existing.has(track.id) || overwrite) continue; // just written fresh
@@ -257,6 +268,7 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
         title: copy.title,
         description: copy.description,
         overview: copy.overview,
+        lessons: copy.lessons,
         hidden: track.hidden ?? false,
         repoRevision: track.repoRevision ?? 1,
       });
