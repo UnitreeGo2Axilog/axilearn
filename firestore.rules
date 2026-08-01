@@ -124,6 +124,46 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // A learner writing to their teacher, and the reply.
+    //
+    // A thread is readable by the learner who owns it and by admins, and by
+    // nobody else -- a question like "I don't understand any of this" is not
+    // for classmates.
+    //
+    // AUTHORSHIP IS ENFORCED HERE, which is the reason the messages are
+    // separate documents rather than an array on the thread. Rules cannot
+    // look inside an array, so with one field holding every message, anyone
+    // able to write the thread could append an entry labelled `from: "admin"`
+    // and manufacture a reply. As documents, each one is checked as it is
+    // created: a learner may only create `from: "student"` in a thread that
+    // is theirs, and only an admin may create `from: "admin"`. Messages are
+    // never editable or deletable by anyone -- a conversation you can rewrite
+    // after the fact is not a record of anything.
+    match /contactThreads/{threadId} {
+      function ownsThread() {
+        return isSignedIn()
+          && exists(/databases/$(database)/documents/contactThreads/$(threadId))
+          && get(/databases/$(database)/documents/contactThreads/$(threadId)).data.uid == request.auth.uid;
+      }
+
+      allow read: if isAdmin()
+                  || (isSignedIn() && resource != null && resource.data.uid == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      // Both sides update the thread: the flags that drive the unread badges
+      // live here, and each side clears its own on opening. The uid can never
+      // change hands, so a thread cannot be reassigned to somebody else.
+      allow update: if (isAdmin() || (resource != null && resource.data.uid == request.auth.uid))
+                    && request.resource.data.uid == resource.data.uid;
+      allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if isAdmin() || ownsThread();
+        allow create: if (isAdmin() && request.resource.data.from == 'admin')
+                      || (ownsThread() && request.resource.data.from == 'student');
+        allow update, delete: if false;
+      }
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

@@ -16,11 +16,21 @@ import {
   markNotificationsRead,
 } from "./notifications";
 import { unreadNotifications, visibleNotifications } from "./notification-schedule";
-import type { NotificationDoc } from "@/content/schema";
+import { fetchAllThreads, fetchMyThreads } from "./contact";
+import type { ContactThread, NotificationDoc } from "@/content/schema";
 
 interface NotificationsValue {
   visible: NotificationDoc[];
   unread: NotificationDoc[];
+  /**
+   * Conversations waiting on whoever is signed in: a reply for a learner, a
+   * question for the staff.
+   *
+   * Kept apart from the tips, and NOT cleared by opening the bell. A tip is
+   * read by being seen; an unanswered question is not answered by being
+   * glanced at. These clear when the thread itself is opened.
+   */
+  messageAlerts: ContactThread[];
   loading: boolean;
   /** Called when the panel is opened -- everything shown becomes read. */
   markAllRead: () => Promise<void>;
@@ -30,13 +40,15 @@ interface NotificationsValue {
 const NotificationsContext = createContext<NotificationsValue | null>(null);
 
 export function NotificationsProvider({ children }: { children: React.ReactNode }) {
-  const { user, configured } = useAuth();
+  const { user, profile, configured } = useAuth();
   const [all, setAll] = useState<NotificationDoc[]>([]);
+  const [messageAlerts, setMessageAlerts] = useState<ContactThread[]>([]);
   const [readIds, setReadIds] = useState<Set<string>>(() => new Set());
   const [loading, setLoading] = useState(false);
   const [today, setToday] = useState<Date | null>(null);
 
   const uid = user?.uid ?? null;
+  const isAdmin = profile?.role === "admin";
 
   useEffect(() => {
     setToday(new Date());
@@ -46,6 +58,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     if (!uid || !configured) {
       setAll([]);
       setReadIds(new Set());
+      setMessageAlerts([]);
       return;
     }
     setLoading(true);
@@ -64,7 +77,19 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     } finally {
       setLoading(false);
     }
-  }, [uid, configured]);
+
+    // Threads are fetched separately and allowed to fail on their own. If
+    // the contact rules are not deployed yet, the tips should still work --
+    // one half of the bell being unavailable is not a reason to empty it.
+    try {
+      const threads = isAdmin ? await fetchAllThreads() : await fetchMyThreads(uid);
+      setMessageAlerts(
+        threads.filter((th) => (isAdmin ? th.adminUnread : th.studentUnread)),
+      );
+    } catch {
+      setMessageAlerts([]);
+    }
+  }, [uid, configured, isAdmin]);
 
   useEffect(() => {
     void refresh();
@@ -88,8 +113,8 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
   }, [uid, unread, refresh]);
 
   const value = useMemo<NotificationsValue>(
-    () => ({ visible, unread, loading, markAllRead, refresh }),
-    [visible, unread, loading, markAllRead, refresh],
+    () => ({ visible, unread, messageAlerts, loading, markAllRead, refresh }),
+    [visible, unread, messageAlerts, loading, markAllRead, refresh],
   );
 
   return (

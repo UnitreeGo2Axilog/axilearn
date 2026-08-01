@@ -13,7 +13,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Bell, Bot, Gamepad2, Lightbulb, Megaphone, Terminal } from "lucide-react";
+import { Bell, Bot, Gamepad2, Lightbulb, Megaphone, MessageCircle, Terminal } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useNotifications } from "@/lib/notifications-context";
 import { pick } from "@/content/schema";
@@ -35,8 +35,8 @@ const CATEGORY: Record<
 export function NotificationBell() {
   const t = useT();
   const locale = useLocale() as Locale;
-  const { user } = useAuth();
-  const { visible, unread, markAllRead } = useNotifications();
+  const { user, profile } = useAuth();
+  const { visible, unread, messageAlerts, markAllRead } = useNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -58,7 +58,12 @@ export function NotificationBell() {
 
   if (!user) return null;
 
-  const count = unread.length;
+  const isAdmin = profile?.role === "admin";
+  // Conversations count too. They are the half of the bell somebody is
+  // actually waiting on, so they lead the panel and they do not clear when it
+  // is opened -- only when the thread itself is.
+  const count = unread.length + messageAlerts.length;
+  const threadHref = isAdmin ? `/${locale}/admin/messages` : `/${locale}/contact`;
   const unreadIds = new Set(unread.map((n) => n.id));
 
   function toggle() {
@@ -109,7 +114,40 @@ export function NotificationBell() {
             )}
           </div>
 
-          {visible.length === 0 ? (
+          {messageAlerts.length > 0 && (
+            <div className="space-y-1 p-1.5 pt-0">
+              {messageAlerts.map((th) => (
+                <Link
+                  key={th.id}
+                  href={threadHref}
+                  onClick={() => setOpen(false)}
+                  role="menuitem"
+                  className="flex gap-2.5 rounded-xl p-2.5 transition hover:opacity-80"
+                  style={{ background: "color-mix(in srgb, var(--reward) 10%, transparent)" }}
+                >
+                  <span
+                    className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg"
+                    style={{
+                      background: "color-mix(in srgb, var(--reward) 18%, transparent)",
+                      color: "var(--reward)",
+                    }}
+                  >
+                    <MessageCircle className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-xs font-extrabold text-strong">
+                      {isAdmin ? t("contact.notifNew") : t("contact.notifReply")}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[11px] leading-relaxed text-muted">
+                      {isAdmin ? `${th.displayName} · ${th.subject}` : th.subject}
+                    </span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {visible.length === 0 && messageAlerts.length === 0 ? (
             <p className="px-4 pb-4 text-xs leading-relaxed text-muted">{t("notif.empty")}</p>
           ) : (
             <div className="space-y-1 p-1.5 pt-0">

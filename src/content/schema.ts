@@ -473,3 +473,41 @@ export function resolveNotification(
     ...(doc.href ? { href: doc.href } : {}),
   };
 }
+
+/* ------------------------------------------------------------- messaging */
+
+/**
+ * One conversation between a learner and the staff.
+ *
+ * The metadata lives on this document and the messages themselves in a
+ * SUBCOLLECTION, which is not the shape a handful of messages would normally
+ * justify. It is here because authorship has to be enforceable: with the
+ * messages in an array on this document, anybody allowed to write the
+ * document could append an entry labelled `from: "admin"`, and rules cannot
+ * check inside an array. As separate documents, each message is validated on
+ * creation -- a learner may only ever create one marked "student", and only
+ * an admin can create one marked "admin".
+ */
+export interface ContactThread {
+  id: string;
+  uid: string;
+  /** Copied in, so the inbox does not need a read per learner to show a name. */
+  displayName: string;
+  email: string | null;
+  subject: string;
+  createdAt: number;
+  updatedAt: number;
+  /** Who wrote last -- what the inbox sorts and badges on. */
+  lastFrom: "student" | "admin";
+  /** A reply the learner has not opened. */
+  studentUnread: boolean;
+  /** A message the staff has not opened. */
+  adminUnread: boolean;
+}
+
+export interface ContactMessage {
+  id: string;
+  from: "student" | "admin";
+  text: string;
+  at: number;
+}
