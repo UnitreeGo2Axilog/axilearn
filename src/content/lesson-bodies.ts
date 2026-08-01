@@ -21,6 +21,178 @@
 import type { L10n } from "./schema";
 
 export const lessonBodies: Record<string, L10n> = {
+  "pp-1": {
+    en: `## A program is just a list of orders
+
+A computer is very fast and very obedient. It is also very literal. It will do
+exactly what you tell it -- in exactly the order you tell it -- and it will
+never guess what you meant.
+
+That is the whole job of a programmer: write the orders clearly enough that
+something with no common sense can follow them.
+
+\`\`\`flow
+step: put bread in the toaster
+step: press the button
+ask: is it brown yet ?
+yes: take it out
+step: eat
+\`\`\`
+
+If you swap two of those lines, you eat bread and toast the plate. The
+computer will not stop you. It will just do it.
+
+## Say hello
+
+Here is a real Python program. It is one line long. Press **Run** and see what
+happens.
+
+\`\`\`python
+print("Hello! I am your first program.")
+\`\`\`
+
+\`print\` means *show this on the screen*. Whatever you put between the round
+brackets is what gets shown.
+
+> tip: Change the words inside the quotes to your own name, then press Run again. Nothing breaks. You can do this as many times as you like.
+
+## The quotes matter
+
+Python needs the quotes so it knows where your message starts and ends.
+Without them it thinks you are talking about something else and it stops.
+
+Try running this one. It is **supposed** to break:
+
+\`\`\`python
+print(Hello)
+\`\`\`
+
+You got a red message saying \`NameError\`. That is not you being bad at this.
+That is Python telling you, politely, *"I do not know anything called Hello."*
+
+> do: Read the red message. It nearly always says what is wrong and which line it is on.
+> don't: Do not panic and delete everything. An error is information, not a punishment.
+
+## Doing two things
+
+Give it two orders and it does them in order, top to bottom.
+
+\`\`\`python
+print("First")
+print("Second")
+\`\`\`
+
+Swap the two lines and run it again. The order changes, because the computer
+follows your list from the top -- always.
+
+## Notes to yourself
+
+A line that starts with \`#\` is a **comment**. Python ignores it completely. It
+is there for humans.
+
+\`\`\`python
+# This line does nothing at all.
+print("But this line works.")
+\`\`\`
+
+You will use comments to leave notes for the person who reads your code later.
+That person is usually you, in two weeks, having forgotten everything.
+
+## Why is it called Python?
+
+Not the snake. It is named after *Monty Python*, an old British comedy show
+that the person who invented the language liked. Programming has more silly
+names in it than you would expect.
+
+> tip: Everything you just ran happened inside this page -- there is nothing to install, and nothing you can break. Try things.
+`,
+    fr: `## Un programme, c'est une liste d'ordres
+
+Un ordinateur est très rapide et très obéissant. Il est aussi très bête. Il
+fait exactement ce que tu lui dis -- dans l'ordre exact où tu le dis -- et il
+ne devine jamais ce que tu voulais dire.
+
+C'est tout le métier de programmeur : écrire les ordres assez clairement pour
+que quelque chose sans aucun bon sens puisse les suivre.
+
+\`\`\`flow
+step: mettre le pain dans le grille-pain
+step: appuyer sur le bouton
+ask: c'est doré ?
+yes: sortir le pain
+step: manger
+\`\`\`
+
+Si tu inverses deux lignes, tu manges du pain cru et tu fais griller l'assiette.
+L'ordinateur ne t'arrêtera pas. Il le fera, c'est tout.
+
+## Dire bonjour
+
+Voici un vrai programme Python. Il fait une ligne. Appuie sur **Run** et
+regarde.
+
+\`\`\`python
+print("Salut ! Je suis ton premier programme.")
+\`\`\`
+
+\`print\` veut dire *affiche ça à l'écran*. Ce que tu mets entre les parenthèses,
+c'est ce qui s'affiche.
+
+> tip: Remplace le texte entre les guillemets par ton prénom, puis appuie encore sur Run. Rien ne casse. Tu peux recommencer autant de fois que tu veux.
+
+## Les guillemets comptent
+
+Python a besoin des guillemets pour savoir où ton message commence et où il
+s'arrête. Sans eux, il croit que tu parles d'autre chose et il s'arrête.
+
+Lance celui-ci. Il est **fait** pour planter :
+
+\`\`\`python
+print(Salut)
+\`\`\`
+
+Tu as eu un message rouge qui dit \`NameError\`. Ce n'est pas parce que tu es
+nul. C'est Python qui te dit, poliment : *« je ne connais rien qui s'appelle
+Salut »*.
+
+> do: Lis le message rouge. Il dit presque toujours ce qui ne va pas et à quelle ligne.
+> don't: Ne panique pas et n'efface pas tout. Une erreur, c'est une information, pas une punition.
+
+## Faire deux choses
+
+Donne-lui deux ordres et il les fait dans l'ordre, de haut en bas.
+
+\`\`\`python
+print("Premier")
+print("Deuxième")
+\`\`\`
+
+Inverse les deux lignes et relance. L'ordre change, parce que l'ordinateur suit
+ta liste depuis le haut -- toujours.
+
+## Des notes pour toi-même
+
+Une ligne qui commence par \`#\` est un **commentaire**. Python l'ignore
+complètement. Elle est là pour les humains.
+
+\`\`\`python
+# Cette ligne ne fait rien du tout.
+print("Mais celle-ci marche.")
+\`\`\`
+
+Tu utiliseras les commentaires pour laisser des notes à la personne qui lira
+ton code plus tard. Cette personne, c'est souvent toi, dans deux semaines,
+qui as tout oublié.
+
+## Pourquoi « Python » ?
+
+Pas le serpent. C'est nommé d'après *Monty Python*, une vieille série comique
+anglaise qu'aimait la personne qui a inventé le langage. En programmation, il y
+a plus de noms idiots que tu ne crois.
+
+> tip: Tout ce que tu viens de lancer s'est passé dans cette page -- rien à installer, et rien que tu puisses casser. Essaie des choses.
+`,
+  },
   "ph-1": {
     en: `Physical AI is what happens when the two halves of "AI" that you usually hear about separately -- software that can decide things, and a machine that can move -- are put in the same box. A chatbot is intelligence with no body: it can reason about the world, but it cannot touch it. A washing machine is a body with no intelligence: it moves, but only ever the same fixed sequence, blind to what is actually inside the drum. A robot is both at once. It has to sense a world that keeps changing, decide what to do about it, and then physically act -- and it has to do all three fast enough that the world hasn't changed again by the time it moves.
 

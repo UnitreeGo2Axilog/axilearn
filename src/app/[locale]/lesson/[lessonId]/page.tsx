@@ -9,6 +9,7 @@ import { LessonComplete } from "@/components/lesson-complete";
 import { LessonQuiz } from "@/components/lesson-quiz";
 import { LessonExercisePrompt } from "@/components/lesson-exercise-prompt";
 import { CodeSandbox } from "@/components/code-sandbox";
+import { LessonBody } from "@/components/lesson-body";
 import { LessonSteps } from "@/components/lesson-steps";
 import { LessonNav } from "@/components/lesson-nav";
 import { BookmarkButton } from "@/components/bookmark-button";
@@ -112,59 +113,48 @@ export default async function LessonPage({
           </div>
         )}
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(280px,340px)_1fr_minmax(240px,320px)]">
-          {/* instructions */}
-          <section className="panel rounded-xl p-4">
-            <h2
-              className="mb-3 text-sm font-semibold uppercase tracking-wide"
-              style={{ color: "var(--neon)" }}
-            >
-              {t("lesson.instructions")}
-            </h2>
-            {body ? (
-              <div className="space-y-3 text-sm leading-relaxed text-main">
-                {body.split(/\n{2,}/).map((para, i) => (
-                  <p key={i}>{para}</p>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm leading-relaxed text-muted">{level.shortDescription}</p>
-            )}
+        {/* The reading, as one column.
+            It used to be a narrow left rail beside the editor, which asks a
+            reader to hold the explanation in their head while they look at
+            the example somewhere else. The code now sits inside the text, at
+            the moment it is being explained, and the workspace -- when the
+            lesson has one -- comes after the reading rather than beside it. */}
+        <section className="panel rounded-2xl p-5 sm:p-7">
+          <h2
+            className="mb-4 text-sm font-semibold uppercase tracking-wide"
+            style={{ color: "var(--neon)" }}
+          >
+            {t("lesson.instructions")}
+          </h2>
 
-            {level.skills.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-1.5">
-                {level.skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="rounded-md px-2 py-0.5 text-[11px] font-semibold text-faint"
-                    style={{ background: "var(--bg-2)" }}
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* workspace + output -- a real Python sandbox when the lesson has
-              starter code, otherwise an honest "this one is reading only"
-              rather than two dead panels implying something is broken. */}
-          {level.starterCode ? (
-            <CodeSandbox starterCode={level.starterCode} />
+          {body ? (
+            <LessonBody body={body} accent={track.color} />
           ) : (
-            <section className="panel rounded-xl p-4 lg:col-span-2">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-                {t("lesson.workspace")}
-              </h2>
-              <div
-                className="grid min-h-[220px] place-items-center rounded-lg border p-3 text-center text-sm text-muted"
-                style={{ borderColor: "var(--border)", background: "var(--bg)" }}
-              >
-                {t("lesson.readingOnly")}
-              </div>
-            </section>
+            <p className="text-sm leading-relaxed text-muted">{level.shortDescription}</p>
           )}
-        </div>
+
+          {level.skills.length > 0 && (
+            <div className="mt-6 flex flex-wrap gap-1.5">
+              {level.skills.map((skill) => (
+                <span
+                  key={skill}
+                  className="rounded-md px-2 py-0.5 text-[11px] font-semibold text-faint"
+                  style={{ background: "var(--bg-2)" }}
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* "Your turn": the exercise comes after the reading, as it does on
+            the sites this shape is borrowed from. */}
+        {level.starterCode && (
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_minmax(240px,340px)]">
+            <CodeSandbox starterCode={level.starterCode} />
+          </div>
+        )}
 
         {/* completion -- the only write a learner makes, and what every
             progress number on the platform is counted from. A lesson with a
