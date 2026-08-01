@@ -6,15 +6,20 @@
  * Before this existed, "mark as done" was a single unguarded button -- a
  * learner could complete a lesson without reading a word of it, and every
  * progress number on the platform (map, profile, admin roster) would have
- * reported that as real learning. Now completion, and the XP that comes with
- * it, is only awarded once every question is answered correctly.
+ * reported that as real learning. So the quiz still stands between a lesson
+ * and its XP.
+ *
+ * It no longer stands between a lesson and the REST OF THE TRACK. It did:
+ * completion was awarded only on a perfect score, and the next lesson unlocks
+ * on completion, so a single stubborn question walled a learner out of
+ * everything after it -- a comprehension check behaving like an exam. A
+ * perfect score still awards the lesson instantly. Anything short of it now
+ * offers both a retry and the choice to mark the lesson done and carry on.
  *
  * All questions show at once, like a real answer sheet. Checking reveals
  * right/wrong PLUS an explanation for each one -- right or wrong, because the
- * explanation is the actual teaching moment, not just a verdict. Getting
- * everything right immediately awards the lesson; anything wrong offers a
- * retry with a clean slate, because this is a comprehension check meant to
- * be passed, not a one-shot exam.
+ * explanation is the teaching moment rather than the verdict, and it is what
+ * makes moving on after a wrong answer different from skipping.
  */
 import { useMemo, useState } from "react";
 import { Check, Loader2, RotateCcw, Sparkles } from "lucide-react";
@@ -64,20 +69,26 @@ export function LessonQuiz({
     setAnswers((prev) => prev.map((a, i) => (i === qi ? oi : a)));
   }
 
+  /** Complete the lesson. Reached automatically on a perfect score, or by
+   *  the learner's own choice after seeing where they went wrong. */
+  async function award() {
+    setBusy(true);
+    setFailed(false);
+    try {
+      await markLessonDone(uid, trackId, lessonId, xp);
+      await refresh();
+    } catch {
+      // Surfaced below: without this a failed write showed "done" anyway,
+      // and the next lesson would stay locked with nothing explaining why.
+      setFailed(true);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function check() {
     setChecked(true);
-    if (answers.every((a, i) => a === quiz[i].correctIndex)) {
-      setBusy(true);
-      setFailed(false);
-      try {
-        await markLessonDone(uid, trackId, lessonId, xp);
-        await refresh();
-      } catch {
-        setFailed(true);
-      } finally {
-        setBusy(false);
-      }
-    }
+    if (answers.every((a, i) => a === quiz[i].correctIndex)) await award();
   }
 
   function retry() {
@@ -119,7 +130,10 @@ export function LessonQuiz({
         </span>
         <span className="min-w-[160px] flex-1">
           <span className="block text-sm font-bold" style={{ color: "var(--cleared)" }}>
-            {t("quiz.passed")}
+            {/* Only celebrate a clean sweep. Someone who moved on with two
+                wrong answers being told "Nailed it!" learns that the
+                platform is not paying attention. */}
+            {passed ? t("quiz.passed") : t("quiz.doneTitle")}
           </span>
           <span className="block text-xs text-faint">
             +{xp} XP · {t("lesson.completed")}
@@ -180,32 +194,58 @@ export function LessonQuiz({
       })}
 
       <div className="flex flex-wrap items-center gap-3">
-        {!checked || !passed ? (
-          <button
-            onClick={checked ? retry : check}
-            disabled={!checked && !allAnswered}
-            className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-black uppercase tracking-wide transition disabled:opacity-40"
-            style={{ background: accent, color: "var(--surface-solid)" }}
-          >
-            {checked ? <RotateCcw className="h-4 w-4" /> : <Check className="h-4 w-4" />}
-            {checked ? t("quiz.retry") : t("quiz.check")}
-          </button>
-        ) : busy ? (
+        {busy ? (
           <span className="inline-flex items-center gap-2 text-sm font-bold text-faint">
             <Loader2 className="h-4 w-4 animate-spin" />
             {t("admin.saving")}
           </span>
-        ) : (
+        ) : !checked ? (
+          <button
+            onClick={check}
+            disabled={!allAnswered}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-black uppercase tracking-wide transition disabled:opacity-40"
+            style={{ background: accent, color: "var(--surface-solid)" }}
+          >
+            <Check className="h-4 w-4" />
+            {t("quiz.check")}
+          </button>
+        ) : passed ? (
           <span className="inline-flex items-center gap-2 text-sm font-bold" style={{ color: "var(--cleared)" }}>
             <Check className="h-4 w-4" />
             {t("quiz.passed")} · +{xp} XP
           </span>
+        ) : (
+          // Got some wrong. Two ways forward, and neither is a dead end:
+          // try again for the full score, or accept it and keep going. The
+          // second one is why one hard question can no longer wall a learner
+          // out of every lesson that follows.
+          <>
+            <button
+              onClick={retry}
+              className="inline-flex items-center gap-2 rounded-xl border px-5 py-3 text-sm font-black uppercase tracking-wide transition hover:opacity-80"
+              style={{ borderColor: "var(--border-strong)", color: "var(--text)" }}
+            >
+              <RotateCcw className="h-4 w-4" />
+              {t("quiz.retry")}
+            </button>
+            <button
+              onClick={award}
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-black uppercase tracking-wide transition"
+              style={{ background: accent, color: "var(--surface-solid)" }}
+            >
+              <Check className="h-4 w-4" />
+              {t("quiz.markAnyway")}
+            </button>
+          </>
         )}
 
-        {checked && !passed && (
+        {checked && !passed && !busy && (
           <span className="text-xs font-bold text-faint">
             {t("quiz.scoreLabel").replace("{score}", String(score)).replace("{total}", String(quiz.length))}
           </span>
+        )}
+        {checked && !passed && !busy && (
+          <span className="w-full text-xs leading-relaxed text-faint">{t("quiz.reviewHint")}</span>
         )}
         {!checked && !allAnswered && (
           <span className="text-xs text-faint">{t("quiz.needAllCorrect")}</span>
