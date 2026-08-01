@@ -412,3 +412,64 @@ export function youTubeId(input: string): string | null {
   const m = s.match(/(?:youtu\.be\/|v=|\/embed\/|\/shorts\/)([\w-]{11})/);
   return m ? m[1] : null;
 }
+
+/* ---------------------------------------------------------- notifications */
+
+/** What a message is about, so the bell can colour and group them. */
+export type NotificationCategory =
+  | "programming"
+  | "games"
+  | "robotics"
+  | "practice"
+  | "announcement";
+
+/**
+ * When a message becomes visible.
+ *
+ *  - `daily`  one message from the daily pool per calendar day, rotating
+ *  - `weekly` one from the weekly pool per calendar week, rotating
+ *  - `date`   visible from a specific day onward, and then permanently
+ *
+ * Rotation is what makes "a tip a day" work with no server, no scheduler and
+ * no billing plan: the day number picks the message, so every learner opening
+ * the app on the same day sees the same one, and nothing has to run overnight
+ * to make that true.
+ */
+export type NotificationSchedule =
+  | { kind: "daily" }
+  | { kind: "weekly" }
+  | { kind: "date"; date: string }; // YYYY-MM-DD
+
+export interface NotificationDoc {
+  id: string;
+  order: number;
+  status: PublishStatus;
+  category: NotificationCategory;
+  title: L10n;
+  body: L10n;
+  schedule: NotificationSchedule;
+  /** Optional place to send the reader, e.g. a track or a challenge. */
+  href?: string;
+  updatedAt?: number;
+}
+
+export interface ResolvedNotification {
+  id: string;
+  category: NotificationCategory;
+  title: string;
+  body: string;
+  href?: string;
+}
+
+export function resolveNotification(
+  doc: NotificationDoc,
+  locale: Locale,
+): ResolvedNotification {
+  return {
+    id: doc.id,
+    category: doc.category,
+    title: pick(doc.title, locale),
+    body: pick(doc.body, locale),
+    ...(doc.href ? { href: doc.href } : {}),
+  };
+}

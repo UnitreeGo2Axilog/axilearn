@@ -106,6 +106,24 @@ service cloud.firestore {
       }
     }
 
+    // Admin-authored tips and announcements, shown in the bell.
+    //
+    // Readable by anyone signed in -- nothing here is private, and the bell
+    // only exists for a signed-in learner. Same draft rule as course content,
+    // with the same consequence: because this rule inspects `status`, a LIST
+    // query must constrain that field or Firestore rejects it outright (see
+    // src/lib/notifications.ts).
+    //
+    // WHICH ONES A LEARNER HAS READ is deliberately not stored here. It lives
+    // as an array on their own user document, like bookmarks. Per-learner
+    // state does not belong in shared content, and keeping it here would mean
+    // giving every learner write access to messages they must not be able to
+    // edit.
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && (isPublished() || isAdmin());
+      allow write: if isAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

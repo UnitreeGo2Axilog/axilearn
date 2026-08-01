@@ -7,6 +7,7 @@ import { useLocale, useT } from "@/i18n/use-t";
 import { LOCALES } from "@/i18n/messages";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AccountMenu } from "@/components/account-menu";
+import { NotificationBell } from "@/components/notification-bell";
 
 /**
  * Top bar: logo mark, theme, language, and the account menu.
@@ -86,7 +87,12 @@ export function SiteHeader() {
           )}
 
           {!loading && user ? (
-            <AccountMenu />
+            <>
+              {/* Outside the menu on purpose -- an unread badge you have to
+                  open something to see is not an unread badge. */}
+              <NotificationBell />
+              <AccountMenu />
+            </>
           ) : (
             !loading && (
               <Link

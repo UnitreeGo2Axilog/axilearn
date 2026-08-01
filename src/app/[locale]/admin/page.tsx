@@ -160,6 +160,11 @@ function Dashboard() {
                 {t("admin.importChallenges")} {result.challengesWritten.length}
               </p>
             )}
+            {result.notificationsWritten.length > 0 && (
+              <p style={{ color: "var(--reward)" }}>
+                {t("notif.imported")} {result.notificationsWritten.length}
+              </p>
+            )}
             {result.fieldsBackfilled.length > 0 && (
               <p style={{ color: "var(--neon)" }}>
                 {t("admin.importBackfilled")} {result.fieldsBackfilled.length}

@@ -29,6 +29,7 @@ import { repoTrackDocs } from "./repo-content";
 import { lessonBodies } from "./lesson-bodies";
 import { lessonQuizzes } from "./lesson-quizzes";
 import { repoChallenges } from "./challenges";
+import { repoNotifications } from "./notifications";
 import type { ChallengeDoc, L10n, LessonEntry, LessonQuiz, PublishStatus, TrackDoc } from "./schema";
 
 const TRACKS = "tracks";
@@ -160,6 +161,8 @@ export interface ImportResult {
   fieldsBackfilled: string[];
   /** Track ids whose stored copy was refreshed from a newer repo revision. */
   tracksRefreshed: string[];
+  /** Notification ids created, on this run. */
+  notificationsWritten: string[];
 }
 
 /**
@@ -360,6 +363,28 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
     }
   }
 
+  // The starter tips, so the bell is not empty the day the feature ships.
+  // Same rule as challenges: existing ones are left alone, because after the
+  // first import these belong to whoever edits them in the CMS.
+  const notificationsWritten: string[] = [];
+  for (const n of repoNotifications) {
+    const ref = doc(getDb(), "notifications", n.id);
+    if ((await getDoc(ref)).exists()) continue;
+    // Spread minus the id, written explicitly: the id is the document name,
+    // and storing it inside the document too is a second copy that can drift.
+    const copy = clean(n);
+    await setDoc(ref, {
+      order: copy.order,
+      status: copy.status,
+      category: copy.category,
+      title: copy.title,
+      body: copy.body,
+      schedule: copy.schedule,
+      updatedAt: Date.now(),
+    });
+    notificationsWritten.push(n.id);
+  }
+
   return {
     written,
     skipped,
@@ -368,6 +393,7 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
     challengesMoved,
     fieldsBackfilled,
     tracksRefreshed,
+    notificationsWritten,
   };
 }
 
