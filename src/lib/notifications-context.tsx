@@ -11,12 +11,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "./auth-context";
 import {
+  dismissNotifications,
+  fetchDismissedNotificationIds,
   fetchNotifications,
   fetchReadNotificationIds,
   markNotificationsRead,
 } from "./notifications";
 import { unreadNotifications, visibleNotifications } from "./notification-schedule";
-import { fetchAllThreads, fetchMyThreads } from "./contact";
+import { fetchAllThreads, fetchMyThreads, markThreadRead } from "./contact";
 import type { ContactThread, NotificationDoc } from "@/content/schema";
 
 interface NotificationsValue {
@@ -32,6 +34,10 @@ interface NotificationsValue {
    */
   messageAlerts: ContactThread[];
   loading: boolean;
+  /** Remove one item from this person's bell, for good. */
+  dismiss: (id: string) => Promise<void>;
+  /** Remove everything currently in the bell. */
+  clearAll: () => Promise<void>;
   /** Called when the panel is opened -- everything shown becomes read. */
   markAllRead: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -44,6 +50,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
   const [all, setAll] = useState<NotificationDoc[]>([]);
   const [messageAlerts, setMessageAlerts] = useState<ContactThread[]>([]);
   const [readIds, setReadIds] = useState<Set<string>>(() => new Set());
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => new Set());
   const [loading, setLoading] = useState(false);
   const [today, setToday] = useState<Date | null>(null);
 
@@ -58,17 +65,20 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     if (!uid || !configured) {
       setAll([]);
       setReadIds(new Set());
+      setDismissedIds(new Set());
       setMessageAlerts([]);
       return;
     }
     setLoading(true);
     try {
-      const [messages, read] = await Promise.all([
+      const [messages, read, dismissed] = await Promise.all([
         fetchNotifications(),
         fetchReadNotificationIds(uid),
+        fetchDismissedNotificationIds(uid),
       ]);
       setAll(messages);
       setReadIds(new Set(read));
+      setDismissedIds(new Set(dismissed));
     } catch {
       // Rules not deployed yet, or offline. An empty bell is the honest
       // answer and nothing else on the platform depends on it.
@@ -95,9 +105,15 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     void refresh();
   }, [refresh]);
 
+  // Dismissed items are filtered AFTER the schedule has picked, not before.
+  // Removing one from the pool first would renumber the rotation for that
+  // learner alone -- their "tip of the day" would stop matching everyone
+  // else's, and dismissing one message would silently reshuffle every future
+  // one. Filtering afterwards leaves the schedule fixed: a removed tip simply
+  // leaves its slot empty for the person who removed it.
   const visible = useMemo(
-    () => (today ? visibleNotifications(all, today) : []),
-    [all, today],
+    () => (today ? visibleNotifications(all, today).filter((n) => !dismissedIds.has(n.id)) : []),
+    [all, today, dismissedIds],
   );
   const unread = useMemo(() => unreadNotifications(visible, readIds), [visible, readIds]);
 
@@ -112,9 +128,57 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     }
   }, [uid, unread, refresh]);
 
+  /**
+   * One id, whichever kind it is.
+   *
+   * A tip is hidden from this person's bell. A conversation is NOT deleted --
+   * removing the alert marks the thread read, so the notification goes and
+   * the messages stay where both sides can still find them. Deleting somebody
+   * else's question because the badge was annoying is not something a bell
+   * should be able to do.
+   */
+  const dismiss = useCallback(
+    async (id: string) => {
+      if (!uid) return;
+      const thread = messageAlerts.find((th) => th.id === id);
+      if (thread) {
+        setMessageAlerts((prev) => prev.filter((th) => th.id !== id));
+        try {
+          await markThreadRead(id, isAdmin ? "admin" : "student");
+        } catch {
+          void refresh();
+        }
+        return;
+      }
+      setDismissedIds((prev) => new Set([...prev, id]));
+      try {
+        await dismissNotifications(uid, [id]);
+      } catch {
+        void refresh();
+      }
+    },
+    [uid, isAdmin, messageAlerts, refresh],
+  );
+
+  const clearAll = useCallback(async () => {
+    if (!uid) return;
+    const tipIds = visible.map((n) => n.id);
+    const threadIds = messageAlerts.map((th) => th.id);
+    setDismissedIds((prev) => new Set([...prev, ...tipIds]));
+    setMessageAlerts([]);
+    try {
+      await dismissNotifications(uid, tipIds);
+      await Promise.all(
+        threadIds.map((id) => markThreadRead(id, isAdmin ? "admin" : "student")),
+      );
+    } catch {
+      void refresh();
+    }
+  }, [uid, isAdmin, visible, messageAlerts, refresh]);
+
   const value = useMemo<NotificationsValue>(
-    () => ({ visible, unread, messageAlerts, loading, markAllRead, refresh }),
-    [visible, unread, messageAlerts, loading, markAllRead, refresh],
+    () => ({ visible, unread, messageAlerts, loading, dismiss, clearAll, markAllRead, refresh }),
+    [visible, unread, messageAlerts, loading, dismiss, clearAll, markAllRead, refresh],
   );
 
   return (

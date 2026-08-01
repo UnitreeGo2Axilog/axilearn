@@ -76,3 +76,28 @@ export async function markNotificationsRead(uid: string, ids: string[]): Promise
   if (ids.length === 0) return;
   await updateDoc(doc(getDb(), "users", uid), { readNotifications: arrayUnion(...ids) });
 }
+
+/* ------------------------------------------------------------- dismissed */
+
+/**
+ * Removing a notification hides it from ONE person's bell. It does not touch
+ * the message itself, which belongs to whoever wrote it and is still on
+ * everybody else's bell -- a learner cannot delete a tip out from under the
+ * rest of the class, and an admin who wants one gone for good deletes it in
+ * the CMS instead.
+ *
+ * There is no undo, which is the honest reading of "remove". Nothing is lost
+ * that cannot be republished.
+ */
+export async function fetchDismissedNotificationIds(uid: string): Promise<string[]> {
+  const snap = await getDoc(doc(getDb(), "users", uid));
+  const raw = snap.exists()
+    ? (snap.data() as { dismissedNotifications?: unknown }).dismissedNotifications
+    : null;
+  return Array.isArray(raw) ? raw.filter((v): v is string => typeof v === "string") : [];
+}
+
+export async function dismissNotifications(uid: string, ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  await updateDoc(doc(getDb(), "users", uid), { dismissedNotifications: arrayUnion(...ids) });
+}

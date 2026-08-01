@@ -13,7 +13,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Bell, Bot, Gamepad2, Lightbulb, Megaphone, MessageCircle, Terminal } from "lucide-react";
+import { Bell, Bot, Gamepad2, Lightbulb, Megaphone, MessageCircle, Terminal, X } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useNotifications } from "@/lib/notifications-context";
 import { pick } from "@/content/schema";
@@ -36,7 +36,7 @@ export function NotificationBell() {
   const t = useT();
   const locale = useLocale() as Locale;
   const { user, profile } = useAuth();
-  const { visible, unread, messageAlerts, markAllRead } = useNotifications();
+  const { visible, unread, messageAlerts, dismiss, clearAll, markAllRead } = useNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -107,22 +107,26 @@ export function NotificationBell() {
         >
           <div className="flex items-center justify-between px-4 pb-2 pt-3.5">
             <span className="text-sm font-extrabold text-strong">{t("notif.title")}</span>
-            {count > 0 && (
-              <span className="text-[11px] font-bold" style={{ color: "var(--reward)" }}>
-                {t("notif.newCount").replace("{n}", String(count))}
-              </span>
+            {visible.length + messageAlerts.length > 0 && (
+              <button
+                type="button"
+                onClick={() => void clearAll()}
+                className="text-[11px] font-bold text-faint underline decoration-2 underline-offset-2 transition hover:opacity-80"
+              >
+                {t("notif.clearAll")}
+              </button>
             )}
           </div>
 
           {messageAlerts.length > 0 && (
             <div className="space-y-1 p-1.5 pt-0">
               {messageAlerts.map((th) => (
+                <div key={th.id} className="relative">
                 <Link
-                  key={th.id}
                   href={threadHref}
                   onClick={() => setOpen(false)}
                   role="menuitem"
-                  className="flex gap-2.5 rounded-xl p-2.5 transition hover:opacity-80"
+                  className="flex gap-2.5 rounded-xl p-2.5 pr-8 transition hover:opacity-80"
                   style={{ background: "color-mix(in srgb, var(--reward) 10%, transparent)" }}
                 >
                   <span
@@ -143,6 +147,8 @@ export function NotificationBell() {
                     </span>
                   </span>
                 </Link>
+                <DismissButton label={t("notif.remove")} onClick={() => void dismiss(th.id)} />
+                </div>
               ))}
             </div>
           )}
@@ -156,7 +162,7 @@ export function NotificationBell() {
                 const wasUnread = unreadIds.has(n.id);
                 const body = (
                   <div
-                    className="flex gap-2.5 rounded-xl p-2.5"
+                    className="flex gap-2.5 rounded-xl p-2.5 pr-8"
                     style={{
                       // Only the ones that were new when the panel opened are
                       // tinted. Everything fading to the same grey the instant
@@ -183,13 +189,16 @@ export function NotificationBell() {
                   </div>
                 );
 
-                return n.href ? (
-                  <Link key={n.id} href={n.href} onClick={() => setOpen(false)} role="menuitem">
-                    {body}
-                  </Link>
-                ) : (
-                  <div key={n.id} role="menuitem">
-                    {body}
+                return (
+                  <div key={n.id} className="relative">
+                    {n.href ? (
+                      <Link href={n.href} onClick={() => setOpen(false)} role="menuitem">
+                        {body}
+                      </Link>
+                    ) : (
+                      <div role="menuitem">{body}</div>
+                    )}
+                    <DismissButton label={t("notif.remove")} onClick={() => void dismiss(n.id)} />
                   </div>
                 );
               })}
@@ -198,5 +207,24 @@ export function NotificationBell() {
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * The remove control, layered over the row rather than inside it: the row is
+ * often a <Link>, and a <button> inside an <a> is interactive content nested
+ * in interactive content -- the same trap the track cards had.
+ */
+function DismissButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-md text-faint opacity-60 transition hover:opacity-100"
+    >
+      <X className="h-3.5 w-3.5" />
+    </button>
   );
 }
