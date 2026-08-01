@@ -47,25 +47,43 @@ export function SiteHeader() {
         </Link>
 
         <div className="ml-auto flex items-center gap-3">
-          <ThemeToggle />
+          {/* Theme and language live INSIDE the account menu for anyone signed
+              in -- that is the whole point of collecting the account area in
+              one place. They stay out here for everyone else, because a
+              visitor reading the login page in the wrong language has no menu
+              to open.
 
-          <div className="flex overflow-hidden rounded-lg border text-xs font-bold"
-            style={{ borderColor: "var(--border-strong)" }}>
-            {LOCALES.map((l) => (
-              <Link
-                key={l}
-                href={swapLocale(l)}
-                className="px-2.5 py-1.5 uppercase transition"
-                style={
-                  l === locale
-                    ? { background: "var(--neon)", color: "var(--surface-solid)" }
-                    : { color: "var(--text-muted)" }
-                }
+              Gated on `user` alone and NOT on `!loading && !user`. Auth
+              resolves on the client, so `loading` is true through the server
+              render and the first paint; including it left a signed-out
+              visitor with no language switch at all until Firebase answered,
+              which is exactly when they are most likely to want one. `user`
+              is null then too, so these render server-side and simply give
+              way to the menu for anyone who turns out to be signed in. */}
+          {!user && (
+            <>
+              <ThemeToggle />
+              <div
+                className="flex overflow-hidden rounded-lg border text-xs font-bold"
+                style={{ borderColor: "var(--border-strong)" }}
               >
-                {l}
-              </Link>
-            ))}
-          </div>
+                {LOCALES.map((l) => (
+                  <Link
+                    key={l}
+                    href={swapLocale(l)}
+                    className="px-2.5 py-1.5 uppercase transition"
+                    style={
+                      l === locale
+                        ? { background: "var(--neon)", color: "var(--surface-solid)" }
+                        : { color: "var(--text-muted)" }
+                    }
+                  >
+                    {l}
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
 
           {!loading && user ? (
             <AccountMenu />

@@ -20,6 +20,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Award,
   BookMarked,
@@ -28,18 +29,22 @@ import {
   ClipboardList,
   Home,
   Info,
+  Languages,
   LayoutDashboard,
   LogOut,
   Mail,
+  Moon,
+  Sun,
   TrendingUp,
   UserRound,
   Users,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useBookmarks } from "@/lib/bookmarks-context";
+import { useTheme } from "@/lib/theme";
 import { Avatar } from "@/components/avatar";
 import { useLocale, useT } from "@/i18n/use-t";
-import type { MessageKey } from "@/i18n/messages";
+import { LOCALES, type MessageKey } from "@/i18n/messages";
 
 interface Entry {
   key: MessageKey;
@@ -58,8 +63,18 @@ export function AccountMenu() {
   const locale = useLocale();
   const { user, profile, logout } = useAuth();
   const { ids: bookmarkIds } = useBookmarks();
+  const { theme, setTheme } = useTheme();
+  const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const dark = theme === "dark";
+
+  /** Same path, other language -- keeps you on the page you were reading. */
+  const swapLocale = (next: string) => {
+    const rest = (pathname ?? "").split("/").slice(2).join("/");
+    return `/${next}${rest ? `/${rest}` : ""}`;
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -165,6 +180,82 @@ export function AccountMenu() {
             {entries.map((e) => (
               <MenuRow key={e.key} entry={e} t={t} onNavigate={() => setOpen(false)} />
             ))}
+          </div>
+
+          <div className="h-px" style={{ background: "var(--border)" }} />
+
+          {/* Preferences, not destinations. They are settings you flip in
+              place, so they are rows with a control on the right rather than
+              links -- and flipping one does NOT close the menu, because
+              choosing a theme is something you want to see the result of. */}
+          <div className="space-y-1 p-1.5">
+            <div className="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5">
+              <Languages className="h-4 w-4 shrink-0 text-faint" />
+              <span className="flex-1 text-sm font-semibold text-main">{t("nav.language")}</span>
+              <span
+                className="flex overflow-hidden rounded-lg border text-[11px] font-bold"
+                style={{ borderColor: "var(--border-strong)" }}
+              >
+                {LOCALES.map((l) => (
+                  <button
+                    key={l}
+                    type="button"
+                    onClick={() => router.push(swapLocale(l))}
+                    aria-current={l === locale ? "true" : undefined}
+                    className="px-2 py-1 uppercase transition"
+                    style={
+                      l === locale
+                        ? { background: "var(--neon)", color: "var(--surface-solid)" }
+                        : { color: "var(--text-muted)" }
+                    }
+                  >
+                    {l}
+                  </button>
+                ))}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5">
+              {dark ? (
+                <Moon className="h-4 w-4 shrink-0 text-faint" />
+              ) : (
+                <Sun className="h-4 w-4 shrink-0 text-faint" />
+              )}
+              <span className="flex-1 text-sm font-semibold text-main">{t("nav.theme")}</span>
+              <span
+                className="flex overflow-hidden rounded-lg border text-[11px] font-bold"
+                style={{ borderColor: "var(--border-strong)" }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setTheme("light")}
+                  aria-current={!dark ? "true" : undefined}
+                  aria-label={t("nav.themeLight")}
+                  className="grid h-6 w-7 place-items-center transition"
+                  style={
+                    !dark
+                      ? { background: "var(--neon)", color: "var(--surface-solid)" }
+                      : { color: "var(--text-muted)" }
+                  }
+                >
+                  <Sun className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTheme("dark")}
+                  aria-current={dark ? "true" : undefined}
+                  aria-label={t("nav.themeDark")}
+                  className="grid h-6 w-7 place-items-center transition"
+                  style={
+                    dark
+                      ? { background: "var(--neon)", color: "var(--surface-solid)" }
+                      : { color: "var(--text-muted)" }
+                  }
+                >
+                  <Moon className="h-3.5 w-3.5" />
+                </button>
+              </span>
+            </div>
           </div>
 
           <div className="h-px" style={{ background: "var(--border)" }} />

@@ -34,6 +34,10 @@ export const messages = {
     "nav.students": "Students",
     "nav.editProfile": "Edit profile",
     "nav.soon": "soon",
+    "nav.language": "Language",
+    "nav.theme": "Theme",
+    "nav.themeLight": "Light mode",
+    "nav.themeDark": "Dark mode",
 
     "home.title": "Choose your adventure",
     "home.subtitle":
@@ -451,6 +455,10 @@ export const messages = {
     "nav.students": "Élèves",
     "nav.editProfile": "Modifier le profil",
     "nav.soon": "bientôt",
+    "nav.language": "Langue",
+    "nav.theme": "Thème",
+    "nav.themeLight": "Mode clair",
+    "nav.themeDark": "Mode sombre",
 
     "home.title": "Choisis ton aventure",
     "home.subtitle":
