@@ -48,6 +48,16 @@ interface AuthValue {
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  /**
+   * Change the learner's own display name.
+   *
+   * Written in BOTH places, because both are read. The Firestore document is
+   * what the admin roster and the certificate use; the Firebase Auth record
+   * is what ensureProfile falls back to and what Google sign-in populates.
+   * Letting them drift means a learner renames themselves and their teacher's
+   * roster keeps showing the old name.
+   */
+  updateDisplayName: (name: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -131,6 +141,25 @@ export function AuthProvider({
         // Firebase sends the email and hosts the reset page itself, so there
         // is no token handling or reset route for us to get wrong.
         await sendPasswordResetEmail(getFirebaseAuth(), email);
+      },
+      async updateDisplayName(name) {
+        const current = getFirebaseAuth().currentUser;
+        if (!current) throw new Error("Not signed in");
+        const clean = name.trim();
+        if (!clean) throw new Error("Name cannot be empty");
+
+        await updateProfile(current, { displayName: clean });
+        // merge, not set: the user document also holds role, bookmarks and
+        // read notifications, and none of those belong to this form.
+        await setDoc(
+          doc(getDb(), "users", current.uid),
+          { displayName: clean },
+          { merge: true },
+        );
+        // Update local state rather than waiting for a reload -- the header,
+        // the avatar's initials and the certificate all read this, and none
+        // of them re-fetch on their own.
+        setProfile((prev) => (prev ? { ...prev, displayName: clean } : prev));
       },
       async logout() {
         await signOut(getFirebaseAuth());

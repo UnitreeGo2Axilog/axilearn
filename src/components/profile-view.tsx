@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { learner, type RoadmapTrack } from "@/content/roadmap-data";
 import { useProgress } from "@/lib/progress-context";
+import { ProfileEditor } from "@/components/profile-editor";
 import { certificateStatus } from "@/lib/certificate";
 import { useAuth } from "@/lib/auth-context";
 import { useLocale, useT } from "@/i18n/use-t";
@@ -159,6 +160,8 @@ function AdminProfile({
       </p>
 
       {/* what exists on the platform */}
+      <ProfileEditor />
+
       <section className="mb-6">
         <h2 className="mb-3 flex items-center gap-2 text-lg font-extrabold text-strong">
           <Layers className="h-5 w-5" style={{ color: "var(--advanced)" }} />
@@ -377,6 +380,8 @@ function LearnerProfile({
           </div>
         ))}
       </section>
+
+      <ProfileEditor />
 
       {/* per-track progress */}
       <section className="panel mb-6 rounded-2xl p-5">
