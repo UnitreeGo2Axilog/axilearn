@@ -19,6 +19,7 @@ import { ArrowLeft, Trophy } from "lucide-react";
 import { learner, trackProgress, type Level, type RoadmapTrack } from "@/content/roadmap-data";
 import { useProgress } from "@/lib/progress-context";
 import { certificateStatus } from "@/lib/certificate";
+import { withProgress } from "@/lib/lesson-access";
 import { useAuth } from "@/lib/auth-context";
 import { RoadmapCanvas } from "@/components/roadmap/roadmap-canvas";
 import { TopStatusBar } from "@/components/roadmap/top-status-bar";
@@ -144,21 +145,6 @@ export function RoadmapView({
   );
 }
 
-/**
- * Re-state a track for one learner: everything they have finished is cleared,
- * the first thing they have not is open, the rest stay locked.
- */
-function withProgress(track: RoadmapTrack, completed: Set<string>): RoadmapTrack {
-  let currentTaken = false;
-  return {
-    ...track,
-    levels: track.levels.map((level) => {
-      if (completed.has(level.id)) return { ...level, state: "completed" as const };
-      if (!currentTaken) {
-        currentTaken = true;
-        return { ...level, state: "current" as const };
-      }
-      return { ...level, state: "locked" as const };
-    }),
-  };
-}
+// withProgress lived here, which was fine while the map was the only screen
+// that cared about the sequence. The lesson page enforces it too now, so the
+// rule moved to lib/lesson-access.ts and both read it from the one copy.

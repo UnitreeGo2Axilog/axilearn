@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, Clock, Zap } from "lucide-react";
+import { ArrowLeft, Clock, Zap } from "lucide-react";
 import { getT, isLocale } from "@/i18n/messages";
 import { getChallenges, getLessonContent, getLessonLocation } from "@/content/store";
 import type { Locale } from "@/content/types";
@@ -10,6 +10,7 @@ import { LessonQuiz } from "@/components/lesson-quiz";
 import { LessonExercisePrompt } from "@/components/lesson-exercise-prompt";
 import { CodeSandbox } from "@/components/code-sandbox";
 import { LessonSteps } from "@/components/lesson-steps";
+import { LessonNav } from "@/components/lesson-nav";
 
 /**
  * The Learning Studio, in the three-pane shape the tech spec describes:
@@ -194,36 +195,14 @@ export default async function LessonPage({
           />
         )}
 
-        {/* Both directions. Forward was the only way through a track before,
-            which is fine until you want to re-read the thing the current
-            lesson assumes you remember. The row keeps its shape when either
-            end is missing, so the Next button does not slide to the left on
-            the first lesson. */}
-        {(prev || next) && (
-          <div className="mt-6 flex items-center justify-between gap-3">
-            {prev ? (
-              <Link
-                href={`/${locale}/lesson/${prev.id}`}
-                className="inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-bold text-main transition hover:opacity-80"
-                style={{ borderColor: "var(--border-strong)" }}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                {t("lesson.prev")}
-              </Link>
-            ) : (
-              <span />
-            )}
-            {next && (
-              <Link
-                href={`/${locale}/lesson/${next.id}`}
-                className="btn-neon inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-bold"
-              >
-                {t("lesson.next")}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            )}
-          </div>
-        )}
+        {/* Both directions, but forward has to be earned -- see LessonNav. */}
+        <LessonNav
+          lessonId={level.id}
+          prev={prev}
+          next={next}
+          locale={locale}
+          accent={track.color}
+        />
       </div>
     </AuthGate>
   );

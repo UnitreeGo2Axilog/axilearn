@@ -211,7 +211,7 @@ export const tracks: RoadmapTrack[] = [
   {
     id: "physical-ai",
     title: "Physical AI",
-    repoRevision: 2,
+    repoRevision: 3,
     short: "ROBOTICS",
     description: "Teach a real robot to see, walk and work.",
     color: "#22d3ee",
@@ -236,18 +236,6 @@ export const tracks: RoadmapTrack[] = [
         "Keep a small notebook of what you tried. Your own notes will save you hours later.",
         "Do a little every day rather than everything on Sunday -- your streak is on the map for a reason.",
       ],
-      primer: {
-        title: "New to code? Start with Python Basics",
-        why:
-          "This track writes a little Python to talk to the robot. Python Basics is a full track of its own -- four lessons and twelve challenges, about an hour of reading. Never written code? Take it first. Already comfortable? Go straight to the robot.",
-        minutes: 60,
-        lessons: [
-          "Your first line of code: print and comments",
-          "Variables, numbers and text",
-          "Making decisions: if, else and loops",
-          "Functions and lists",
-        ],
-      },
     },
     levels: physicalLevels,
   },
