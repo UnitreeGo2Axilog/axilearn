@@ -44,8 +44,18 @@ service cloud.firestore {
       // write their own `lastSeenAt` heartbeat, which is how the dashboard
       // knows who is on the platform right now.
       allow create: if isOwner(uid) && request.resource.data.role == 'student';
-      allow update: if isOwner(uid)
-                    && request.resource.data.role == resource.data.role;
+      // `role` is pinned for EVERYONE, admins included -- promotion stays a
+      // console action, exactly as before. `blocked` is pinned for the owner
+      // only: an admin can set it, and the person it is set on cannot clear
+      // it. A block a learner can lift is not a block, and this field is the
+      // only thing standing between a blocked account and the discussion.
+      allow update: if request.resource.data.role == resource.data.role
+                    && (
+                         isAdmin()
+                         || (isOwner(uid)
+                             && request.resource.data.get('blocked', false)
+                                == resource.data.get('blocked', false))
+                       );
       allow delete: if isAdmin();
     }
 
@@ -162,6 +172,98 @@ service cloud.firestore {
                       || (ownsThread() && request.resource.data.from == 'student');
         allow update, delete: if false;
       }
+    }
+
+    // Homework set by the teacher. Published work is readable by anyone
+    // signed in; drafts and every write are admin-only, as with course
+    // content.
+    match /assignments/{assignmentId} {
+      allow read: if isSignedIn() && (isPublished() || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // One learner's answer, id `{assignmentId}__{uid}`.
+    //
+    // THE DEADLINE IS ENFORCED HERE, and it is the only place it means
+    // anything. A check in the browser is worth nothing: moving the system
+    // clock back is two clicks, and every "you have 24 hours" that lives only
+    // in JavaScript is an honour system with a countdown drawn on it.
+    //
+    // What the rule does NOT do is refuse late work. Locking somebody out at
+    // 24h05 loses the thing they spent the evening on, which is a worse
+    // outcome than a teacher seeing "late" next to it. So a late submission
+    // is accepted -- it simply may not call itself punctual. `late` must
+    // equal what the SERVER's clock says, via request.time, so the flag the
+    // teacher sees cannot be forged from the client.
+    match /submissions/{submissionId} {
+      function assignmentOf(id) {
+        return get(/databases/$(database)/documents/assignments/$(id)).data;
+      }
+      function dueAtOf(id) {
+        return assignmentOf(id).dueAt;
+      }
+      function honestlyLate(id) {
+        // A null deadline means the teacher turned the limit off: nothing is
+        // ever late, so the flag must be false.
+        return dueAtOf(id) == null
+          ? request.resource.data.late == false
+          : request.resource.data.late == (request.time.toMillis() > dueAtOf(id));
+      }
+      // Feedback belongs to the teacher. A learner resubmitting must carry it
+      // through unchanged rather than quietly clearing the reply they got.
+      function keepsFeedback() {
+        return request.resource.data.get('feedback', '') == resource.data.get('feedback', '');
+      }
+
+      allow read: if isAdmin()
+                  || (isSignedIn() && resource != null && resource.data.uid == request.auth.uid);
+      allow create: if isSignedIn()
+                    && request.resource.data.uid == request.auth.uid
+                    && submissionId == request.resource.data.assignmentId + '__' + request.auth.uid
+                    && honestlyLate(request.resource.data.assignmentId)
+                    && request.resource.data.get('feedback', '') == '';
+      allow update: if isAdmin()
+                    || (isSignedIn()
+                        && resource.data.uid == request.auth.uid
+                        && request.resource.data.uid == resource.data.uid
+                        && honestlyLate(request.resource.data.assignmentId)
+                        && keepsFeedback());
+      allow delete: if isAdmin();
+    }
+
+    // The shared discussion area: everyone signed in reads it, everyone not
+    // blocked writes to it.
+    //
+    // This is the one genuinely PUBLIC space on the platform, and it is
+    // between minors, so what it can and cannot do is worth being exact
+    // about:
+    //
+    //  - A message carries its author's uid, and the rule requires that uid
+    //    to be the person writing. Nobody can post as somebody else.
+    //  - Messages are never editable. Not by the author, not by an admin.
+    //    A public message somebody can silently rewrite after other people
+    //    have replied to it is a way to make anyone appear to have said
+    //    anything.
+    //  - An author may delete their own; an admin may delete any. That is the
+    //    moderation the teacher asked for, and it is the minimum a public
+    //    space between children needs.
+    //  - A blocked account cannot post. `blocked` lives on the user document
+    //    where only an admin can set it -- see the users rule above.
+    match /discussion/{messageId} {
+      function isBlocked() {
+        return exists(/databases/$(database)/documents/users/$(request.auth.uid))
+          && get(/databases/$(database)/documents/users/$(request.auth.uid))
+               .data.get('blocked', false) == true;
+      }
+
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+                    && request.resource.data.uid == request.auth.uid
+                    && !isBlocked();
+      allow update: if false;
+      allow delete: if isAdmin()
+                    || (isSignedIn() && resource != null
+                        && resource.data.uid == request.auth.uid);
     }
 
     match /{document=**} {

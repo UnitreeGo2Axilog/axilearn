@@ -511,3 +511,89 @@ export interface ContactMessage {
   text: string;
   at: number;
 }
+
+/* -------------------------------------------------------------- homework */
+
+/**
+ * A piece of work set by the teacher.
+ *
+ * `dueAt` is an absolute instant in milliseconds, not a duration. Storing "24
+ * hours" would mean every reader computing the deadline from a different
+ * starting point; storing the instant means the learner's screen, the
+ * teacher's list and the security rule are all talking about the same moment.
+ *
+ * `dueAt: null` is the switch the teacher can flip: no deadline at all, and
+ * nothing is ever marked late.
+ */
+export interface AssignmentDoc {
+  id: string;
+  status: PublishStatus;
+  title: L10n;
+  brief: L10n;
+  /** Optional track this belongs to, for grouping. */
+  trackId?: string;
+  /** Optional stub the learner starts from. */
+  starterCode?: string;
+  createdAt: number;
+  /** Absolute deadline in ms, or null when the teacher has turned it off. */
+  dueAt: number | null;
+  updatedAt?: number;
+}
+
+/**
+ * One learner's answer. Id is `{assignmentId}__{uid}`, the same shape as
+ * progress records, so a learner can only ever have one per assignment and
+ * the document name itself carries who it belongs to.
+ */
+export interface SubmissionDoc {
+  id: string;
+  assignmentId: string;
+  uid: string;
+  displayName: string;
+  code: string;
+  note?: string;
+  submittedAt: number;
+  /**
+   * Whether it arrived after the deadline.
+   *
+   * Written by the client and VERIFIED BY THE SECURITY RULE against
+   * request.time, which is the server's clock. A browser-side check alone is
+   * worth nothing -- moving the system clock back is a two-click bypass. The
+   * rule does not refuse a late submission, it only refuses to let one call
+   * itself punctual.
+   */
+  late: boolean;
+  /** The teacher's reply. Only an admin can write this. */
+  feedback?: string;
+  reviewedAt?: number;
+}
+
+/** Late is a question about one instant against another, and nothing else. */
+export function isLateAt(dueAt: number | null, at: number): boolean {
+  return dueAt !== null && at > dueAt;
+}
+
+/** The default the teacher gets, and can turn off: 24 hours from now. */
+export const DEFAULT_HOMEWORK_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+/* ------------------------------------------------------------ discussion */
+
+/**
+ * One message in the shared discussion area.
+ *
+ * The reply context is COPIED IN (`replyToName`, `replyToExcerpt`) rather
+ * than looked up from the parent. A quoted line that still reads correctly
+ * after the original is deleted is worth more than a live reference that
+ * turns into a dangling id -- and moderation means messages really do get
+ * deleted, so dangling ids are the normal case, not the edge one.
+ */
+export interface DiscussionMessage {
+  id: string;
+  uid: string;
+  displayName: string;
+  text: string;
+  at: number;
+  replyTo?: string;
+  replyToName?: string;
+  replyToExcerpt?: string;
+}

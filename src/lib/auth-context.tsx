@@ -37,6 +37,9 @@ export interface Profile {
   email: string | null;
   role: Role;
   locale: Locale;
+  /** Set by an admin to stop this account posting in the discussion area.
+   *  Enforced by the rules; this copy only decides what the UI shows. */
+  blocked?: boolean;
 }
 
 interface AuthValue {
@@ -75,6 +78,7 @@ async function ensureProfile(user: User, locale: Locale): Promise<Profile> {
       email: user.email,
       role: data.role === "admin" ? "admin" : "student",
       locale: (data.locale as Locale) || locale,
+      ...(data.blocked === true ? { blocked: true } : {}),
     };
   }
   const profile: Profile = {

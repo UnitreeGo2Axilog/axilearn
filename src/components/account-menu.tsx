@@ -33,6 +33,7 @@ import {
   LayoutDashboard,
   LogOut,
   Mail,
+  MessagesSquare,
   Moon,
   Sun,
   TrendingUp,
@@ -98,7 +99,8 @@ export function AccountMenu() {
   const studentEntries: Entry[] = [
     { key: "nav.home", href: `/${locale}`, icon: Home },
     { key: "nav.progress", href: `/${locale}/progress`, icon: TrendingUp },
-    { key: "nav.homework", icon: ClipboardList, soon: true },
+    { key: "nav.homework", href: `/${locale}/homework`, icon: ClipboardList },
+    { key: "nav.discussion", href: `/${locale}/discussion`, icon: MessagesSquare },
     { key: "nav.certificates", href: `/${locale}/certificates`, icon: Award },
     { key: "nav.bookmarks", href: `/${locale}/bookmarks`, icon: BookMarked, badge: bookmarkIds.size },
     { key: "nav.info", href: `/${locale}/info`, icon: Info, separated: true },
@@ -109,7 +111,8 @@ export function AccountMenu() {
     { key: "nav.dashboard", href: `/${locale}/admin`, icon: LayoutDashboard },
     { key: "nav.students", href: `/${locale}/admin/students`, icon: Users },
     { key: "nav.messages", href: `/${locale}/admin/messages`, icon: Mail },
-    { key: "nav.homeworkReview", icon: ClipboardList, soon: true },
+    { key: "nav.homeworkReview", href: `/${locale}/admin/homework`, icon: ClipboardList },
+    { key: "nav.discussion", href: `/${locale}/discussion`, icon: MessagesSquare },
     { key: "nav.notifications", href: `/${locale}/admin/notifications`, icon: Bell },
     { key: "nav.info", href: `/${locale}/info`, icon: Info, separated: true },
   ];
