@@ -432,6 +432,22 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
       if (belongsTo && belongsTo !== track.id) {
         await deleteChallenge(track.id, stored.id);
         challengesMoved.push(stored.id);
+        continue;
+      }
+      // RETIRED: the repo wrote this one and no longer has it anywhere.
+      //
+      // Restructuring a track's exercises leaves the old ones behind
+      // otherwise -- Python went from twelve loose problems to twenty-seven
+      // tied to chapters, and without this the twelve would sit alongside
+      // them for ever, teaching the wrong things in the wrong order.
+      //
+      // `fromRepo` is the guard. It is stamped only when the importer writes
+      // a challenge, so a challenge the supervisor wrote in the CMS has no
+      // stamp, can never match, and is never removed by this.
+      const fromRepo = (stored as { fromRepo?: boolean }).fromRepo === true;
+      if (fromRepo && !belongsTo) {
+        await deleteChallenge(track.id, stored.id);
+        challengesMoved.push(stored.id);
       }
     }
   }
@@ -452,7 +468,9 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
       const isLegacyMcq = exists !== null && (exists.tests ?? []).length === 0;
       const upgrading = isLegacyMcq && (challenge.tests ?? []).length > 0;
       if (exists && !upgrading) continue;
-      await saveChallenge(track.id, challenge);
+      // Stamped so a later import can tell its own work from the
+      // supervisor's -- see the retirement rule above.
+      await saveChallenge(track.id, { ...challenge, fromRepo: true } as ChallengeDoc);
       challengesWritten.push(challenge.id);
     }
   }

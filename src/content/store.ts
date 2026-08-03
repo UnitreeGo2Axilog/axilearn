@@ -378,6 +378,7 @@ function challengeOf(id: string, raw: Record<string, unknown>): ChallengeDoc | n
     raw.difficulty === "medium" || raw.difficulty === "hard" ? raw.difficulty : "easy";
   return {
     id,
+    ...(typeof raw.lessonId === "string" && raw.lessonId ? { lessonId: raw.lessonId } : {}),
     order: num(raw.order, 99),
     status: raw.status === "draft" ? "draft" : "published",
     difficulty,

@@ -44,7 +44,14 @@ export default async function LessonPage({
   const { body, quiz } = await getLessonContent(track.id, level.id, locale);
   // Only offer the exercise nudge when there is actually something to send
   // them to -- a prompt that leads to an empty page is worse than no prompt.
-  const hasChallenges = (await getChallenges(track.id, locale)).length > 0;
+  const trackChallenges = await getChallenges(track.id, locale);
+  const hasChallenges = trackChallenges.length > 0;
+  // "Your turn" should hand over the exercise about THIS chapter, not drop the
+  // learner into a list of thirty. Easy first; the harder ones are offered
+  // once that one is solved.
+  const startId = trackChallenges.find(
+    (c) => c.lessonId === level.id && c.difficulty === "easy",
+  )?.id;
 
   return (
     <AuthGate>
@@ -186,6 +193,7 @@ export default async function LessonPage({
             trackTitle={track.title}
             accent={track.color}
             lessonId={level.id}
+            startId={startId}
           />
         )}
 

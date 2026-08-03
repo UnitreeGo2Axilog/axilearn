@@ -39,18 +39,24 @@ const LEVELS: { key: ChallengeDifficulty; icon: typeof Zap; color: string }[] = 
 export function ChallengesView({
   track,
   challenges,
+  startId,
 }: {
   track: RoadmapTrack;
   challenges: ResolvedChallenge[];
+  /** Open this one immediately, skipping the difficulty picker. */
+  startId?: string;
 }) {
   const t = useT();
   const locale = useLocale();
   const { countedChallengeIds } = useProgress();
-  const [level, setLevel] = useState<ChallengeDifficulty | null>(null);
+  // Arriving from a lesson means the exercise is already chosen: opening the
+  // picker first would ask a question that has been answered.
+  const opening = startId ? challenges.find((c) => c.id === startId) : undefined;
+  const [level, setLevel] = useState<ChallengeDifficulty | null>(opening?.difficulty ?? null);
   /** The one being solved. While set, NOTHING else is on screen -- picking a
       challenge should hand over the whole page, not unfold a row while five
       others keep competing for attention. */
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(opening?.id ?? null);
 
   // ONE Python runtime for the whole page. A runner per card would mean each
   // card downloading its own ~10MB copy of Python, so it is created here and
@@ -134,6 +140,13 @@ export function ChallengesView({
             challenge={open}
             runner={runner}
             onBack={() => setOpenId(null)}
+            nextUp={nextRung(challenges, open)}
+            onOpen={(id) => {
+              const next = challenges.find((c) => c.id === id);
+              if (!next) return;
+              setLevel(next.difficulty);
+              setOpenId(id);
+            }}
           />
         ) : challenges.length === 0 ? (
           <p className="panel rounded-2xl p-5 text-center text-sm text-muted">
@@ -256,4 +269,23 @@ function DifficultyPicker({
       </div>
     </div>
   );
+}
+
+/**
+ * The next difficulty up, for the same lesson.
+ *
+ * Only within one lesson: after the easy exercise about loops, the useful
+ * offer is the medium one about loops, not the medium one about dictionaries
+ * three chapters away. Returns nothing at the top of a ladder, or for a
+ * challenge that belongs to no particular lesson.
+ */
+function nextRung(all: ResolvedChallenge[], current: ResolvedChallenge) {
+  if (!current.lessonId) return undefined;
+  const ladder: ResolvedChallenge["difficulty"][] = ["easy", "medium", "hard"];
+  const at = ladder.indexOf(current.difficulty);
+  for (const step of ladder.slice(at + 1)) {
+    const found = all.find((c) => c.lessonId === current.lessonId && c.difficulty === step);
+    if (found) return { id: found.id, title: found.title, difficulty: found.difficulty };
+  }
+  return undefined;
 }

@@ -25,11 +25,14 @@ export function LessonExercisePrompt({
   trackTitle,
   accent,
   lessonId,
+  startId,
 }: {
   trackId: string;
   trackTitle: string;
   accent: string;
   lessonId: string;
+  /** The easy challenge for THIS lesson, when the track has one. */
+  startId?: string;
 }) {
   const t = useT();
   const locale = useLocale();
@@ -120,7 +123,11 @@ export function LessonExercisePrompt({
               {t("lesson.notNow")}
             </button>
             <Link
-              href={`/${locale}/challenges/${trackId}`}
+              href={
+                startId
+                  ? `/${locale}/challenges/${trackId}?start=${startId}`
+                  : `/${locale}/challenges/${trackId}`
+              }
               className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-black"
               style={{ background: accent, color: "var(--surface-solid)" }}
             >

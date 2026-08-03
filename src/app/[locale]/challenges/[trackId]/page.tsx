@@ -12,10 +12,15 @@ import { ChallengesView } from "@/components/challenges-view";
  */
 export default async function ChallengesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; trackId: string }>;
+  /** `?start=<id>` arrives from the "your turn" card at the foot of a lesson,
+   *  naming the exercise about the chapter just finished. */
+  searchParams: Promise<{ start?: string }>;
 }) {
   const { locale: raw, trackId } = await params;
+  const { start } = await searchParams;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
 
   const track = await getTrack(locale, trackId);
@@ -24,7 +29,7 @@ export default async function ChallengesPage({
 
   return (
     <AuthGate>
-      <ChallengesView track={track} challenges={challenges} />
+      <ChallengesView track={track} challenges={challenges} startId={start} />
     </AuthGate>
   );
 }

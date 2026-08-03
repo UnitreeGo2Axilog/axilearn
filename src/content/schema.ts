@@ -162,6 +162,23 @@ export interface ChallengeTest {
 
 export interface ChallengeDoc {
   id: string;
+  /**
+   * The lesson this practises.
+   *
+   * A challenge used to belong only to a track, which made the whole set one
+   * undifferentiated pile: a learner finishing chapter two was offered the
+   * same twelve problems as one finishing chapter eight, most of them about
+   * things they had not met yet. Tied to a lesson, "your turn" can hand them
+   * the one exercise that is about what they just read.
+   *
+   * Optional, because a track can still carry general practice that belongs
+   * to no particular chapter.
+   */
+  lessonId?: string;
+  /** Written by the importer, never by the CMS. Marks a challenge as the
+   *  repo's, so a restructure can retire it without touching one the
+   *  supervisor wrote by hand. */
+  fromRepo?: boolean;
   order: number;
   status: PublishStatus;
   difficulty: ChallengeDifficulty;
@@ -192,6 +209,7 @@ export interface ChallengeDoc {
 
 export interface ResolvedChallenge {
   id: string;
+  lessonId?: string;
   difficulty: ChallengeDifficulty;
   kind: ChallengeKind;
   title: string;
@@ -213,6 +231,7 @@ export function resolveChallenge(c: ChallengeDoc, locale: Locale): ResolvedChall
   const kind: ChallengeKind = c.kind === "code" || tests.length > 0 ? "code" : "mcq";
   return {
     id: c.id,
+    ...(c.lessonId ? { lessonId: c.lessonId } : {}),
     difficulty: c.difficulty,
     kind,
     title: pick(c.title, locale),

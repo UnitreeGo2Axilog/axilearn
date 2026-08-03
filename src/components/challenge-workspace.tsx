@@ -33,6 +33,7 @@ import { oneDark } from "@codemirror/theme-one-dark";
 import {
   AlertTriangle,
   ArrowLeft,
+  ArrowRight,
   BookOpen,
   Check,
   Loader2,
@@ -50,6 +51,7 @@ import { PythonRunner, RUN_TIMEOUT_MS, type RunResult } from "@/lib/python-runne
 import { Tabs, type TabItem } from "@/components/tabs";
 import { useTheme } from "@/lib/theme";
 import { useT } from "@/i18n/use-t";
+
 import type { ResolvedChallenge } from "@/content/schema";
 
 type TabId = "problem" | "editorial" | "tutorial";
@@ -65,11 +67,16 @@ export function ChallengeWorkspace({
   challenge,
   runner,
   onBack,
+  nextUp,
+  onOpen,
 }: {
   trackId: string;
   challenge: ResolvedChallenge;
   runner: PythonRunner | null;
   onBack: () => void;
+  /** The next rung for the SAME lesson, offered once this one is solved. */
+  nextUp?: { id: string; title: string; difficulty: ResolvedChallenge["difficulty"] };
+  onOpen?: (id: string) => void;
 }) {
   const t = useT();
   const { theme } = useTheme();
@@ -176,6 +183,39 @@ export function ChallengeWorkspace({
           </span>
         )}
       </div>
+
+      {/* Solved -- so the harder one about the same chapter is offered here,
+          not left to be found in a list. A learner who has just got something
+          working is the most likely they will ever be to try a harder version
+          of it, and that moment passes. */}
+      {solved && nextUp && onOpen && (
+        <button
+          onClick={() => onOpen(nextUp.id)}
+          className="mb-4 flex w-full items-center gap-3 rounded-2xl border p-3.5 text-left transition hover:opacity-90"
+          style={{
+            borderColor: `color-mix(in srgb, ${DIFF_COLOR[nextUp.difficulty]} 45%, transparent)`,
+            background: `color-mix(in srgb, ${DIFF_COLOR[nextUp.difficulty]} 8%, transparent)`,
+          }}
+        >
+          <span
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl"
+            style={{
+              background: `color-mix(in srgb, ${DIFF_COLOR[nextUp.difficulty]} 18%, transparent)`,
+              color: DIFF_COLOR[nextUp.difficulty],
+            }}
+          >
+            <ArrowRight className="h-4 w-4" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-xs font-black uppercase tracking-wider" style={{ color: DIFF_COLOR[nextUp.difficulty] }}>
+              {t(`challenges.${nextUp.difficulty}` as "challenges.easy")}
+            </span>
+            <span className="mt-0.5 block truncate text-sm font-bold text-strong">
+              {t("challenges.nextUp")} {nextUp.title}
+            </span>
+          </span>
+        </button>
+      )}
 
       {/* two columns on a real screen: statement left, workbench right */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
