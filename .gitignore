@@ -42,3 +42,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# a throwaway demo login used only to take documentation screenshots
+.demo-pass
+.browserlibs/

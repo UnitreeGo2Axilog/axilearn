@@ -1,9 +1,30 @@
 # Screenshots for the platform guide
 
-Save each as a PNG here, with exactly these names.
-**Sign in first** — most pages show only a sign-in prompt when signed out.
+Eighteen of these are already here, captured from a signed-in student account.
+The eight teaching screens are not: a new account is a student, `role` cannot
+be self-assigned, and a screenshot of "you need an admin account" is worse
+than an empty slot.
 
-A browser window around **1280 × 800** gives the cleanest crops.
+## Taking the rest (or redoing all of them)
+
+    BASE=https://axilearn.vercel.app \
+    AXI_EMAIL=you@example.com AXI_PASSWORD='...' \
+    node scripts/screenshots.mjs
+
+Signed in as an ADMIN it captures all twenty-six. As a student it captures
+eighteen and says which it skipped.
+
+It needs Playwright's browser once:
+
+    npx playwright install chromium
+    sudo npx playwright install-deps    # libnss3, libnspr4
+
+Point `BASE` at http://localhost:3000 to capture a local build instead.
+
+## By hand
+
+Same filenames, saved here. A window around 1280 x 800 gives the cleanest
+crops, and the guide expects a signed-in view.
 
 | # | file | page | what to show |
 |---|---|---|---|

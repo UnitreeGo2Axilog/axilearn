@@ -307,7 +307,11 @@ function Decision({ text, accent }: { text: string; accent: string }) {
 /** The vertical connector, with an arrowhead. */
 function Down() {
   return (
-    <span aria-hidden className="ml-5 flex h-5 flex-col items-center">
+    // w-4 matters: without a width this span fills the row, and
+    // `items-center` then centres the line on the whole diagram rather than
+    // under the box it is joining -- the arrows floated off to the right of
+    // everything. Narrow and offset, it lands under the box's left shoulder.
+    <span aria-hidden className="ml-5 flex h-5 w-4 flex-col items-center">
       <span className="w-px flex-1" style={{ background: "var(--border-strong)" }} />
       <span
         className="h-0 w-0"
