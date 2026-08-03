@@ -22,7 +22,8 @@ export type Block =
   | { kind: "list"; items: string[] }
   | { kind: "code"; code: string; runnable: boolean }
   | { kind: "callout"; tone: CalloutTone; text: string }
-  | { kind: "flow"; steps: FlowStep[] };
+  | { kind: "flow"; steps: FlowStep[] }
+  | { kind: "progout"; program: string; output: string };
 
 export type CalloutTone = "tip" | "warn" | "do" | "dont";
 
@@ -30,6 +31,37 @@ export type CalloutTone = "tip" | "warn" | "do" | "dont";
 export interface FlowStep {
   kind: "step" | "ask" | "yes" | "no";
   text: string;
+}
+
+/**
+ * The flat step list, grouped into what a reader actually sees: a spine of
+ * steps, with each question owning the branches that hang off it.
+ *
+ * Kept separate from parsing so the written form stays as simple as possible
+ * -- a teacher writes four lines in a row, not a nested structure.
+ */
+export type FlowNode =
+  | { kind: "step"; text: string }
+  | { kind: "decision"; question: string; yes: string[]; no: string[] };
+
+export function groupFlow(steps: FlowStep[]): FlowNode[] {
+  const out: FlowNode[] = [];
+  for (const s of steps) {
+    if (s.kind === "step") {
+      out.push({ kind: "step", text: s.text });
+      continue;
+    }
+    if (s.kind === "ask") {
+      out.push({ kind: "decision", question: s.text, yes: [], no: [] });
+      continue;
+    }
+    const last = out[out.length - 1];
+    if (last && last.kind === "decision") last[s.kind].push(s.text);
+    // A yes/no with no question above it is a typo; showing it as a plain
+    // step is more useful than dropping it silently.
+    else out.push({ kind: "step", text: s.text });
+  }
+  return out;
 }
 
 const CALLOUTS: Record<string, CalloutTone> = {
@@ -100,6 +132,14 @@ export function parseLessonBody(body: string): Block[] {
       const content = collected.join("\n").replace(/^\n+|\n+$/g, "");
 
       if (lang === "flow") blocks.push({ kind: "flow", steps: parseFlow(content) });
+      else if (lang === "progout") {
+        // "the program, and what it printed" -- the pairing the Python for
+        // Everybody slides put side by side, split on a --- line.
+        const at = content.indexOf("\n---");
+        const program = at >= 0 ? content.slice(0, at) : content;
+        const output = at >= 0 ? content.slice(content.indexOf("\n", at + 1) + 1) : "";
+        blocks.push({ kind: "progout", program: program.trim(), output: output.trim() });
+      }
       else blocks.push({ kind: "code", code: content, runnable: lang === "python" || lang === "py" });
       continue;
     }

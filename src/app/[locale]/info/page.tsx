@@ -38,6 +38,7 @@ const BUILT_WITH: Resource[] = [
 ];
 
 const INSPIRED_BY: Resource[] = [
+  { name: "Python for Everybody", what: "how the Python chapters explain conditions and loops -- the flowchart shapes and the sequential / conditional / repeated framing come from this course (CC BY)", url: "https://www.py4e.com/" },
   { name: "Kaggle Learn", what: "lesson shape: read a little, then immediately try it", url: "https://www.kaggle.com/learn" },
   { name: "HackerRank", what: "challenge shape: a problem, tests, and an editorial that costs you something", url: "https://www.hackerrank.com/domains/python" },
 ];

@@ -34,6 +34,7 @@ function Dashboard() {
   const [tracks, setTracks] = useState<TrackDoc[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
+  const [confirmForce, setConfirmForce] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -50,11 +51,12 @@ function Dashboard() {
     void load();
   }, [load]);
 
-  async function runImport() {
+  async function runImport(overwrite = false) {
     setBusy(true);
     setError(null);
     try {
-      setResult(await importStarterContent());
+      setResult(await importStarterContent(overwrite));
+      setConfirmForce(false);
       await load();
     } catch (err) {
       setError((err as Error).message);
@@ -119,7 +121,7 @@ function Dashboard() {
             <p className="mt-1 text-xs leading-relaxed text-muted">{t("admin.importHint")}</p>
           </div>
           <button
-            onClick={runImport}
+            onClick={() => void runImport(false)}
             disabled={busy}
             className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black disabled:opacity-50"
             style={{ background: "var(--advanced)", color: "var(--surface-solid)" }}
@@ -128,6 +130,21 @@ function Dashboard() {
             {busy ? t("admin.importing") : t("admin.import")}
           </button>
         </div>
+        {/* The blunt version. Separate button, two presses, and the label
+            says what it costs -- a normal import never touches lesson text a
+            teacher has written, and this one does. */}
+        <button
+          onClick={() => (confirmForce ? void runImport(true) : setConfirmForce(true))}
+          disabled={busy}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-bold disabled:opacity-50"
+          style={{
+            borderColor: confirmForce ? "var(--reward)" : "var(--border-strong)",
+            color: confirmForce ? "var(--reward)" : "var(--text-faint)",
+          }}
+        >
+          {confirmForce ? t("admin.importForceConfirm") : t("admin.importForce")}
+        </button>
+
         {result && (
           <div className="mt-3 space-y-1 text-xs">
             {result.written.length > 0 && (

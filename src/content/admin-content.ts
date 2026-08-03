@@ -123,12 +123,43 @@ function renumber(lessons: LessonEntry[]): LessonEntry[] {
 export interface LessonBodyDoc {
   content: L10n;
   quiz: LessonQuiz;
+  /** Fingerprint of the text the importer last wrote here. See didAnyoneEdit. */
+  repoTextHash?: string;
+  repoQuizHash?: string;
+}
+
+/**
+ * A cheap, stable fingerprint of a string.
+ *
+ * FNV-1a. Not a security hash and does not need to be -- the only question it
+ * answers is "is this byte-for-byte what we wrote", and a 32-bit answer is
+ * plenty for a few hundred lesson bodies.
+ */
+function fingerprint(text: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(36);
 }
 
 export async function readLessonBody(trackId: string, lessonId: string): Promise<LessonBodyDoc> {
   const snap = await getDoc(doc(getDb(), TRACKS, trackId, "bodies", lessonId));
-  const data = snap.exists() ? (snap.data() as { content?: L10n; quiz?: LessonQuiz }) : null;
-  return { content: data?.content ?? { en: "" }, quiz: data?.quiz ?? [] };
+  const data = snap.exists()
+    ? (snap.data() as {
+        content?: L10n;
+        quiz?: LessonQuiz;
+        repoTextHash?: string;
+        repoQuizHash?: string;
+      })
+    : null;
+  return {
+    content: data?.content ?? { en: "" },
+    quiz: data?.quiz ?? [],
+    ...(data?.repoTextHash ? { repoTextHash: data.repoTextHash } : {}),
+    ...(data?.repoQuizHash ? { repoQuizHash: data.repoQuizHash } : {}),
+  };
 }
 
 export async function saveLessonBody(
@@ -137,10 +168,13 @@ export async function saveLessonBody(
   content: L10n,
   quiz: LessonQuiz,
   status: PublishStatus,
+  /** Set by the importer only. A save from the CMS deliberately leaves these
+   *  alone, so the next import can tell that a human has been here. */
+  stamps?: { repoTextHash?: string; repoQuizHash?: string },
 ): Promise<void> {
   await setDoc(
     doc(getDb(), TRACKS, trackId, "bodies", lessonId),
-    { content: clean(content), quiz: clean(quiz), status, updatedAt: Date.now() },
+    { content: clean(content), quiz: clean(quiz), status, updatedAt: Date.now(), ...(stamps ?? {}) },
     { merge: true },
   );
 }
@@ -317,9 +351,51 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
       if (!repoText && !repoQuiz) continue;
 
       const current = await readLessonBody(track.id, lesson.id);
-      const needsText = Boolean(repoText) && !current.content.en.trim();
-      const needsQuiz = Boolean(repoQuiz) && current.quiz.length === 0;
-      if (!needsText && !needsQuiz) continue; // admin already wrote both
+
+      /**
+       * Is this stored copy still exactly what the importer wrote, or has a
+       * human touched it since?
+       *
+       * This is the question that was missing, and without it the content
+       * pipeline was one-shot: a body was written once, and after that the
+       * rule "only write where Firestore is empty" meant no correction in the
+       * repo could ever reach the site again. Fixing a typo in a lesson meant
+       * fixing it by hand in the CMS, on every deployment, for ever.
+       *
+       * When a body is written from the repo, the fingerprint of that exact
+       * text is stored beside it. On a later import, if the stored text still
+       * fingerprints to the stored value, nobody has edited it and the repo's
+       * newer version can safely replace it. If it does not match, a teacher
+       * has been in there, and their writing is left completely alone --
+       * which is the behaviour that mattered in the first place.
+       */
+      const textUntouched =
+        current.repoTextHash !== undefined &&
+        current.repoTextHash === fingerprint(JSON.stringify(current.content));
+      const quizUntouched =
+        current.repoQuizHash !== undefined &&
+        current.repoQuizHash === fingerprint(JSON.stringify(current.quiz));
+
+      const repoTextHash = repoText ? fingerprint(JSON.stringify(clean(repoText))) : undefined;
+      const repoQuizHash = repoQuiz ? fingerprint(JSON.stringify(clean(repoQuiz))) : undefined;
+
+      // `overwrite` is the escape hatch, and it exists for one situation the
+      // fingerprint cannot cover: bodies written before fingerprints existed
+      // carry no stamp, so there is no way to tell an untouched import from a
+      // teacher's rewrite, and the safe assumption leaves them frozen. The
+      // dashboard offers this as a separate, confirmed button that says
+      // plainly that it replaces lesson text.
+      const needsText =
+        Boolean(repoText) &&
+        (overwrite ||
+          !current.content.en.trim() ||
+          (textUntouched && current.repoTextHash !== repoTextHash));
+      const needsQuiz =
+        Boolean(repoQuiz) &&
+        (overwrite ||
+          current.quiz.length === 0 ||
+          (quizUntouched && current.repoQuizHash !== repoQuizHash));
+      if (!needsText && !needsQuiz) continue;
 
       await saveLessonBody(
         track.id,
@@ -327,6 +403,12 @@ export async function importStarterContent(overwrite = false): Promise<ImportRes
         needsText ? repoText! : current.content,
         needsQuiz ? repoQuiz! : current.quiz,
         lesson.status,
+        {
+          // Stamped on every write from the repo, including a forced one, so
+          // the next import can go back to deciding for itself.
+          ...(needsText && repoTextHash ? { repoTextHash } : {}),
+          ...(needsQuiz && repoQuizHash ? { repoQuizHash } : {}),
+        },
       );
       bodiesWritten.push(lesson.id);
     }

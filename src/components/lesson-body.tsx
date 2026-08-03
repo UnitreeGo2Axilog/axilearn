@@ -18,7 +18,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, Play, RotateCcw } from "lucide-react";
 import { PythonRunner, type RunResult } from "@/lib/python-runner";
-import { parseInline, parseLessonBody, type Block, type FlowStep } from "@/lib/lesson-markup";
+import {
+  groupFlow,
+  parseInline,
+  parseLessonBody,
+  type Block,
+  type FlowNode,
+} from "@/lib/lesson-markup";
 import { useT } from "@/i18n/use-t";
 
 export function LessonBody({ body, accent }: { body: string; accent: string }) {
@@ -91,7 +97,10 @@ function BlockView({
       return <Callout tone={block.tone} text={block.text} />;
 
     case "flow":
-      return <Flow steps={block.steps} accent={accent} />;
+      return <Flow nodes={groupFlow(block.steps)} accent={accent} />;
+
+    case "progout":
+      return <ProgramOutput program={block.program} output={block.output} accent={accent} />;
 
     case "code":
       return block.runnable ? (
@@ -160,62 +169,203 @@ function Callout({ tone, text }: { tone: string; text: string }) {
 }
 
 /**
- * The flowchart from the Python for Everybody slides, in the platform's own
- * colours: rectangles for steps, a diamond edge for questions, and answers
- * stepped in under the question they belong to.
+ * An activity diagram: a spine of steps, with each question sending a labelled
+ * branch off to the side that rejoins underneath.
  *
- * Built from divs rather than an image, so it reads correctly in both themes,
- * survives being translated, and can be edited by a teacher who has never
- * opened a drawing program.
+ * Built from elements rather than an image, which costs some fidelity against
+ * a hand-drawn slide and buys three things that matter more here: it reads in
+ * both themes, the labels translate with the rest of the lesson, and a teacher
+ * can change one by editing four lines of text.
+ *
+ * The decision shape is a cut-corner hexagon rather than a true diamond. A
+ * diamond wide enough to hold "battery > 20 and distance > 10 ?" is enormous;
+ * flattening it keeps the "this is a question, not an instruction" reading at
+ * any sentence length, in any language.
  */
-function Flow({ steps, accent }: { steps: FlowStep[]; accent: string }) {
+function Flow({ nodes, accent }: { nodes: FlowNode[]; accent: string }) {
   return (
     <div
-      className="space-y-1.5 overflow-x-auto rounded-xl border p-4"
+      className="overflow-x-auto rounded-xl border p-4 sm:p-5"
       style={{ borderColor: "var(--border)", background: "var(--bg-2)" }}
     >
-      {steps.map((s, i) => (
-        <FlowRow key={i} step={s} accent={accent} last={i === steps.length - 1} />
-      ))}
+      <div className="min-w-[300px]">
+        {nodes.map((n, i) => (
+          <FlowNodeView key={i} node={n} accent={accent} last={i === nodes.length - 1} />
+        ))}
+      </div>
     </div>
   );
 }
 
-function FlowRow({ step, accent, last }: { step: FlowStep; accent: string; last: boolean }) {
-  const branch = step.kind === "yes" || step.kind === "no";
-  const ask = step.kind === "ask";
+function FlowNodeView({
+  node,
+  accent,
+  last,
+}: {
+  node: FlowNode;
+  accent: string;
+  last: boolean;
+}) {
+  if (node.kind === "step") {
+    return (
+      <div>
+        <Box text={node.text} />
+        {!last && <Down />}
+      </div>
+    );
+  }
 
   return (
-    <div className={branch ? "pl-8" : ""}>
-      <div className="flex items-center gap-2">
-        {branch && (
-          <span
-            className="font-robot text-[10px] font-black uppercase"
-            style={{ color: step.kind === "yes" ? "var(--cleared)" : "var(--text-faint)" }}
-          >
-            {step.kind}
-          </span>
+    <div>
+      <div className="flex items-start gap-0">
+        <Decision text={node.question} accent={accent} />
+
+        {node.yes.length > 0 && (
+          <Branch label="Yes" tone="var(--cleared)" items={node.yes} />
         )}
-        <span
-          className="inline-block px-3 py-1.5 font-robot text-[13px] font-bold"
-          style={{
-            border: `2px solid ${ask ? accent : "var(--border-strong)"}`,
-            // A question is not a step, so it does not look like one.
-            borderRadius: ask ? "999px" : "8px",
-            color: ask ? accent : "var(--text-main)",
-            background: "var(--surface-solid)",
-          }}
-        >
-          {step.text}
-        </span>
       </div>
-      {!last && (
-        <span
-          aria-hidden
-          className={`ml-4 block h-3 w-px ${branch ? "ml-12" : ""}`}
-          style={{ background: "var(--border-strong)" }}
-        />
+
+      {node.no.length > 0 && (
+        <div className="flex items-start gap-0">
+          <span
+            className="ml-4 mt-1 font-robot text-[10px] font-black uppercase"
+            style={{ color: "var(--text-faint)" }}
+          >
+            No
+          </span>
+          <div className="ml-2 mt-1 space-y-1">
+            {node.no.map((t, i) => (
+              <Box key={i} text={t} />
+            ))}
+          </div>
+        </div>
       )}
+
+      {!last && <Down />}
+    </div>
+  );
+}
+
+/** A branch that goes out to the right and comes back. */
+function Branch({ label, tone, items }: { label: string; tone: string; items: string[] }) {
+  return (
+    <div className="flex items-center">
+      <span
+        aria-hidden
+        className="h-px w-5 shrink-0"
+        style={{ background: "var(--border-strong)" }}
+      />
+      <span className="mr-2 font-robot text-[10px] font-black uppercase" style={{ color: tone }}>
+        {label}
+      </span>
+      <div className="space-y-1">
+        {items.map((t, i) => (
+          <Box key={i} text={t} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Box({ text }: { text: string }) {
+  return (
+    <span
+      className="inline-block rounded-lg px-3 py-1.5 font-robot text-[12px] font-bold"
+      style={{
+        border: "2px solid var(--border-strong)",
+        color: "var(--text-main)",
+        background: "var(--surface-solid)",
+      }}
+    >
+      {text}
+    </span>
+  );
+}
+
+function Decision({ text, accent }: { text: string; accent: string }) {
+  // Two stacked clipped layers: the outer one is the border colour, the inner
+  // is inset by 2px, which draws an outline that clip-path alone cannot.
+  const shape = "polygon(14px 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 14px 100%, 0 50%)";
+  return (
+    <span className="relative inline-block shrink-0">
+      <span aria-hidden className="absolute inset-0" style={{ background: accent, clipPath: shape }} />
+      <span
+        aria-hidden
+        className="absolute"
+        style={{ inset: 2, background: "var(--surface-solid)", clipPath: shape }}
+      />
+      <span
+        className="relative block px-6 py-1.5 font-robot text-[12px] font-bold"
+        style={{ color: accent }}
+      >
+        {text}
+      </span>
+    </span>
+  );
+}
+
+/** The vertical connector, with an arrowhead. */
+function Down() {
+  return (
+    <span aria-hidden className="ml-5 flex h-5 flex-col items-center">
+      <span className="w-px flex-1" style={{ background: "var(--border-strong)" }} />
+      <span
+        className="h-0 w-0"
+        style={{
+          borderLeft: "4px solid transparent",
+          borderRight: "4px solid transparent",
+          borderTop: "5px solid var(--border-strong)",
+        }}
+      />
+    </span>
+  );
+}
+
+/**
+ * A program and what it printed, side by side.
+ *
+ * The pairing the reference slides use, and it does something a runnable cell
+ * cannot: it lets a reader check their PREDICTION before running anything.
+ * Guessing the output first is the part that teaches; a Run button invites
+ * skipping straight to the answer.
+ */
+function ProgramOutput({
+  program,
+  output,
+  accent,
+}: {
+  program: string;
+  output: string;
+  accent: string;
+}) {
+  const t = useT();
+  return (
+    <div
+      className="grid gap-px overflow-hidden rounded-xl border sm:grid-cols-[1fr_auto]"
+      style={{ borderColor: "var(--border)", background: "var(--border)" }}
+    >
+      <div style={{ background: "var(--bg)" }}>
+        <p
+          className="px-3.5 pt-2.5 font-robot text-[10px] font-black uppercase tracking-wider"
+          style={{ color: accent }}
+        >
+          {t("lesson.program")}
+        </p>
+        <pre className="overflow-x-auto px-3.5 pb-3 pt-1 text-[13px] leading-relaxed">
+          <code style={{ color: "var(--text-main)" }}>{program}</code>
+        </pre>
+      </div>
+      <div className="sm:min-w-[140px]" style={{ background: "var(--surface-solid)" }}>
+        <p
+          className="px-3.5 pt-2.5 font-robot text-[10px] font-black uppercase tracking-wider"
+          style={{ color: "var(--cleared)" }}
+        >
+          {t("lesson.output")}
+        </p>
+        <pre className="overflow-x-auto px-3.5 pb-3 pt-1 text-[13px] leading-relaxed">
+          <code style={{ color: "var(--cleared)" }}>{output}</code>
+        </pre>
+      </div>
     </div>
   );
 }

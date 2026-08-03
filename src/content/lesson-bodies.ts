@@ -1193,11 +1193,33 @@ So far every line ran, every time. A **condition** lets the program look at
 something and decide.
 
 \`\`\`flow
-step: distance = 15
-ask: distance < 20 ?
-yes: print("Stop!")
-step: print("Done")
+step: x = 5
+ask: x < 10 ?
+yes: print('Smaller')
+no: skip it
+ask: x > 20 ?
+yes: print('Bigger')
+no: skip it
+step: print('Finis')
 \`\`\`
+
+That is the picture. Here is the same thing as a program, and what it prints:
+
+\`\`\`progout
+x = 5
+if x < 10:
+    print('Smaller')
+if x > 20:
+    print('Bigger')
+
+print('Finis')
+---
+Smaller
+Finis
+\`\`\`
+
+Bigger never appears, because 5 is not bigger than 20. The program reaches the
+last line either way -- it is not indented, so it belongs to no if.
 
 ## if
 
@@ -1300,11 +1322,34 @@ Jusqu'ici, chaque ligne s'exécutait, à chaque fois. Une **condition** permet a
 programme de regarder quelque chose et de décider.
 
 \`\`\`flow
-step: distance = 15
-ask: distance < 20 ?
-yes: print("Stop !")
-step: print("Fini")
+step: x = 5
+ask: x < 10 ?
+yes: print('Plus petit')
+no: on saute
+ask: x > 20 ?
+yes: print('Plus grand')
+no: on saute
+step: print('Fini')
 \`\`\`
+
+Voilà l'image. Voici la même chose en programme, et ce qu'il affiche :
+
+\`\`\`progout
+x = 5
+if x < 10:
+    print('Plus petit')
+if x > 20:
+    print('Plus grand')
+
+print('Fini')
+---
+Plus petit
+Fini
+\`\`\`
+
+Plus grand n'apparaît jamais, parce que 5 n'est pas plus grand que 20. Le
+programme atteint quand même la dernière ligne -- elle n'est pas indentée, donc
+elle n'appartient à aucun if.
 
 ## if
 
@@ -1415,7 +1460,26 @@ step: n = 5
 ask: n > 0 ?
 yes: print(n)
 yes: n = n - 1
-step: print("Blastoff!")
+no: leave the loop
+step: print('Blastoff!')
+\`\`\`
+
+Follow the arrows: while the answer is **Yes** it goes round again. The moment
+it is **No**, it leaves the loop and carries on.
+
+\`\`\`progout
+n = 5
+while n > 0:
+    print(n)
+    n = n - 1
+print('Blastoff!')
+---
+5
+4
+3
+2
+1
+Blastoff!
 \`\`\`
 
 That is the picture. Here is the code.
@@ -1504,7 +1568,26 @@ step: n = 5
 ask: n > 0 ?
 yes: print(n)
 yes: n = n - 1
-step: print("Décollage !")
+no: sortir de la boucle
+step: print('Décollage !')
+\`\`\`
+
+Suis les flèches : tant que la réponse est **Oui**, on refait un tour. Dès que
+c'est **Non**, on sort de la boucle et on continue.
+
+\`\`\`progout
+n = 5
+while n > 0:
+    print(n)
+    n = n - 1
+print('Décollage !')
+---
+5
+4
+3
+2
+1
+Décollage !
 \`\`\`
 
 Voilà l'image. Voici le code.
@@ -1599,7 +1682,20 @@ step: put bread in the toaster
 step: press the button
 ask: is it brown yet ?
 yes: take it out
+no: wait a bit longer
 step: eat
+\`\`\`
+
+A program runs the same way -- one step, then the next, top to bottom:
+
+\`\`\`progout
+x = 2
+print(x)
+x = x + 2
+print(x)
+---
+2
+4
 \`\`\`
 
 If you swap two of those lines, you eat bread and toast the plate. The
@@ -1683,7 +1779,20 @@ step: mettre le pain dans le grille-pain
 step: appuyer sur le bouton
 ask: c'est doré ?
 yes: sortir le pain
+no: attendre encore un peu
 step: manger
+\`\`\`
+
+Un programme marche pareil -- une étape, puis la suivante, de haut en bas :
+
+\`\`\`progout
+x = 2
+print(x)
+x = x + 2
+print(x)
+---
+2
+4
 \`\`\`
 
 Si tu inverses deux lignes, tu manges du pain cru et tu fais griller l'assiette.
