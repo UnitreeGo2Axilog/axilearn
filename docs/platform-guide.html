@@ -53,12 +53,29 @@
   /* The slot label sits UNDER the image. No script anywhere: an <img> with an
      empty alt that fails to load collapses to nothing, so the label shows
      through until the file exists and is covered the moment it does. */
-  .frame { position:relative; background:
-      repeating-linear-gradient(45deg, #fafbfc 0 9px, #f2f5f8 9px 18px); }
-  .slot { position:absolute; inset:0; margin:0; display:flex; align-items:center;
-          justify-content:center; font-size:11.5px; font-weight:600; color:var(--faint);
-          min-height:150px; }
-  .frame img { position:relative; display:block; width:100%; height:auto; background:var(--paper); }
+  /* The height lives HERE, on the in-flow parent.
+     It was on .slot, which is position:absolute -- and an out-of-flow element
+     gives its parent no height at all. With the screenshot missing (an <img>
+     with empty alt collapses to nothing) the frame had nothing left to size
+     against, so it rendered as a zero-height strip between the browser bar
+     and the caption. */
+  .frame {
+    position: relative;
+    min-height: 170px;
+    background: repeating-linear-gradient(45deg, #fafbfc 0 9px, #f2f5f8 9px 18px);
+  }
+  .slot {
+    position: absolute; inset: 0; margin: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11.5px; font-weight: 600; color: var(--faint);
+  }
+  /* Painted after .slot in the DOM and positioned, so it covers the label the
+     moment the file exists. The opaque background matters for a screenshot
+     saved with transparency. */
+  .frame img {
+    position: relative; display: block;
+    width: 100%; height: auto; background: var(--paper);
+  }
 
   figcaption { display:flex; gap:8px; align-items:baseline; margin-top:8px;
                font-size:13px; color:var(--muted); }
