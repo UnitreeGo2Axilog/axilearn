@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { isLocale } from "@/i18n/messages";
-import { getTrack } from "@/content/store";
+import { getChallenges, getTrack } from "@/content/store";
 import type { Locale } from "@/content/types";
 import { AuthGate } from "@/components/auth-gate";
 import { CertificateView } from "@/components/certificate-view";
@@ -22,9 +22,13 @@ export default async function CertificatePage({
   const track = await getTrack(locale, trackId);
   if (!track) notFound();
 
+  // The exam is content, so it is loaded here; whether THIS learner has
+  // solved it is per-person and checked in the view.
+  const examId = (await getChallenges(trackId, locale)).find((c) => c.isExam)?.id;
+
   return (
     <AuthGate>
-      <CertificateView track={track} />
+      <CertificateView track={track} examId={examId} />
     </AuthGate>
   );
 }

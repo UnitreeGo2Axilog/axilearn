@@ -21,13 +21,25 @@ import { useLocale, useT } from "@/i18n/use-t";
 import { certificateStatus } from "@/lib/certificate";
 import type { RoadmapTrack } from "@/content/roadmap-data";
 
-export function CertificateView({ track }: { track: RoadmapTrack }) {
+export function CertificateView({
+  track,
+  examId,
+}: {
+  track: RoadmapTrack;
+  /** The track's final exam, when it has one. */
+  examId?: string;
+}) {
   const t = useT();
   const locale = useLocale();
   const { profile } = useAuth();
-  const { records, completedIds } = useProgress();
+  const { records, completedIds, solvedChallengeIds } = useProgress();
 
-  const { total, done, remaining, earned } = certificateStatus(track, completedIds);
+  const status = certificateStatus(
+    track,
+    completedIds,
+    examId ? { id: examId, solved: solvedChallengeIds.has(examId) } : null,
+  );
+  const { total, done, remaining, earned } = status;
 
   if (!earned) {
     return (
@@ -39,9 +51,25 @@ export function CertificateView({ track }: { track: RoadmapTrack }) {
           <Lock className="h-7 w-7" />
         </span>
         <h1 className="mb-2 text-xl font-extrabold text-strong">{t("cert.lockedTitle")}</h1>
-        <p className="mb-1 text-sm leading-relaxed text-muted">
-          {t("cert.lockedBody").replace("{track}", track.title)}
-        </p>
+        {/* Two different reasons to be here, and they need different
+            instructions. Telling somebody who has read every chapter to "go
+            and finish the lessons" would be wrong and infuriating. */}
+        {status.lessonsComplete && status.examRequired ? (
+          <>
+            <p className="mb-1 text-sm leading-relaxed text-muted">{t("cert.examLeft")}</p>
+            <Link
+              href={`/${locale}/challenges/${track.id}?start=${examId}`}
+              className="mt-4 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-black"
+              style={{ background: track.color, color: "var(--surface-solid)" }}
+            >
+              {t("cert.takeExam")}
+            </Link>
+          </>
+        ) : (
+          <p className="mb-1 text-sm leading-relaxed text-muted">
+            {t("cert.lockedBody").replace("{track}", track.title)}
+          </p>
+        )}
         <p className="mb-6 text-sm font-bold" style={{ color: track.color }}>
           {done}/{total} · {remaining} {remaining === 1 ? t("cert.oneLeft") : t("cert.moreLeft")}
         </p>

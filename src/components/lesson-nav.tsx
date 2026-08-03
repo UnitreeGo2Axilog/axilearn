@@ -18,7 +18,7 @@
  * with a sentence next to it says there IS more, and what to do about it.
  */
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Lock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Lock, PartyPopper } from "lucide-react";
 import type { Level } from "@/content/roadmap-data";
 import { useProgress } from "@/lib/progress-context";
 import { useT } from "@/i18n/use-t";
@@ -29,20 +29,59 @@ export function LessonNav({
   next,
   locale,
   accent,
+  trackId,
+  examId,
 }: {
   lessonId: string;
   prev: Level | null;
   next: Level | null;
   locale: string;
   accent: string;
+  trackId: string;
+  /** The track's final exam, when it has one. */
+  examId?: string;
 }) {
   const t = useT();
   const { completedIds } = useProgress();
   const done = completedIds.has(lessonId);
 
+  // The end of the track. Without this the last chapter simply stops -- a
+  // Previous button and nothing else, which reads as the page having failed
+  // rather than the course having been finished.
+  const finished = !next && done;
+
   if (!prev && !next) return null;
 
   return (
+    <>
+      {finished && (
+        <div
+          className="mt-6 rounded-2xl border p-5 text-center"
+          style={{
+            borderColor: `color-mix(in srgb, ${accent} 45%, transparent)`,
+            background: `color-mix(in srgb, ${accent} 8%, transparent)`,
+          }}
+        >
+          <PartyPopper className="mx-auto h-7 w-7" style={{ color: accent }} />
+          <p className="mt-2 text-lg font-extrabold text-strong">{t("lesson.trackDone")}</p>
+          <p className="mx-auto mt-1 max-w-lg text-sm leading-relaxed text-muted">
+            {examId ? t("lesson.trackDoneBody") : t("cert.available")}
+          </p>
+          <Link
+            href={
+              examId
+                ? `/${locale}/challenges/${trackId}?start=${examId}`
+                : `/${locale}/certificate/${trackId}`
+            }
+            className="mt-4 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-black"
+            style={{ background: accent, color: "var(--surface-solid)" }}
+          >
+            {examId ? t("lesson.goToExam") : t("cert.view")}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      )}
+
     <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
       {prev ? (
         <Link
@@ -78,5 +117,6 @@ export function LessonNav({
           </span>
         ))}
     </div>
+    </>
   );
 }

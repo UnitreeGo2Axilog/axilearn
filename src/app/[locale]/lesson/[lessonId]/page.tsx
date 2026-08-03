@@ -52,6 +52,9 @@ export default async function LessonPage({
   const startId = trackChallenges.find(
     (c) => c.lessonId === level.id && c.difficulty === "easy",
   )?.id;
+  // The last chapter ends differently: there is no next lesson to offer, so
+  // it points at the thing that actually remains.
+  const examId = trackChallenges.find((c) => c.isExam)?.id;
 
   return (
     <AuthGate>
@@ -204,6 +207,8 @@ export default async function LessonPage({
           next={next}
           locale={locale}
           accent={track.color}
+          trackId={track.id}
+          examId={examId}
         />
       </div>
     </AuthGate>

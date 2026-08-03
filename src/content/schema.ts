@@ -179,6 +179,16 @@ export interface ChallengeDoc {
    *  repo's, so a restructure can retire it without touching one the
    *  supervisor wrote by hand. */
   fromRepo?: boolean;
+  /**
+   * The track's final exam -- the last thing between a learner and the
+   * certificate.
+   *
+   * Finishing every lesson used to be the whole requirement, which meant the
+   * certificate could be earned by pressing "mark as done" nine times. One
+   * exam that uses all nine chapters at once is a much better claim to make
+   * on a piece of paper somebody shows a teacher.
+   */
+  isExam?: boolean;
   order: number;
   status: PublishStatus;
   difficulty: ChallengeDifficulty;
@@ -210,6 +220,7 @@ export interface ChallengeDoc {
 export interface ResolvedChallenge {
   id: string;
   lessonId?: string;
+  isExam?: boolean;
   difficulty: ChallengeDifficulty;
   kind: ChallengeKind;
   title: string;
@@ -232,6 +243,7 @@ export function resolveChallenge(c: ChallengeDoc, locale: Locale): ResolvedChall
   return {
     id: c.id,
     ...(c.lessonId ? { lessonId: c.lessonId } : {}),
+    ...(c.isExam ? { isExam: true } : {}),
     difficulty: c.difficulty,
     kind,
     title: pick(c.title, locale),
