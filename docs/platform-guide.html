@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AxiLearn — a guided tour of the interface</title>
+<style>
+  /* Print first: this document exists to become a PDF. */
+  @page { size: A4; margin: 16mm 14mm 18mm; }
+
+  :root {
+    --ink: #10151f;
+    --muted: #5b6472;
+    --faint: #8b95a3;
+    --rule: #e2e6ec;
+    --accent: #0e7c9b;
+    --accent-soft: #eaf5f8;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0 auto;
+    max-width: 780px;
+    padding: 28px 24px 60px;
+    font: 15px/1.65 "Segoe UI", -apple-system, system-ui, Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: #fff;
+  }
+
+  /* ---- cover ---- */
+  .cover { padding: 40px 0 28px; border-bottom: 3px solid var(--ink); margin-bottom: 34px; }
+  .brand {
+    display: inline-block; font-weight: 800; letter-spacing: .22em; font-size: 11px;
+    text-transform: uppercase; color: var(--accent);
+    border: 1.5px solid var(--accent); border-radius: 4px; padding: 4px 9px;
+  }
+  h1 { font-size: 34px; line-height: 1.15; margin: 18px 0 8px; letter-spacing: -.02em; }
+  .sub { font-size: 16px; color: var(--muted); margin: 0 0 22px; max-width: 46em; }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px 28px; font-size: 13px; color: var(--muted); }
+  .meta b { color: var(--ink); font-weight: 600; }
+  .meta a { color: var(--accent); text-decoration: none; }
+
+  /* ---- intro ---- */
+  .intro { margin-bottom: 34px; }
+  .intro p { margin: 0 0 10px; color: var(--muted); max-width: 46em; }
+  .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 18px; }
+  .fact { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; }
+  .fact b { display: block; font-size: 20px; letter-spacing: -.01em; }
+  .fact span { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .06em; }
+
+  /* ---- sections ---- */
+  .chapter { break-before: page; }
+  .chapter:first-of-type { break-before: auto; }
+  h2 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: .16em; color: var(--accent);
+    margin: 0 0 4px; padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+  }
+  .lead { margin: 10px 0 22px; color: var(--muted); font-size: 14px; }
+
+  figure { margin: 0 0 22px; break-inside: avoid; }
+  .shot {
+    position: relative; border: 1px solid var(--rule); border-radius: 8px;
+    overflow: hidden; background: #f7f9fb;
+  }
+  .shot img { display: block; width: 100%; height: auto; }
+  .shot .ph { display: none; }
+  /* Until a screenshot is dropped in, show a labelled slot rather than a
+     broken image -- the document stays printable while it is being filled. */
+  .shot.missing img { display: none; }
+  .shot.missing .ph {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px; height: 168px; color: var(--faint);
+    background: repeating-linear-gradient(45deg, #f7f9fb 0 10px, #f1f4f8 10px 20px);
+  }
+  .shot.missing .ph span { font-size: 12px; font-weight: 600; }
+  .shot.missing .ph code { font-size: 11px; color: var(--accent); }
+
+  figcaption { display: flex; gap: 9px; align-items: baseline; margin-top: 9px; font-size: 13.5px; color: var(--muted); }
+  figcaption strong { color: var(--ink); font-weight: 650; }
+  .n {
+    flex: 0 0 auto; min-width: 20px; height: 20px; border-radius: 4px;
+    background: var(--accent-soft); color: var(--accent);
+    font-size: 11px; font-weight: 800; display: inline-flex;
+    align-items: center; justify-content: center; padding: 0 5px;
+  }
+
+  footer { margin-top: 34px; padding-top: 12px; border-top: 1px solid var(--rule);
+            font-size: 12px; color: var(--faint); }
+
+  /* on screen only */
+  .howto { background: var(--accent-soft); border-left: 3px solid var(--accent);
+            padding: 12px 14px; border-radius: 0 6px 6px 0; font-size: 13px; margin-bottom: 30px; }
+  .howto b { color: var(--ink); }
+  .howto ol { margin: 8px 0 0; padding-left: 18px; color: var(--muted); }
+  @media print { .howto { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="howto">
+  <b>Before printing.</b> This box does not appear in the PDF.
+  <ol>
+    <li>Take each screenshot below and save it into <code>docs/screenshots/</code> with the filename shown in the empty slot.</li>
+    <li>Reload this page — the slots fill in as the files appear.</li>
+    <li>Print → <b>Save as PDF</b>. A4, margins default, background graphics ON.</li>
+  </ol>
+</div>
+
+<header class="cover">
+  <span class="brand">AxiLearn</span>
+  <h1>A guided tour of the platform</h1>
+  <p class="sub">Every screen a student or a teacher sees, in the order they meet it, with one line on what each is for.</p>
+  <div class="meta">
+    <span><b>Live at</b> <a href="https://axilearn.vercel.app">axilearn.vercel.app</a></span>
+    <span><b>Prepared by</b> Nasr</span>
+    <span><b>For</b> Axilog</span>
+  </div>
+</header>
+
+<section class="intro">
+  <p>AxiLearn is a bilingual learning platform for teenagers, built around three tracks: Python Basics, Physical AI, and two more to come. Lessons are read in the browser, the code in them runs in the browser, and nothing needs installing.</p>
+  <p>The pages that follow are grouped by who uses them — the student side first, then the teaching side.</p>
+  <div class="facts">
+    <div class="fact"><b>2</b><span>languages</span></div>
+    <div class="fact"><b>4</b><span>tracks</span></div>
+    <div class="fact"><b>9</b><span>Python chapters</span></div>
+    <div class="fact"><b>18</b><span>coding challenges</span></div>
+  </div>
+</section>
+
+<section class="chapter"><h2>For the student</h2><p class="lead">From signing in to handing work back.</p>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/01-signing-in.png" alt="Signing in"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/01-signing-in.png</span><code>/en/login</code></div>
+        </div>
+        <figcaption><span class="n">1</span><strong>Signing in</strong> — Email or Google, in English or French.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/02-home-choose-a-track.png" alt="Home — choose a track"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/02-home-choose-a-track.png</span><code>/en</code></div>
+        </div>
+        <figcaption><span class="n">2</span><strong>Home — choose a track</strong> — The four tracks, each showing progress, challenges and certificate at a glance.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/03-track-briefing.png" alt="Track briefing"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/03-track-briefing.png</span><code>/en/track/python-primer</code></div>
+        </div>
+        <figcaption><span class="n">3</span><strong>Track briefing</strong> — What the track teaches, who it is for, and how to succeed — before committing to it.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/04-the-mission-map.png" alt="The mission map"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/04-the-mission-map.png</span><code>/en/roadmap/python-primer</code></div>
+        </div>
+        <figcaption><span class="n">4</span><strong>The mission map</strong> — Every chapter as a node; finished ones cleared, the next one open, the rest locked.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/05-a-lesson.png" alt="A lesson"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/05-a-lesson.png</span><code>/en/lesson/pp-3</code></div>
+        </div>
+        <figcaption><span class="n">5</span><strong>A lesson</strong> — Reading, diagrams and code the student can run and edit without leaving the page.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/06-diagram-and-output.png" alt="Diagram and output"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/06-diagram-and-output.png</span><code>/en/lesson/pp-4</code></div>
+        </div>
+        <figcaption><span class="n">6</span><strong>Diagram and output</strong> — A flowchart of the logic, then the same program with what it prints.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/07-end-of-lesson-quiz.png" alt="End-of-lesson quiz"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/07-end-of-lesson-quiz.png</span><code>/en/lesson/pp-3</code></div>
+        </div>
+        <figcaption><span class="n">7</span><strong>End-of-lesson quiz</strong> — A short check that awards the XP; a wrong answer explains itself and never blocks progress.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/08-challenges-pick-a-level.png" alt="Challenges — pick a level"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/08-challenges-pick-a-level.png</span><code>/en/challenges/python-primer</code></div>
+        </div>
+        <figcaption><span class="n">8</span><strong>Challenges — pick a level</strong> — Easy, Normal or Hard, chosen before any problem is shown.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/09-solving-a-challenge.png" alt="Solving a challenge"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/09-solving-a-challenge.png</span><code>/en/challenges/python-primer</code></div>
+        </div>
+        <figcaption><span class="n">9</span><strong>Solving a challenge</strong> — Problem, editorial and tutorial in tabs, with tests run in the browser.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/10-my-progress.png" alt="My Progress"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/10-my-progress.png</span><code>/en/progress</code></div>
+        </div>
+        <figcaption><span class="n">10</span><strong>My Progress</strong> — Level, streak, and four real numbers: XP, lessons, challenges, certificates.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/11-certificates.png" alt="Certificates"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/11-certificates.png</span><code>/en/certificates</code></div>
+        </div>
+        <figcaption><span class="n">11</span><strong>Certificates</strong> — Earned ones open; locked ones say exactly what is left to do.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/12-saved-lessons.png" alt="Saved lessons"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/12-saved-lessons.png</span><code>/en/bookmarks</code></div>
+        </div>
+        <figcaption><span class="n">12</span><strong>Saved lessons</strong> — Anything the student starred, to come back to.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/13-homework.png" alt="Homework"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/13-homework.png</span><code>/en/homework</code></div>
+        </div>
+        <figcaption><span class="n">13</span><strong>Homework</strong> — What the teacher set, the deadline, and the answer sent back.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/14-discussion.png" alt="Discussion"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/14-discussion.png</span><code>/en/discussion</code></div>
+        </div>
+        <figcaption><span class="n">14</span><strong>Discussion</strong> — One shared room for the whole platform, with replies and pasted code.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/15-ask-the-teacher.png" alt="Ask the teacher"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/15-ask-the-teacher.png</span><code>/en/contact</code></div>
+        </div>
+        <figcaption><span class="n">15</span><strong>Ask the teacher</strong> — A private thread between one student and the staff.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/16-notifications.png" alt="Notifications"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/16-notifications.png</span><code>/en</code></div>
+        </div>
+        <figcaption><span class="n">16</span><strong>Notifications</strong> — A daily tip, plus anything waiting on the student. Open the bell.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/17-the-account-menu.png" alt="The account menu"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/17-the-account-menu.png</span><code>/en</code></div>
+        </div>
+        <figcaption><span class="n">17</span><strong>The account menu</strong> — Everything reachable from one place. Open the avatar menu.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/18-profile.png" alt="Profile"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/18-profile.png</span><code>/en/profile</code></div>
+        </div>
+        <figcaption><span class="n">18</span><strong>Profile</strong> — Badges, certificates, and the name and password the student can change.</figcaption>
+      </figure>
+</section>
+
+<section class="chapter"><h2>For the teacher</h2><p class="lead">Writing the course, setting work, and seeing who is keeping up.</p>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/19-admin-dashboard.png" alt="Admin dashboard"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/19-admin-dashboard.png</span><code>/en/admin</code></div>
+        </div>
+        <figcaption><span class="n">19</span><strong>Admin dashboard</strong> — Every track, its size, and whether students can see it.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/20-editing-a-track.png" alt="Editing a track"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/20-editing-a-track.png</span><code>/en/admin/track/python-primer</code></div>
+        </div>
+        <figcaption><span class="n">20</span><strong>Editing a track</strong> — Lessons, order and publication, all editable in the browser.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/21-writing-a-lesson.png" alt="Writing a lesson"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/21-writing-a-lesson.png</span><code>/en/admin/track/python-primer</code></div>
+        </div>
+        <figcaption><span class="n">21</span><strong>Writing a lesson</strong> — Text and quiz in both languages, English required and French optional.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/22-setting-homework.png" alt="Setting homework"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/22-setting-homework.png</span><code>/en/admin/homework</code></div>
+        </div>
+        <figcaption><span class="n">22</span><strong>Setting homework</strong> — A brief, an optional file, and a deadline that defaults to 24 hours.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/23-marking.png" alt="Marking"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/23-marking.png</span><code>/en/admin/homework</code></div>
+        </div>
+        <figcaption><span class="n">23</span><strong>Marking</strong> — Every answer, flagged late or on time, with a reply box under each.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/24-daily-tips.png" alt="Daily tips"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/24-daily-tips.png</span><code>/en/admin/notifications</code></div>
+        </div>
+        <figcaption><span class="n">24</span><strong>Daily tips</strong> — Short messages that rotate — one per day, one per week, or on a date.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/25-student-messages.png" alt="Student messages"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/25-student-messages.png</span><code>/en/admin/messages</code></div>
+        </div>
+        <figcaption><span class="n">25</span><strong>Student messages</strong> — Questions from students, the unanswered ones first.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="shot">
+          <img src="screenshots/26-the-class.png" alt="The class"
+               onerror="this.closest('.shot').classList.add('missing')" />
+          <div class="ph"><span>screenshots/26-the-class.png</span><code>/en/admin/students</code></div>
+        </div>
+        <figcaption><span class="n">26</span><strong>The class</strong> — Who is on the platform, how far they have got, and private notes.</figcaption>
+      </figure>
+</section>
+
+<footer>AxiLearn — axilearn.vercel.app · Built with Next.js, Firebase and Pyodide · Course content written for AxiLearn.</footer>
+
+</body>
+</html>
