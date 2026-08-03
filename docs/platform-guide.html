@@ -4,105 +4,87 @@
 <meta charset="utf-8" />
 <title>AxiLearn — a guided tour of the interface</title>
 <style>
-  /* Print first: this document exists to become a PDF. */
-  @page { size: A4; margin: 16mm 14mm 18mm; }
+  @page { size: A4; margin: 15mm 13mm 17mm; }
 
   :root {
-    --ink: #10151f;
-    --muted: #5b6472;
-    --faint: #8b95a3;
-    --rule: #e2e6ec;
-    --accent: #0e7c9b;
-    --accent-soft: #eaf5f8;
+    --ink: #101722; --muted: #59636f; --faint: #9aa3ae;
+    --rule: #e3e7ec; --paper: #fff; --wash: #f5f7fa;
+    --accent: #0d7a99; --accent-soft: #e9f4f8;
   }
-
   * { box-sizing: border-box; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body {
-    margin: 0 auto;
-    max-width: 780px;
-    padding: 28px 24px 60px;
-    font: 15px/1.65 "Segoe UI", -apple-system, system-ui, Roboto, Helvetica, Arial, sans-serif;
-    color: var(--ink);
-    background: #fff;
+    margin: 0 auto; max-width: 760px; padding: 26px 22px 56px;
+    font: 15px/1.6 "Segoe UI", -apple-system, system-ui, Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink); background: var(--paper);
   }
 
-  /* ---- cover ---- */
-  .cover { padding: 40px 0 28px; border-bottom: 3px solid var(--ink); margin-bottom: 34px; }
-  .brand {
-    display: inline-block; font-weight: 800; letter-spacing: .22em; font-size: 11px;
-    text-transform: uppercase; color: var(--accent);
-    border: 1.5px solid var(--accent); border-radius: 4px; padding: 4px 9px;
-  }
-  h1 { font-size: 34px; line-height: 1.15; margin: 18px 0 8px; letter-spacing: -.02em; }
-  .sub { font-size: 16px; color: var(--muted); margin: 0 0 22px; max-width: 46em; }
-  .meta { display: flex; flex-wrap: wrap; gap: 6px 28px; font-size: 13px; color: var(--muted); }
-  .meta b { color: var(--ink); font-weight: 600; }
-  .meta a { color: var(--accent); text-decoration: none; }
+  .cover { padding: 34px 0 26px; border-bottom: 3px solid var(--ink); margin-bottom: 30px; }
+  .brand { display:inline-block; font-weight:800; letter-spacing:.22em; font-size:10.5px;
+           text-transform:uppercase; color:var(--accent);
+           border:1.5px solid var(--accent); border-radius:4px; padding:4px 9px; }
+  h1 { font-size:33px; line-height:1.14; margin:17px 0 8px; letter-spacing:-.02em; }
+  .sub { font-size:15.5px; color:var(--muted); margin:0 0 20px; max-width:46em; }
+  .meta { display:flex; flex-wrap:wrap; gap:5px 26px; font-size:12.5px; color:var(--muted); }
+  .meta b { color:var(--ink); font-weight:600; }
+  .meta a { color:var(--accent); text-decoration:none; }
 
-  /* ---- intro ---- */
-  .intro { margin-bottom: 34px; }
-  .intro p { margin: 0 0 10px; color: var(--muted); max-width: 46em; }
-  .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 18px; }
-  .fact { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; }
-  .fact b { display: block; font-size: 20px; letter-spacing: -.01em; }
-  .fact span { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .06em; }
+  .intro p { margin:0 0 9px; color:var(--muted); max-width:46em; }
+  .facts { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin:16px 0 0; }
+  .fact { border:1px solid var(--rule); border-radius:8px; padding:9px 11px; }
+  .fact b { display:block; font-size:19px; letter-spacing:-.01em; }
+  .fact span { font-size:10.5px; color:var(--faint); text-transform:uppercase; letter-spacing:.06em; }
 
-  /* ---- sections ---- */
-  .chapter { break-before: page; }
-  .chapter:first-of-type { break-before: auto; }
-  h2 {
-    font-size: 13px; text-transform: uppercase; letter-spacing: .16em; color: var(--accent);
-    margin: 0 0 4px; padding-bottom: 8px; border-bottom: 1px solid var(--rule);
-  }
-  .lead { margin: 10px 0 22px; color: var(--muted); font-size: 14px; }
+  .chapter { break-before: page; margin-top: 30px; }
+  h2 { font-size:12.5px; text-transform:uppercase; letter-spacing:.16em; color:var(--accent);
+       margin:0; padding-bottom:8px; border-bottom:1px solid var(--rule); }
+  .lead { margin:10px 0 20px; color:var(--muted); font-size:13.5px; }
 
-  figure { margin: 0 0 22px; break-inside: avoid; }
-  .shot {
-    position: relative; border: 1px solid var(--rule); border-radius: 8px;
-    overflow: hidden; background: #f7f9fb;
-  }
-  .shot img { display: block; width: 100%; height: auto; }
-  .shot .ph { display: none; }
-  /* Until a screenshot is dropped in, show a labelled slot rather than a
-     broken image -- the document stays printable while it is being filled. */
-  .shot.missing img { display: none; }
-  .shot.missing .ph {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 6px; height: 168px; color: var(--faint);
-    background: repeating-linear-gradient(45deg, #f7f9fb 0 10px, #f1f4f8 10px 20px);
-  }
-  .shot.missing .ph span { font-size: 12px; font-weight: 600; }
-  .shot.missing .ph code { font-size: 11px; color: var(--accent); }
+  figure { margin:0 0 20px; break-inside: avoid; }
 
-  figcaption { display: flex; gap: 9px; align-items: baseline; margin-top: 9px; font-size: 13.5px; color: var(--muted); }
-  figcaption strong { color: var(--ink); font-weight: 650; }
-  .n {
-    flex: 0 0 auto; min-width: 20px; height: 20px; border-radius: 4px;
-    background: var(--accent-soft); color: var(--accent);
-    font-size: 11px; font-weight: 800; display: inline-flex;
-    align-items: center; justify-content: center; padding: 0 5px;
-  }
+  /* A screenshot in a small browser frame. The URL sits in the chrome, so the
+     figure says where it came from without spending a caption line on it. */
+  .shot { border:1px solid var(--rule); border-radius:9px; overflow:hidden; background:var(--paper); }
+  .bar { display:flex; align-items:center; gap:5px; padding:6px 10px;
+         background:var(--wash); border-bottom:1px solid var(--rule); }
+  .bar i { width:7px; height:7px; border-radius:50%; background:#d6dbe1; }
+  .bar span { margin-left:6px; font-size:10.5px; color:var(--faint); letter-spacing:.01em; }
 
-  footer { margin-top: 34px; padding-top: 12px; border-top: 1px solid var(--rule);
-            font-size: 12px; color: var(--faint); }
+  /* The slot label sits UNDER the image. No script anywhere: an <img> with an
+     empty alt that fails to load collapses to nothing, so the label shows
+     through until the file exists and is covered the moment it does. */
+  .frame { position:relative; background:
+      repeating-linear-gradient(45deg, #fafbfc 0 9px, #f2f5f8 9px 18px); }
+  .slot { position:absolute; inset:0; margin:0; display:flex; align-items:center;
+          justify-content:center; font-size:11.5px; font-weight:600; color:var(--faint);
+          min-height:150px; }
+  .frame img { position:relative; display:block; width:100%; height:auto; background:var(--paper); }
 
-  /* on screen only */
-  .howto { background: var(--accent-soft); border-left: 3px solid var(--accent);
-            padding: 12px 14px; border-radius: 0 6px 6px 0; font-size: 13px; margin-bottom: 30px; }
-  .howto b { color: var(--ink); }
-  .howto ol { margin: 8px 0 0; padding-left: 18px; color: var(--muted); }
-  @media print { .howto { display: none; } }
+  figcaption { display:flex; gap:8px; align-items:baseline; margin-top:8px;
+               font-size:13px; color:var(--muted); }
+  figcaption strong { color:var(--ink); font-weight:650; }
+  .n { flex:0 0 auto; min-width:19px; height:19px; border-radius:4px; padding:0 5px;
+       background:var(--accent-soft); color:var(--accent); font-size:10.5px; font-weight:800;
+       display:inline-flex; align-items:center; justify-content:center; }
+
+  footer { margin-top:30px; padding-top:11px; border-top:1px solid var(--rule);
+           font-size:11.5px; color:var(--faint); }
+
+  .howto { background:var(--accent-soft); border-left:3px solid var(--accent);
+           padding:11px 13px; border-radius:0 6px 6px 0; font-size:12.5px; margin-bottom:26px; }
+  .howto b { color:var(--ink); }
+  .howto ol { margin:7px 0 0; padding-left:17px; color:var(--muted); }
+  @media print { .howto { display:none; } }
 </style>
 </head>
 <body>
 
 <div class="howto">
-  <b>Before printing.</b> This box does not appear in the PDF.
+  <b>Before printing</b> — this box is not in the PDF.
   <ol>
-    <li>Take each screenshot below and save it into <code>docs/screenshots/</code> with the filename shown in the empty slot.</li>
-    <li>Reload this page — the slots fill in as the files appear.</li>
-    <li>Print → <b>Save as PDF</b>. A4, margins default, background graphics ON.</li>
+    <li>Save each screenshot into <code>docs/screenshots/</code> using the filename printed in its empty slot.</li>
+    <li>Reload. Slots fill in as files appear; empty ones still print tidily.</li>
+    <li>Print → <b>Save as PDF</b>. A4, and leave <b>background graphics</b> on.</li>
   </ol>
 </div>
 
@@ -118,257 +100,287 @@
 </header>
 
 <section class="intro">
-  <p>AxiLearn is a bilingual learning platform for teenagers, built around three tracks: Python Basics, Physical AI, and two more to come. Lessons are read in the browser, the code in them runs in the browser, and nothing needs installing.</p>
-  <p>The pages that follow are grouped by who uses them — the student side first, then the teaching side.</p>
+  <p>AxiLearn is a bilingual learning platform for teenagers. Lessons are read in the browser, the code inside them runs in the browser, and nothing needs installing — a student with a PC and a link can start immediately.</p>
+  <p>The screens below are grouped by who uses them: the student side first, then the teaching side.</p>
   <div class="facts">
     <div class="fact"><b>2</b><span>languages</span></div>
     <div class="fact"><b>4</b><span>tracks</span></div>
     <div class="fact"><b>9</b><span>Python chapters</span></div>
-    <div class="fact"><b>18</b><span>coding challenges</span></div>
+    <div class="fact"><b>18</b><span>challenges</span></div>
   </div>
 </section>
 
-<section class="chapter"><h2>For the student</h2><p class="lead">From signing in to handing work back.</p>
-
+<section class="chapter">
+  <h2>For the student</h2>
+  <p class="lead">From signing in to handing work back.</p>
       <figure>
         <div class="shot">
-          <img src="screenshots/01-signing-in.png" alt="Signing in"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/01-signing-in.png</span><code>/en/login</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/login</span></div>
+          <div class="frame">
+            <p class="slot">01-signing-in.png</p>
+            <img src="screenshots/01-signing-in.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">1</span><strong>Signing in</strong> — Email or Google, in English or French.</figcaption>
+        <figcaption><span class="n">1</span><span><strong>Signing in</strong> — Email or Google, in English or French.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/02-home-choose-a-track.png" alt="Home — choose a track"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/02-home-choose-a-track.png</span><code>/en</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en</span></div>
+          <div class="frame">
+            <p class="slot">02-home-choose-a-track.png</p>
+            <img src="screenshots/02-home-choose-a-track.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">2</span><strong>Home — choose a track</strong> — The four tracks, each showing progress, challenges and certificate at a glance.</figcaption>
+        <figcaption><span class="n">2</span><span><strong>Home — choose a track</strong> — The four tracks, each showing progress, challenges and certificate at a glance.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/03-track-briefing.png" alt="Track briefing"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/03-track-briefing.png</span><code>/en/track/python-primer</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/track/python-primer</span></div>
+          <div class="frame">
+            <p class="slot">03-track-briefing.png</p>
+            <img src="screenshots/03-track-briefing.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">3</span><strong>Track briefing</strong> — What the track teaches, who it is for, and how to succeed — before committing to it.</figcaption>
+        <figcaption><span class="n">3</span><span><strong>Track briefing</strong> — What the track teaches, who it is for, and how to succeed — before committing to it.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/04-the-mission-map.png" alt="The mission map"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/04-the-mission-map.png</span><code>/en/roadmap/python-primer</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/roadmap/python-primer</span></div>
+          <div class="frame">
+            <p class="slot">04-the-mission-map.png</p>
+            <img src="screenshots/04-the-mission-map.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">4</span><strong>The mission map</strong> — Every chapter as a node; finished ones cleared, the next one open, the rest locked.</figcaption>
+        <figcaption><span class="n">4</span><span><strong>The mission map</strong> — Every chapter as a node; finished ones cleared, the next one open, the rest locked.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/05-a-lesson.png" alt="A lesson"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/05-a-lesson.png</span><code>/en/lesson/pp-3</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/lesson/pp-3</span></div>
+          <div class="frame">
+            <p class="slot">05-a-lesson.png</p>
+            <img src="screenshots/05-a-lesson.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">5</span><strong>A lesson</strong> — Reading, diagrams and code the student can run and edit without leaving the page.</figcaption>
+        <figcaption><span class="n">5</span><span><strong>A lesson</strong> — Reading, diagrams and code the student can run and edit without leaving the page.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/06-diagram-and-output.png" alt="Diagram and output"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/06-diagram-and-output.png</span><code>/en/lesson/pp-4</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/lesson/pp-4</span></div>
+          <div class="frame">
+            <p class="slot">06-diagram-and-output.png</p>
+            <img src="screenshots/06-diagram-and-output.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">6</span><strong>Diagram and output</strong> — A flowchart of the logic, then the same program with what it prints.</figcaption>
+        <figcaption><span class="n">6</span><span><strong>Diagram and output</strong> — A flowchart of the logic, then the same program with what it prints.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/07-end-of-lesson-quiz.png" alt="End-of-lesson quiz"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/07-end-of-lesson-quiz.png</span><code>/en/lesson/pp-3</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/lesson/pp-3</span></div>
+          <div class="frame">
+            <p class="slot">07-end-of-lesson-quiz.png</p>
+            <img src="screenshots/07-end-of-lesson-quiz.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">7</span><strong>End-of-lesson quiz</strong> — A short check that awards the XP; a wrong answer explains itself and never blocks progress.</figcaption>
+        <figcaption><span class="n">7</span><span><strong>End-of-lesson quiz</strong> — A short check that awards the XP; a wrong answer explains itself and never blocks progress.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/08-challenges-pick-a-level.png" alt="Challenges — pick a level"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/08-challenges-pick-a-level.png</span><code>/en/challenges/python-primer</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/challenges/python-primer</span></div>
+          <div class="frame">
+            <p class="slot">08-challenges-pick-a-level.png</p>
+            <img src="screenshots/08-challenges-pick-a-level.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">8</span><strong>Challenges — pick a level</strong> — Easy, Normal or Hard, chosen before any problem is shown.</figcaption>
+        <figcaption><span class="n">8</span><span><strong>Challenges — pick a level</strong> — Easy, Normal or Hard, chosen before any problem is shown.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/09-solving-a-challenge.png" alt="Solving a challenge"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/09-solving-a-challenge.png</span><code>/en/challenges/python-primer</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/challenges/python-primer</span></div>
+          <div class="frame">
+            <p class="slot">09-solving-a-challenge.png</p>
+            <img src="screenshots/09-solving-a-challenge.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">9</span><strong>Solving a challenge</strong> — Problem, editorial and tutorial in tabs, with tests run in the browser.</figcaption>
+        <figcaption><span class="n">9</span><span><strong>Solving a challenge</strong> — Problem, editorial and tutorial in tabs, with tests run in the browser.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/10-my-progress.png" alt="My Progress"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/10-my-progress.png</span><code>/en/progress</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/progress</span></div>
+          <div class="frame">
+            <p class="slot">10-my-progress.png</p>
+            <img src="screenshots/10-my-progress.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">10</span><strong>My Progress</strong> — Level, streak, and four real numbers: XP, lessons, challenges, certificates.</figcaption>
+        <figcaption><span class="n">10</span><span><strong>My Progress</strong> — Level, streak, and four real numbers: XP, lessons, challenges, certificates.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/11-certificates.png" alt="Certificates"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/11-certificates.png</span><code>/en/certificates</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/certificates</span></div>
+          <div class="frame">
+            <p class="slot">11-certificates.png</p>
+            <img src="screenshots/11-certificates.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">11</span><strong>Certificates</strong> — Earned ones open; locked ones say exactly what is left to do.</figcaption>
+        <figcaption><span class="n">11</span><span><strong>Certificates</strong> — Earned ones open; locked ones say exactly what is left to do.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/12-saved-lessons.png" alt="Saved lessons"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/12-saved-lessons.png</span><code>/en/bookmarks</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/bookmarks</span></div>
+          <div class="frame">
+            <p class="slot">12-saved-lessons.png</p>
+            <img src="screenshots/12-saved-lessons.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">12</span><strong>Saved lessons</strong> — Anything the student starred, to come back to.</figcaption>
+        <figcaption><span class="n">12</span><span><strong>Saved lessons</strong> — Anything the student starred, to come back to.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/13-homework.png" alt="Homework"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/13-homework.png</span><code>/en/homework</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/homework</span></div>
+          <div class="frame">
+            <p class="slot">13-homework.png</p>
+            <img src="screenshots/13-homework.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">13</span><strong>Homework</strong> — What the teacher set, the deadline, and the answer sent back.</figcaption>
+        <figcaption><span class="n">13</span><span><strong>Homework</strong> — What the teacher set, the deadline, and the answer sent back.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/14-discussion.png" alt="Discussion"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/14-discussion.png</span><code>/en/discussion</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/discussion</span></div>
+          <div class="frame">
+            <p class="slot">14-discussion.png</p>
+            <img src="screenshots/14-discussion.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">14</span><strong>Discussion</strong> — One shared room for the whole platform, with replies and pasted code.</figcaption>
+        <figcaption><span class="n">14</span><span><strong>Discussion</strong> — One shared room for the whole platform, with replies and pasted code.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/15-ask-the-teacher.png" alt="Ask the teacher"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/15-ask-the-teacher.png</span><code>/en/contact</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/contact</span></div>
+          <div class="frame">
+            <p class="slot">15-ask-the-teacher.png</p>
+            <img src="screenshots/15-ask-the-teacher.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">15</span><strong>Ask the teacher</strong> — A private thread between one student and the staff.</figcaption>
+        <figcaption><span class="n">15</span><span><strong>Ask the teacher</strong> — A private thread between one student and the staff.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/16-notifications.png" alt="Notifications"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/16-notifications.png</span><code>/en</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en</span></div>
+          <div class="frame">
+            <p class="slot">16-notifications.png</p>
+            <img src="screenshots/16-notifications.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">16</span><strong>Notifications</strong> — A daily tip, plus anything waiting on the student. Open the bell.</figcaption>
+        <figcaption><span class="n">16</span><span><strong>Notifications</strong> — A daily tip, plus anything waiting on the student. Open the bell.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/17-the-account-menu.png" alt="The account menu"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/17-the-account-menu.png</span><code>/en</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en</span></div>
+          <div class="frame">
+            <p class="slot">17-the-account-menu.png</p>
+            <img src="screenshots/17-the-account-menu.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">17</span><strong>The account menu</strong> — Everything reachable from one place. Open the avatar menu.</figcaption>
+        <figcaption><span class="n">17</span><span><strong>The account menu</strong> — Everything reachable from one place. Open the avatar menu.</span></figcaption>
       </figure>
-
       <figure>
         <div class="shot">
-          <img src="screenshots/18-profile.png" alt="Profile"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/18-profile.png</span><code>/en/profile</code></div>
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/profile</span></div>
+          <div class="frame">
+            <p class="slot">18-profile.png</p>
+            <img src="screenshots/18-profile.png" alt="" />
+          </div>
         </div>
-        <figcaption><span class="n">18</span><strong>Profile</strong> — Badges, certificates, and the name and password the student can change.</figcaption>
-      </figure>
-</section>
-
-<section class="chapter"><h2>For the teacher</h2><p class="lead">Writing the course, setting work, and seeing who is keeping up.</p>
-
-      <figure>
-        <div class="shot">
-          <img src="screenshots/19-admin-dashboard.png" alt="Admin dashboard"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/19-admin-dashboard.png</span><code>/en/admin</code></div>
-        </div>
-        <figcaption><span class="n">19</span><strong>Admin dashboard</strong> — Every track, its size, and whether students can see it.</figcaption>
-      </figure>
-
-      <figure>
-        <div class="shot">
-          <img src="screenshots/20-editing-a-track.png" alt="Editing a track"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/20-editing-a-track.png</span><code>/en/admin/track/python-primer</code></div>
-        </div>
-        <figcaption><span class="n">20</span><strong>Editing a track</strong> — Lessons, order and publication, all editable in the browser.</figcaption>
-      </figure>
-
-      <figure>
-        <div class="shot">
-          <img src="screenshots/21-writing-a-lesson.png" alt="Writing a lesson"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/21-writing-a-lesson.png</span><code>/en/admin/track/python-primer</code></div>
-        </div>
-        <figcaption><span class="n">21</span><strong>Writing a lesson</strong> — Text and quiz in both languages, English required and French optional.</figcaption>
-      </figure>
-
-      <figure>
-        <div class="shot">
-          <img src="screenshots/22-setting-homework.png" alt="Setting homework"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/22-setting-homework.png</span><code>/en/admin/homework</code></div>
-        </div>
-        <figcaption><span class="n">22</span><strong>Setting homework</strong> — A brief, an optional file, and a deadline that defaults to 24 hours.</figcaption>
-      </figure>
-
-      <figure>
-        <div class="shot">
-          <img src="screenshots/23-marking.png" alt="Marking"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/23-marking.png</span><code>/en/admin/homework</code></div>
-        </div>
-        <figcaption><span class="n">23</span><strong>Marking</strong> — Every answer, flagged late or on time, with a reply box under each.</figcaption>
-      </figure>
-
-      <figure>
-        <div class="shot">
-          <img src="screenshots/24-daily-tips.png" alt="Daily tips"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/24-daily-tips.png</span><code>/en/admin/notifications</code></div>
-        </div>
-        <figcaption><span class="n">24</span><strong>Daily tips</strong> — Short messages that rotate — one per day, one per week, or on a date.</figcaption>
-      </figure>
-
-      <figure>
-        <div class="shot">
-          <img src="screenshots/25-student-messages.png" alt="Student messages"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/25-student-messages.png</span><code>/en/admin/messages</code></div>
-        </div>
-        <figcaption><span class="n">25</span><strong>Student messages</strong> — Questions from students, the unanswered ones first.</figcaption>
-      </figure>
-
-      <figure>
-        <div class="shot">
-          <img src="screenshots/26-the-class.png" alt="The class"
-               onerror="this.closest('.shot').classList.add('missing')" />
-          <div class="ph"><span>screenshots/26-the-class.png</span><code>/en/admin/students</code></div>
-        </div>
-        <figcaption><span class="n">26</span><strong>The class</strong> — Who is on the platform, how far they have got, and private notes.</figcaption>
+        <figcaption><span class="n">18</span><span><strong>Profile</strong> — Badges, certificates, and the name and password the student can change.</span></figcaption>
       </figure>
 </section>
 
-<footer>AxiLearn — axilearn.vercel.app · Built with Next.js, Firebase and Pyodide · Course content written for AxiLearn.</footer>
+<section class="chapter">
+  <h2>For the teacher</h2>
+  <p class="lead">Writing the course, setting work, and seeing who is keeping up.</p>
+      <figure>
+        <div class="shot">
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/admin</span></div>
+          <div class="frame">
+            <p class="slot">19-admin-dashboard.png</p>
+            <img src="screenshots/19-admin-dashboard.png" alt="" />
+          </div>
+        </div>
+        <figcaption><span class="n">19</span><span><strong>Admin dashboard</strong> — Every track, its size, and whether students can see it.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot">
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/admin/track/python-primer</span></div>
+          <div class="frame">
+            <p class="slot">20-editing-a-track.png</p>
+            <img src="screenshots/20-editing-a-track.png" alt="" />
+          </div>
+        </div>
+        <figcaption><span class="n">20</span><span><strong>Editing a track</strong> — Lessons, order and publication, all editable in the browser.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot">
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/admin/track/python-primer</span></div>
+          <div class="frame">
+            <p class="slot">21-writing-a-lesson.png</p>
+            <img src="screenshots/21-writing-a-lesson.png" alt="" />
+          </div>
+        </div>
+        <figcaption><span class="n">21</span><span><strong>Writing a lesson</strong> — Text and quiz in both languages, English required and French optional.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot">
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/admin/homework</span></div>
+          <div class="frame">
+            <p class="slot">22-setting-homework.png</p>
+            <img src="screenshots/22-setting-homework.png" alt="" />
+          </div>
+        </div>
+        <figcaption><span class="n">22</span><span><strong>Setting homework</strong> — A brief, an optional file, and a deadline that defaults to 24 hours.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot">
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/admin/homework</span></div>
+          <div class="frame">
+            <p class="slot">23-marking.png</p>
+            <img src="screenshots/23-marking.png" alt="" />
+          </div>
+        </div>
+        <figcaption><span class="n">23</span><span><strong>Marking</strong> — Every answer, flagged late or on time, with a reply box under each.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot">
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/admin/notifications</span></div>
+          <div class="frame">
+            <p class="slot">24-daily-tips.png</p>
+            <img src="screenshots/24-daily-tips.png" alt="" />
+          </div>
+        </div>
+        <figcaption><span class="n">24</span><span><strong>Daily tips</strong> — Short messages that rotate — one per day, one per week, or on a date.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot">
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/admin/messages</span></div>
+          <div class="frame">
+            <p class="slot">25-student-messages.png</p>
+            <img src="screenshots/25-student-messages.png" alt="" />
+          </div>
+        </div>
+        <figcaption><span class="n">25</span><span><strong>Student messages</strong> — Questions from students, the unanswered ones first.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot">
+          <div class="bar"><i></i><i></i><i></i><span>axilearn.vercel.app/en/admin/students</span></div>
+          <div class="frame">
+            <p class="slot">26-the-class.png</p>
+            <img src="screenshots/26-the-class.png" alt="" />
+          </div>
+        </div>
+        <figcaption><span class="n">26</span><span><strong>The class</strong> — Who is on the platform, how far they have got, and private notes.</span></figcaption>
+      </figure>
+</section>
+
+<footer>AxiLearn · axilearn.vercel.app · Next.js, Firebase and Pyodide · Course content written for AxiLearn.</footer>
 
 </body>
 </html>

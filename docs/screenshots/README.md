@@ -1,9 +1,11 @@
 # Screenshots for the platform guide
 
-Save each as a PNG in this folder, with exactly these names.
-Sign in first — most pages are empty when signed out.
+Save each as a PNG here, with exactly these names.
+**Sign in first** — most pages show only a sign-in prompt when signed out.
 
-| # | file | page to capture | what to show |
+A browser window around **1280 × 800** gives the cleanest crops.
+
+| # | file | page | what to show |
 |---|---|---|---|
 | 1 | `01-signing-in.png` | `/en/login` | Email or Google, in English or French. |
 | 2 | `02-home-choose-a-track.png` | `/en` | The four tracks, each showing progress, challenges and certificate at a glance. |
@@ -31,5 +33,3 @@ Sign in first — most pages are empty when signed out.
 | 24 | `24-daily-tips.png` | `/en/admin/notifications` | Short messages that rotate — one per day, one per week, or on a date. |
 | 25 | `25-student-messages.png` | `/en/admin/messages` | Questions from students, the unanswered ones first. |
 | 26 | `26-the-class.png` | `/en/admin/students` | Who is on the platform, how far they have got, and private notes. |
-
-Tip: a browser window around 1280×800 gives the cleanest crops.
