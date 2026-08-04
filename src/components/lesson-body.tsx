@@ -258,9 +258,14 @@ function Branch({ label, tone, items }: { label: string; tone: string; items: st
       <span className="mr-2 font-robot text-[10px] font-black uppercase" style={{ color: tone }}>
         {label}
       </span>
+      {/* Each on its own line. A Box is inline-block, so two of them in a
+          plain container sit side by side and read as "these happen
+          together" -- but a loop body is one step THEN the next. */}
       <div className="space-y-1">
         {items.map((t, i) => (
-          <Box key={i} text={t} />
+          <div key={i}>
+            <Box text={t} />
+          </div>
         ))}
       </div>
     </div>
