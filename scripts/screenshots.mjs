@@ -18,6 +18,20 @@ import { chromium } from "playwright";
 import fs from "node:fs";
 import path from "node:path";
 
+/**
+ * Chromium needs libnss3 and libnspr4, and installing them system-wide wants
+ * sudo. If a local copy has been extracted into .browserlibs (see the README),
+ * point the dynamic linker at it here rather than making every caller
+ * remember an export -- the browser is spawned as a child process, so it
+ * inherits whatever this sets.
+ */
+const localLibs = path.join(process.cwd(), ".browserlibs", "usr", "lib", "x86_64-linux-gnu");
+if (fs.existsSync(localLibs)) {
+  process.env.LD_LIBRARY_PATH = [localLibs, process.env.LD_LIBRARY_PATH].filter(Boolean).join(":");
+  // The libraries are present, just not where Playwright's check looks.
+  process.env.PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "1";
+}
+
 const BASE = process.env.BASE ?? "http://localhost:3500";
 const OUT = path.join(process.cwd(), "docs", "screenshots");
 const EMAIL = process.env.AXI_EMAIL;
@@ -74,7 +88,27 @@ async function act(page, what) {
   await page.waitForTimeout(700);
 }
 
-const browser = await chromium.launch({ headless: true });
+if (!EMAIL || !PASSWORD) {
+  console.log(
+    "\n  No login given, so only the public pages can be captured.\n" +
+    "  Set AXI_EMAIL and AXI_PASSWORD -- note the leading A on both.\n",
+  );
+}
+
+let browser;
+try {
+  browser = await chromium.launch({ headless: true });
+} catch (e) {
+  console.log("\n  The browser would not start.\n");
+  if (!fs.existsSync(localLibs)) {
+    console.log("  Chromium needs two libraries this machine does not have. Either:");
+    console.log("    sudo npx playwright install-deps");
+    console.log("  or extract them locally, which needs no root -- see docs/screenshots/README.md\n");
+  } else {
+    console.log(`  ${String(e).split("\n")[0]}\n`);
+  }
+  process.exit(1);
+}
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 2 });
 const page = await ctx.newPage();
 
