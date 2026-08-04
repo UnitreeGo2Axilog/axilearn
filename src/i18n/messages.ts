@@ -116,8 +116,13 @@ export const messages = {
     "nav.themeDark": "Dark mode",
 
     "home.title": "Choose your adventure",
+    // No count in this sentence. It read "Three journeys" with four cards
+    // underneath, because splitting Python out into its own track changed the
+    // page and not the prose describing it. A number spelled out in copy has
+    // to be remembered by hand every time the curriculum grows, and the
+    // sentence does its job without one.
     "home.subtitle":
-      "Three journeys into artificial intelligence. Start anywhere, learn by doing.",
+      "Your journey into artificial intelligence. Start anywhere, learn by doing.",
     "home.start": "Start learning",
     "home.comingSoon": "Coming soon",
     "home.lessons": "lessons",
@@ -639,7 +644,7 @@ export const messages = {
 
     "home.title": "Choisis ton aventure",
     "home.subtitle":
-      "Trois parcours vers l'intelligence artificielle. Commence où tu veux, apprends en pratiquant.",
+      "Ton parcours vers l'intelligence artificielle. Commence où tu veux, apprends en pratiquant.",
     "home.start": "Commencer",
     "home.comingSoon": "Bientôt disponible",
     "home.lessons": "leçons",

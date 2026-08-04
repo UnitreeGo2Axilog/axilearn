@@ -1,25 +1,40 @@
 # Screenshots for the platform guide
 
-Eighteen of these are already here, captured from a signed-in student account.
-The eight teaching screens are not: a new account is a student, `role` cannot
-be self-assigned, and a screenshot of "you need an admin account" is worse
-than an empty slot.
+All twenty-six are here.
 
-## Taking the rest (or redoing all of them)
+## Two passes, not one
 
-    BASE=https://axilearn.vercel.app \
-    AXI_EMAIL=you@example.com AXI_PASSWORD='...' \
-    node scripts/screenshots.mjs
+An admin can open every page, so one admin run captures all twenty-six without
+a single error -- and gets several of them wrong. Staff do not see the track
+cards on the home page, so figure 2 comes back showing the admin's own view
+under a caption about the four tracks a student chooses between. Nothing fails;
+it just quietly documents the wrong thing.
 
-Signed in as an ADMIN it captures all twenty-six. As a student it captures
-eighteen and says which it skipped.
+So: **1-18 as a student, 19-26 as an admin.**
 
-It needs Playwright's browser once:
+    npm run screenshots    # add ONLY= and the login for each pass
+
+    ONLY=1-18  AXI_EMAIL=student@... AXI_PASSWORD='...'  npm run screenshots
+    ONLY=19-26 AXI_EMAIL=admin@...   AXI_PASSWORD='...'  npm run screenshots
+
+`ONLY` takes a range, a single number, or a mix -- `ONLY=2,16-17` redoes just
+the three home-page figures.
+
+## The data is live
+
+The pages are served locally but read the real Firestore, so the figures show
+whatever the database holds at that moment. Import any pending content changes
+BEFORE capturing, or the guide documents the old curriculum.
+
+## First run
 
     npx playwright install chromium
     sudo npx playwright install-deps    # libnss3, libnspr4
 
-Point `BASE` at http://localhost:3000 to capture a local build instead.
+Without root, extract those two into `.browserlibs/` instead -- the script
+finds them there and needs no environment set up by hand.
+
+Point `BASE` at a deployed URL to capture that instead of a local build.
 
 ## By hand
 

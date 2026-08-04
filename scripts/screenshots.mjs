@@ -147,7 +147,29 @@ fs.mkdirSync(OUT, { recursive: true });
 const rank = { public: 0, student: 1, admin: 2 };
 let taken = 0, skipped = [];
 
+/**
+ * ONLY=1-18 restricts the run to a range of figures.
+ *
+ * It exists because being allowed to see a page is not the same as seeing what
+ * the guide is describing. An admin can open every student screen, so a single
+ * admin run captures all twenty-six without one error -- but the home page
+ * deliberately hides the tracks from staff, so figure 2 comes out showing the
+ * admin's own view under a caption about the four tracks a student picks from.
+ * Silently wrong, and it looks fine until somebody reads the caption.
+ *
+ * So the guide is captured in two passes: 1-18 signed in as a student, 19-26
+ * as an admin.
+ */
+/** "1-18", "7", or a mix: "2,16-17". */
+const wanted = (process.env.ONLY ?? "")
+  .split(",")
+  .filter(Boolean)
+  .map((part) => part.split("-").map(Number))
+  .map(([lo, hi]) => [lo, hi ?? lo]);
+const inRange = (n) => !wanted.length || wanted.some(([lo, hi]) => n >= lo && n <= hi);
+
 for (const [n, file, url, action, needs] of SHOTS) {
+  if (!inRange(n)) continue;
   if (rank[needs] > rank[role]) { skipped.push(`${n} ${file}`); continue; }
   try {
     await page.goto(`${BASE}${url}`, GOTO);
