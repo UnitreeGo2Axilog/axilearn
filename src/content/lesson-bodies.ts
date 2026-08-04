@@ -1200,7 +1200,7 @@ no: skip it
 ask: x > 20 ?
 yes: print('Bigger')
 no: skip it
-step: print('Finis')
+step: print('Done')
 \`\`\`
 
 That is the picture. Here is the same thing as a program, and what it prints:
@@ -1212,10 +1212,10 @@ if x < 10:
 if x > 20:
     print('Bigger')
 
-print('Finis')
+print('Done')
 ---
 Smaller
-Finis
+Done
 \`\`\`
 
 Bigger never appears, because 5 is not bigger than 20. The program reaches the
