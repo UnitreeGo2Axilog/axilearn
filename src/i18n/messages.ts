@@ -115,6 +115,17 @@ export const messages = {
     "nav.themeLight": "Light mode",
     "nav.themeDark": "Dark mode",
 
+    "sim.play": "Play",
+    "sim.pause": "Pause",
+    "sim.replay": "Play again",
+    "sim.loading": "Waking the robot up…",
+    "sim.loadingHint": "This happens once. The robot and Python are downloading.",
+    "sim.unsupported": "This device cannot run the simulator, so here is the real robot instead.",
+    "sim.run": "Run",
+    "sim.runPart": "Run this part",
+    "sim.reset": "Start over",
+    "sim.truncated": "That ran for a very long time, so only the first 20 seconds are shown.",
+
     "home.title": "Choose your adventure",
     // No count in this sentence. It read "Three journeys" with four cards
     // underneath, because splitting Python out into its own track changed the
@@ -641,6 +652,17 @@ export const messages = {
     "nav.theme": "Thème",
     "nav.themeLight": "Mode clair",
     "nav.themeDark": "Mode sombre",
+
+    "sim.play": "Lecture",
+    "sim.pause": "Pause",
+    "sim.replay": "Revoir",
+    "sim.loading": "On réveille le robot…",
+    "sim.loadingHint": "Cela n'arrive qu'une fois. Le robot et Python se téléchargent.",
+    "sim.unsupported": "Cet appareil ne peut pas lancer le simulateur, voici donc le vrai robot.",
+    "sim.run": "Lancer",
+    "sim.runPart": "Lancer cette partie",
+    "sim.reset": "Recommencer",
+    "sim.truncated": "Cela a duré très longtemps, seules les 20 premières secondes sont affichées.",
 
     "home.title": "Choisis ton aventure",
     "home.subtitle":
