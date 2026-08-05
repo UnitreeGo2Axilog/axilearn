@@ -82,7 +82,7 @@ export interface SimPart {
 export const SIM_PARTS: SimPart[] = [
   {
     id: "sp-stand-up",
-    lessonId: "ph-2",
+    lessonId: "ph-3",
     title: { en: "Part 1 — Stand up", fr: "Partie 1 — Se lever" },
     intro: {
       en: "A real Go2 wakes up folded flat on the floor. Before it can walk, or see, or carry anything, it has to push itself up onto four legs. That is the first thing the research project had to solve, and the angles you are about to use are the ones it actually uses.",

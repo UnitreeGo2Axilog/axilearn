@@ -260,16 +260,20 @@ export const lessonQuizzes: Record<string, LessonQuiz> = {
       },
     },
     {
-      question: { en: "What order does this track build a robot's intelligence in?" },
+      question: {
+        en: "Which kind of AI has a body and moves things in the real world?",
+        fr: "Quelle sorte d'IA a un corps et fait bouger des choses dans le monde réel ?",
+      },
       options: [
-        { en: "Vision, then sensors, then control" },
-        { en: "Sensors, then actuators, then control, then vision, then a full mission" },
-        { en: "Actuators first, because movement matters most" },
-        { en: "Control only -- sensors and actuators aren't needed" },
+        { en: "Traditional AI", fr: "L'IA traditionnelle" },
+        { en: "Generative AI", fr: "L'IA générative" },
+        { en: "Agentic AI", fr: "L'IA agentique" },
+        { en: "Physical AI", fr: "L'IA physique" },
       ],
-      correctIndex: 1,
+      correctIndex: 3,
       explanation: {
-        en: "Perceive, then act, then connect the two into a loop, then make sense of what a camera shows, then combine all of it into one mission.",
+        en: "All four can be clever. Only Physical AI has to be right the first time, because it moves something real and there is no undo button.",
+        fr: "Les quatre peuvent être intelligentes. Seule l'IA physique doit avoir raison du premier coup, parce qu'elle fait bouger quelque chose de réel et qu'il n'y a pas de bouton « annuler ».",
       },
     },
   ],

@@ -1866,15 +1866,108 @@ a plus de noms idiots que tu ne crois.
 `,
   },
   "ph-1": {
-    en: `Physical AI is what happens when the two halves of "AI" that you usually hear about separately -- software that can decide things, and a machine that can move -- are put in the same box. A chatbot is intelligence with no body: it can reason about the world, but it cannot touch it. A washing machine is a body with no intelligence: it moves, but only ever the same fixed sequence, blind to what is actually inside the drum. A robot is both at once. It has to sense a world that keeps changing, decide what to do about it, and then physically act -- and it has to do all three fast enough that the world hasn't changed again by the time it moves.
+    en: `## Four kinds of AI
 
-That combination is what makes robotics hard in a way that pure software isn't. A website that mishandles bad input shows an error message. A robot that mishandles bad input can walk into a wall, drop something it was holding, or fall over. The stakes of being wrong are physical, not just logical, and there is no undo button in the real world.
+People say "AI" about four quite different things. Your supervisor's course is about the fourth one, and it helps a lot to see where it sits.
 
-In this track you will build up a robot's intelligence in the same order a real robotics engineer does: first how it perceives the world (sensors), then how it acts on it (actuators), then how those two connect into a loop that runs continuously (control), then how it makes sense of what a camera actually shows it (vision), and finally how it strings all of that together into one mission it can carry out by itself -- for example, walking up to an object, picking it up, and putting it exactly where it belongs.
+- **Traditional AI** sorts and predicts. It looks at things that already exist and puts them in boxes: this email is spam, this photo has a cat in it, this customer will probably leave.
+- **Generative AI** makes new things. Text, pictures, music, code. ChatGPT is this one.
+- **Agentic AI** decides and acts, over several steps, to reach a goal. It can use tools, check its own work, and try again. It still lives entirely inside a computer.
+- **Physical AI** has a body. It senses a real room, decides, and then *moves something*. That is the one with legs.
 
-You will do this on a simulated four-legged robot, the same kind of machine that companies actually build and sell today, running inside a physics engine on your own computer. Everything you try -- every command, every mistake -- happens in simulation first. That is not a shortcut; it's how professional robotics teams work too, because testing an idea on real hardware is slow and a mistake can break something expensive. Simulation is where you get to be wrong for free, as many times as it takes.
+\`\`\`flow
+step: Traditional AI -- puts things in boxes
+step: Generative AI -- makes new things
+step: Agentic AI -- decides and acts, in software
+step: Physical AI -- decides and MOVES
+\`\`\`
 
-By the end of this track, you won't just know what a robot is. You will have written the logic that makes one see, decide, and move -- three things that, until you've done it yourself, look like magic.`,
+## Why the body changes everything
+
+The first three can be wrong cheaply. A chatbot writes a bad sentence and you press delete.
+
+A robot cannot press delete. If it is wrong, it walks into a wall, drops what it was holding, or falls on somebody's foot. There is no undo button in a real room.
+
+It also cannot take its time. A robot that needs three seconds to decide has already fallen over, because gravity did not wait for it.
+
+> tip: This is the whole difficulty of Physical AI in one sentence -- **be right, be fast, and you only get one try.**
+
+## The machines this course is about
+
+- **Unitree Go2** -- a four-legged robot about the size of a medium dog, and about as heavy as one: **15 kg**. It is the robot you will be programming.
+- **NVIDIA Jetson** -- a small computer that rides on the robot's back and does the thinking. It has to work with no internet, on a battery.
+- **Simulators** -- a pretend world with real physics, where a robot can fall over a thousand times and break nothing.
+
+## Safety, before anything else
+
+You will spend this course in simulation, where nothing can go wrong. But if you are ever in a room with a real one:
+
+> warn: A Go2 weighs about 15 kg and moves faster than you expect. It is not a toy, and it does not know you are there unless someone told it.
+
+> do: Stand back. Know where the stop button is before it starts. Let one person -- and only one -- give it commands.
+
+> don't: Never put your hand near a leg joint while it is powered on. A joint that is holding still is still pushing hard.
+
+## The project you are learning from
+
+This course is not built from made-up examples. It is built from a real research project on a real Go2, and you will meet its actual code:
+
+- **the standing angles** the robot uses to get up
+- **the control rule** its motors follow, in one line of maths
+- **the walking pattern**, and the story of the faster one that kept falling over
+
+> tip: Everything you write runs in simulation first. That is not the beginner version -- it is how professional robotics teams work, because a mistake on real hardware is slow and expensive. Simulation is where you get to be wrong for free.`,
+    fr: `## Quatre sortes d'IA
+
+Les gens disent « IA » pour quatre choses assez différentes. Le cours de ton encadrant parle de la quatrième, et ça aide beaucoup de voir où elle se situe.
+
+- **L'IA traditionnelle** trie et prédit. Elle regarde ce qui existe déjà et le range dans des cases : cet e-mail est un spam, cette photo contient un chat, ce client va sûrement partir.
+- **L'IA générative** fabrique du neuf. Du texte, des images, de la musique, du code. ChatGPT, c'est celle-là.
+- **L'IA agentique** décide et agit, en plusieurs étapes, pour atteindre un but. Elle peut utiliser des outils, vérifier son travail et réessayer. Elle reste entièrement dans un ordinateur.
+- **L'IA physique** a un corps. Elle perçoit une vraie pièce, décide, puis *fait bouger quelque chose*. C'est celle qui a des pattes.
+
+\`\`\`flow
+step: IA traditionnelle -- range dans des cases
+step: IA générative -- fabrique du neuf
+step: IA agentique -- décide et agit, dans le logiciel
+step: IA physique -- décide et BOUGE
+\`\`\`
+
+## Pourquoi le corps change tout
+
+Les trois premières peuvent se tromper sans que ça coûte cher. Un chatbot écrit une mauvaise phrase, tu appuies sur supprimer.
+
+Un robot ne peut pas appuyer sur supprimer. S'il se trompe, il rentre dans un mur, lâche ce qu'il portait, ou tombe sur le pied de quelqu'un. Il n'y a pas de bouton « annuler » dans une vraie pièce.
+
+Il ne peut pas non plus prendre son temps. Un robot qui met trois secondes à décider est déjà tombé, parce que la gravité ne l'a pas attendu.
+
+> tip: Voilà toute la difficulté de l'IA physique en une phrase : **avoir raison, vite, et avec un seul essai.**
+
+## Les machines dont parle ce cours
+
+- **Unitree Go2** -- un robot à quatre pattes de la taille d'un chien moyen, et à peu près aussi lourd : **15 kg**. C'est le robot que tu vas programmer.
+- **NVIDIA Jetson** -- un petit ordinateur posé sur le dos du robot, qui fait la réflexion. Il doit fonctionner sans internet, sur batterie.
+- **Les simulateurs** -- un monde imaginaire avec de vraies lois physiques, où un robot peut tomber mille fois sans rien casser.
+
+## La sécurité, avant tout le reste
+
+Tu vas passer ce cours en simulation, où rien ne peut mal tourner. Mais si tu te retrouves un jour dans une pièce avec un vrai :
+
+> warn: Un Go2 pèse environ 15 kg et bouge plus vite que tu ne le crois. Ce n'est pas un jouet, et il ne sait pas que tu es là si personne ne le lui a dit.
+
+> do: Recule. Sache où est le bouton d'arrêt avant qu'il démarre. Une seule personne -- une seule -- lui donne des ordres.
+
+> don't: Ne mets jamais la main près d'une articulation quand il est allumé. Une articulation immobile pousse quand même très fort.
+
+## Le projet dont tu apprends
+
+Ce cours n'est pas fait d'exemples inventés. Il est construit à partir d'un vrai projet de recherche sur un vrai Go2, et tu vas rencontrer son vrai code :
+
+- **les angles** que le robot utilise pour se lever
+- **la règle de commande** que suivent ses moteurs, en une ligne de maths
+- **le motif de marche**, et l'histoire de celui, plus rapide, qui tombait sans arrêt
+
+> tip: Tout ce que tu écris tourne d'abord en simulation. Ce n'est pas la version débutant : c'est comme ça que travaillent les équipes de robotique professionnelles, parce qu'une erreur sur du vrai matériel est lente et coûteuse. La simulation, c'est là où tu as le droit de te tromper gratuitement.`,
   },
 
   "ph-2": {
@@ -1890,15 +1983,88 @@ In the simulator, your robot carries an onboard camera, which is the sensor you 
   },
 
   "ph-3": {
-    en: `If sensors are how a robot perceives the world, actuators are how it changes it. An actuator is any part that converts a command into physical motion -- a motor spinning a wheel, a servo bending a joint, a gripper closing around an object. Sensing without acting is just watching. Acting is what makes something a robot instead of a camera on a stick.
+    en: `## The other half of the loop
 
-The actuator you'll use constantly in this track is the servo motor, because it is what makes every leg joint and every arm joint move. A servo doesn't just spin freely like a fan motor -- it moves to a specific angle you ask for and holds that position. That's exactly the behaviour a leg joint needs: "bend to 30 degrees and stay there" is a request a servo can satisfy directly. A quadruped robot's leg typically has three such joints, so standing, walking or turning is really the coordinated motion of twelve joints (three per leg, times four legs) all being told an angle at the same time.
+A sensor tells the robot what is happening. An **actuator** is how it does something about it. On the Go2 there are twelve of them -- one per joint, three per leg -- and each is a small electric motor.
 
-Here is the part that surprises most people the first time: asking a joint to move to an angle and it actually arriving there are two different problems. Gravity pulls down on the leg. Friction resists the motion. The robot's own weight shifts as other legs move. A joint that was told "30 degrees" might genuinely end up at 27, or overshoot to 33, depending on everything else happening at that instant. This gap between commanded and actual position is one of the most important ideas in robotics, and it's why "walking" is a much harder problem than it looks: standing still, a robot only has to hold twelve numbers steady. Walking means changing all twelve, continuously, while the robot's own balance depends on getting the timing right.
+You do not tell a motor "move". You tell it **an angle you want**, and it pushes until it gets there.
 
-A robotic arm and gripper work the same way, just aimed at a different job: instead of moving the whole robot, an arm moves an end point (the gripper) to a target position in space, and the gripper itself is one more actuator whose only two states are open and closed -- but even "closed" has a range, because gripping a bottle and gripping a cardboard box need different amounts of force.
+## Push, then brake
 
-Every actuator you'll command in this track -- legs, arm, gripper -- reduces to the same basic instruction repeated many times: here is the angle or position I want, go there. What changes as the lessons progress is how you decide what to ask for.`,
+Here is the rule those twelve motors follow. This is one real line from the research project:
+
+\`\`\`python
+# waste_sorting/robot.py
+tau = KP * (target - q) - KD * qd
+\`\`\`
+
+Read it in two halves:
+
+- \`KP * (target - q)\` -- **how far off am I?** The further the joint is from where you want it, the harder it pushes. \`KP\` is 200 in this project.
+- \`- KD * qd\` -- **how fast am I already moving?** Subtract some push if it is moving quickly, so it slows down as it arrives. \`KD\` is 6.
+
+That is called **PD control**, and almost every robot in the world uses some version of it.
+
+> tip: The braking half is the part beginners leave out. Without it the leg races to the target, sails straight past, comes back, overshoots again -- and wobbles forever. The D is what makes it *arrive* instead of *oscillate*.
+
+## What "too strong" and "too weak" look like
+
+- Gains too low: the legs sag. The robot tries to stand and slowly sinks under its own weight.
+- Gains too high: the robot shakes, buzzes, and can throw itself over.
+
+> warn: In the real project a bug once left the turning motion running on the soft standing gains (80 and 4) instead of the walking gains (200 and 6). The robot looked like it was *dragging* its feet, and a lot of time went into rewriting the geometry before anyone checked the gains. The maths was never wrong. The numbers were.
+
+## The angles for standing
+
+\`\`\`python
+# waste_sorting/scene.py
+LEG_STAND = (0.0, 0.9, -1.8)   # hip, thigh, knee -- in radians
+\`\`\`
+
+Three numbers, sent to all four legs. The hip stays at 0 so the leg points straight down the side of the body. The thigh goes forward a little, the knee folds back -- and that shape, repeated four times, holds a 15 kg robot off the floor.
+
+Next you will send exactly those numbers yourself, and watch it stand up.`,
+    fr: `## L'autre moitié de la boucle
+
+Un capteur dit au robot ce qui se passe. Un **actionneur**, c'est ce avec quoi il agit. Le Go2 en a douze -- un par articulation, trois par patte -- et chacun est un petit moteur électrique.
+
+On ne dit pas à un moteur « bouge ». On lui dit **l'angle qu'on veut**, et il pousse jusqu'à l'atteindre.
+
+## Pousser, puis freiner
+
+Voici la règle que suivent ces douze moteurs. C'est une vraie ligne du projet de recherche :
+
+\`\`\`python
+# waste_sorting/robot.py
+tau = KP * (target - q) - KD * qd
+\`\`\`
+
+Lis-la en deux moitiés :
+
+- \`KP * (target - q)\` -- **à quelle distance suis-je ?** Plus l'articulation est loin de l'angle voulu, plus elle pousse fort. \`KP\` vaut 200 dans ce projet.
+- \`- KD * qd\` -- **à quelle vitesse est-ce que je bouge déjà ?** On enlève de la poussée si ça va vite, pour ralentir en arrivant. \`KD\` vaut 6.
+
+Ça s'appelle la **commande PD**, et presque tous les robots du monde en utilisent une version.
+
+> tip: La moitié « freinage » est celle que les débutants oublient. Sans elle, la patte fonce vers la cible, la dépasse, revient, la dépasse encore -- et oscille sans fin. C'est le D qui la fait *arriver* au lieu d'*osciller*.
+
+## À quoi ressemblent « trop fort » et « trop faible »
+
+- Gains trop bas : les pattes s'affaissent. Le robot essaie de se lever et s'enfonce lentement sous son propre poids.
+- Gains trop hauts : le robot tremble, vibre, et peut se renverser tout seul.
+
+> warn: Dans le vrai projet, un bug a un jour laissé le demi-tour tourner avec les gains doux de la position debout (80 et 4) au lieu de ceux de la marche (200 et 6). Le robot avait l'air de *traîner* les pieds, et beaucoup de temps est passé à réécrire la géométrie avant que quelqu'un vérifie les gains. Les maths n'ont jamais été fausses. Les nombres, si.
+
+## Les angles pour se tenir debout
+
+\`\`\`python
+# waste_sorting/scene.py
+LEG_STAND = (0.0, 0.9, -1.8)   # hanche, cuisse, genou -- en radians
+\`\`\`
+
+Trois nombres, envoyés aux quatre pattes. La hanche reste à 0 pour que la patte pointe droit vers le bas le long du corps. La cuisse avance un peu, le genou se replie -- et cette forme, répétée quatre fois, tient un robot de 15 kg au-dessus du sol.
+
+Ensuite, tu enverras toi-même exactement ces nombres, et tu le regarderas se lever.`,
   },
 
   "ph-4": {
