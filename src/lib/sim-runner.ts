@@ -34,6 +34,10 @@ export interface SimInfo {
 
 export interface SimState {
   height: number;
+  /** Metres travelled forward (+) or backward (-). */
+  x: number;
+  /** Metres drifted sideways -- a straight walk keeps this near zero. */
+  y: number;
   time: number;
   joints: number[];
   tilt: [number, number];

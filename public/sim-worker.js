@@ -139,6 +139,8 @@ const bridge = {
   },
   pose: (name) => (name === "standing" ? STANDING : LYING),
   height: () => data.qpos[2],
+  x: () => data.qpos[0],
+  y: () => data.qpos[1],
   time: () => simTime,
   /** Roll and pitch, so a lesson can ask "is it still upright?" */
   tilt: () => {
@@ -201,6 +203,27 @@ class _Robot:
         """Move all four legs to the same angles."""
         self._b.move_to([hip, thigh, knee] * 4, seconds)
 
+    def target(self, leg, hip=None, thigh=None, knee=None):
+        """Aim ONE leg somewhere, without waiting. Use inside a loop."""
+        i = self._b.leg_index(leg)
+        if i < 0:
+            raise ValueError(
+                "I do not know a leg called " + repr(leg) + ". "
+                "Try one of: " + ", ".join(self.LEGS))
+        new = [float(v) for v in self._b.targets()]
+        if hip is not None:
+            new[i * 3] = hip
+        if thigh is not None:
+            new[i * 3 + 1] = thigh
+        if knee is not None:
+            new[i * 3 + 2] = knee
+        self._b.set_now(new)
+
+    def tick(self, seconds=0.02):
+        """Let a tiny slice of time pass. 0.02 is one fiftieth of a second --
+        the same rate the real robot thinks at."""
+        self._b.wait(seconds)
+
     def wait(self, seconds=1.0):
         """Hold still and let time pass."""
         self._b.wait(seconds)
@@ -215,6 +238,16 @@ class _Robot:
     def is_standing(self):
         """True when the body is up off the floor."""
         return self.height > ${STANDING_HEIGHT}
+
+    @property
+    def x(self):
+        """How far forward the robot has travelled, in metres."""
+        return float(self._b.x())
+
+    @property
+    def y(self):
+        """How far sideways the robot has drifted, in metres."""
+        return float(self._b.y())
 
     @property
     def time(self):
@@ -339,6 +372,8 @@ self.onmessage = async (ev) => {
         truncated: hitLimit,
         state: {
           height: data.qpos[2],
+          x: data.qpos[0],
+          y: data.qpos[1],
           time: simTime,
           joints: Array.from({ length: 12 }, (_, i) => data.qpos[7 + i]),
           tilt: bridge.tilt(),

@@ -204,6 +204,263 @@ for _ in range(_SUBSTEPS):
       },
     },
   },
+  {
+    id: "sp-walk-forward",
+    lessonId: "ph-4",
+    title: { en: "Part 2 — Walk forward", fr: "Partie 2 — Marcher en avant" },
+    intro: {
+      en: "Standing still is one pose. Walking is a pose that changes with time, over and over, with the four legs taking turns. The order they take turns in is the gait — and this is the exact one the real Go2 project uses.",
+      fr: "Rester debout, c'est une posture. Marcher, c'est une posture qui change avec le temps, encore et encore, les quatre pattes chacune à leur tour. L'ordre de ces tours, c'est l'allure — et c'est exactement celle qu'utilise le vrai projet Go2.",
+    },
+    terms: ["gait", "crawl-gait", "phase", "trot"],
+    cells: [
+      {
+        id: "w1",
+        kind: "given",
+        explain: {
+          en: "These four numbers are the whole gait. Each leg starts its cycle at a different moment, a quarter apart, so only one leg is ever in the air. Three feet always stay on the ground — which is why this is very hard to knock over.",
+          fr: "Ces quatre nombres sont toute l'allure. Chaque patte commence son cycle à un moment différent, espacé d'un quart, donc une seule patte est en l'air à la fois. Trois pieds restent toujours au sol — c'est pour ça que c'est très difficile à faire tomber.",
+        },
+        code: `# unitree_mujoco/.../foot_trajectory.py -- the real leg_phases
+PHASES = {
+    "front_left": 0.0, "back_right": 0.25,
+    "front_right": 0.5, "back_left": 0.75,
+}
+for leg, start in PHASES.items():
+    print(leg, "starts its cycle at", start)`,
+      },
+      {
+        id: "w2",
+        kind: "given",
+        explain: {
+          en: "A cycle runs from 0 to 1. The project uses duty_factor = 0.75, which means a leg spends three quarters of its cycle pushing on the ground and one quarter in the air. Run this to see which leg is in the air at a few moments in time.",
+          fr: "Un cycle va de 0 à 1. Le projet utilise duty_factor = 0.75 : une patte passe trois quarts de son cycle à pousser au sol et un quart en l'air. Lance ceci pour voir quelle patte est en l'air à différents instants.",
+        },
+        code: `SWING = 1.0 - 0.75      # duty_factor 0.75 -> a quarter in the air
+FREQ = 0.7
+
+for t in [0.0, 0.4, 0.8, 1.2]:
+    up = [leg for leg, start in PHASES.items()
+          if ((t * FREQ + start) % 1.0) < SWING]
+    print("at", t, "s the leg in the air is:", up)`,
+      },
+      {
+        id: "w3",
+        kind: "todo",
+        explain: {
+          en: "Now the loop. Every 1/50th of a second it works out, for each leg, where in its cycle it is — then aims that leg. The line that lifts the foot is missing. A knee angle that is MORE negative is a knee folded up tighter, which lifts the foot off the ground.",
+          fr: "Maintenant la boucle. Toutes les 1/50e de seconde, elle calcule où en est chaque patte dans son cycle, puis vise cette patte. La ligne qui lève le pied manque. Un angle de genou PLUS négatif, c'est un genou plus replié, ce qui décolle le pied du sol.",
+        },
+        code: `import math
+robot.stand_up(); robot.wait(0.6)
+STAND_THIGH, STAND_KNEE = 0.9, -1.8
+STEP, LIFT = 0.10, 0.30
+
+t = 0.0
+while t < 6.0:
+    for leg, start in PHASES.items():
+        ph = (t * FREQ + start) % 1.0
+        if ph < SWING:                       # in the air: reach forward
+            s = ph / SWING
+            thigh = STAND_THIGH + STEP * (s - 0.5) * 2
+            ## TODO: lift the foot. Fold the knee tighter as the leg swings.
+            ## knee = STAND_KNEE - LIFT * math.sin(math.pi * s)
+            knee = STAND_KNEE
+        else:                                # on the ground: push back
+            s = (ph - SWING) / (1 - SWING)
+            thigh = STAND_THIGH + STEP * (0.5 - s) * 2
+            knee = STAND_KNEE
+        robot.target(leg, thigh=thigh, knee=knee)
+    robot.tick(0.02)
+    t += 0.02
+
+print("travelled:", round(robot.x, 3), "m")`,
+        hint: {
+          en: "math.sin(math.pi * s) goes 0 -> 1 -> 0 as s goes 0 -> 1, so it lifts the foot and puts it back down. Subtract LIFT times that from STAND_KNEE.",
+          fr: "math.sin(math.pi * s) va de 0 à 1 puis à 0 quand s va de 0 à 1 : ça lève le pied puis le repose. Soustrais LIFT fois ça à STAND_KNEE.",
+        },
+        solution: `import math
+robot.stand_up(); robot.wait(0.6)
+STAND_THIGH, STAND_KNEE = 0.9, -1.8
+STEP, LIFT = 0.10, 0.30
+
+t = 0.0
+while t < 6.0:
+    for leg, start in PHASES.items():
+        ph = (t * FREQ + start) % 1.0
+        if ph < SWING:
+            s = ph / SWING
+            thigh = STAND_THIGH + STEP * (s - 0.5) * 2
+            knee = STAND_KNEE - LIFT * math.sin(math.pi * s)
+        else:
+            s = (ph - SWING) / (1 - SWING)
+            thigh = STAND_THIGH + STEP * (0.5 - s) * 2
+            knee = STAND_KNEE
+        robot.target(leg, thigh=thigh, knee=knee)
+    robot.tick(0.02)
+    t += 0.02
+
+print("travelled:", round(robot.x, 3), "m")`,
+      },
+    ],
+    check: "robot.x > 0.15 and robot.height > 0.18",
+    success: {
+      en: "It walked. About 40 cm in six seconds, one foot at a time, and it never came close to falling. Try changing LIFT to 0 and running again: with the foot never leaving the ground, it drags itself BACKWARDS.",
+      fr: "Il a marché. Environ 40 cm en six secondes, un pied à la fois, sans jamais frôler la chute. Essaie de mettre LIFT à 0 et relance : si le pied ne quitte jamais le sol, il se traîne EN ARRIÈRE.",
+    },
+    failure: {
+      en: "It stayed roughly where it was. Without the lift, the foot never leaves the ground, so the leg drags on its way forward and undoes the push. Look at the printed distance: near zero, or negative, means dragging.",
+      fr: "Il est resté à peu près sur place. Sans le lever, le pied ne quitte jamais le sol : la patte traîne en avançant et annule la poussée. Regarde la distance affichée : proche de zéro, ou négative, veut dire qu'elle traîne.",
+    },
+    realVideo: "/robot/go2-crawl-10s.mp4",
+    realVideoPoster: "/robot/go2-crawl-poster.jpg",
+    realVideoNote: {
+      en: "The real project's crawl gait, with the same four phases you just used. Watch one foot at a time leave the ground.",
+      fr: "L'allure rampante du vrai projet, avec les quatre mêmes phases que tu viens d'utiliser. Regarde : un seul pied quitte le sol à la fois.",
+    },
+    realCode: {
+      file: "unitree_mujoco/.../controllers/foot_trajectory.py",
+      code: `self.leg_phases = leg_phases or {
+    "FL": 0.0,
+    "RR": 0.25,
+    "FR": 0.5,
+    "RL": 0.75,
+}
+# Statically-stable crawl/wave gait: exactly one leg swings at a time
+# (phases spaced 0.25 apart, duty_factor=0.75 keeps swing_fraction<=0.25),
+# so 3 feet always support the robot.`,
+      note: {
+        en: "The comment goes on to explain why the project did NOT use the faster trot, where two legs swing together: with only per-joint control, one of the remaining feet gets pinned to the floor by its own weight and never lifts. They proved it with contact-force logging, not guessing.",
+        fr: "Le commentaire explique ensuite pourquoi le projet n'a PAS utilisé le trot, plus rapide, où deux pattes bougent ensemble : avec une commande par articulation seulement, l'un des pieds restants est cloué au sol par son propre poids et ne décolle jamais. Ils l'ont prouvé en mesurant les forces de contact, pas en devinant.",
+      },
+    },
+  },
+  {
+    id: "sp-walk-backward",
+    lessonId: "ph-4",
+    title: { en: "Part 3 — Go backward", fr: "Partie 3 — Reculer" },
+    intro: {
+      en: "Making it walk backwards sounds like it should be easy: swing the legs the other way. It is not, and finding out why teaches you more than the forward walk did.",
+      fr: "Le faire reculer semble facile : il suffirait de balancer les pattes dans l'autre sens. Ce n'est pas le cas, et comprendre pourquoi apprend plus que la marche en avant.",
+    },
+    terms: ["gait", "phase", "sim-to-real"],
+    cells: [
+      {
+        id: "b1",
+        kind: "given",
+        explain: {
+          en: "Here is the obvious idea: flip the direction of the thigh sweep. Run it and look at the distance. It still goes forwards.",
+          fr: "Voici l'idée évidente : inverser le sens du balayage de la cuisse. Lance-la et regarde la distance. Il avance quand même.",
+        },
+        code: `import math
+robot.stand_up(); robot.wait(0.6)
+# the same gait you built in Part 2 -- each part starts with a fresh robot,
+# so the constants have to be set up again here
+PHASES = {"front_left": 0.0, "back_right": 0.25,
+          "front_right": 0.5, "back_left": 0.75}
+FREQ, SWING = 0.7, 0.25
+STAND_THIGH, STAND_KNEE = 0.9, -1.8
+STEP, LIFT = 0.10, 0.30
+
+t = 0.0
+while t < 5.0:
+    for leg, start in PHASES.items():
+        ph = (t * FREQ + start) % 1.0
+        if ph < SWING:
+            s = ph / SWING
+            thigh = STAND_THIGH - STEP * (s - 0.5) * 2      # flipped
+            knee = STAND_KNEE - LIFT * math.sin(math.pi * s)
+        else:
+            s = (ph - SWING) / (1 - SWING)
+            thigh = STAND_THIGH - STEP * (0.5 - s) * 2      # flipped
+            knee = STAND_KNEE
+        robot.target(leg, thigh=thigh, knee=knee)
+    robot.tick(0.02)
+    t += 0.02
+
+print("travelled:", round(robot.x, 3), "m  <- still positive!")`,
+      },
+      {
+        id: "b2",
+        kind: "todo",
+        explain: {
+          en: "The direction is not decided by which way the leg sweeps. It is decided by WHEN the foot is lifted. The half of the cycle where the foot is DOWN is the half that grips and pushes. So: move the lift into the other half. Take the lift line out of the swing branch and put it in the stance branch.",
+          fr: "Le sens n'est pas décidé par la direction du balayage. Il est décidé par le MOMENT où le pied se lève. La moitié du cycle où le pied est AU SOL est celle qui accroche et pousse. Donc : déplace le lever dans l'autre moitié. Enlève la ligne du lever de la partie « en l'air » et mets-la dans la partie « au sol ».",
+        },
+        code: `import math
+robot.stand_up(); robot.wait(0.6)
+STAND_THIGH, STAND_KNEE = 0.9, -1.8
+STEP, LIFT = 0.10, 0.30
+
+start_x = robot.x          # where we are before this cell moves anything
+t = 0.0
+while t < 6.0:
+    for leg, start in PHASES.items():
+        ph = (t * FREQ + start) % 1.0
+        if ph < SWING:
+            s = ph / SWING
+            thigh = STAND_THIGH - STEP * (s - 0.5) * 2
+            ## TODO: this half should now keep the foot DOWN
+            knee = STAND_KNEE - LIFT * math.sin(math.pi * s)
+        else:
+            s = (ph - SWING) / (1 - SWING)
+            thigh = STAND_THIGH - STEP * (0.5 - s) * 2
+            ## TODO: ...and this half should lift it
+            knee = STAND_KNEE
+        robot.target(leg, thigh=thigh, knee=knee)
+    robot.tick(0.02)
+    t += 0.02
+
+print("moved:", round(robot.x - start_x, 3), "m  (negative means backwards)")`,
+        hint: {
+          en: "Swap the two knee lines. The first branch gets plain STAND_KNEE; the second gets the one with math.sin in it.",
+          fr: "Échange les deux lignes de genou. La première partie reçoit STAND_KNEE tout simple ; la seconde reçoit celle avec math.sin.",
+        },
+        solution: `import math
+robot.stand_up(); robot.wait(0.6)
+STAND_THIGH, STAND_KNEE = 0.9, -1.8
+STEP, LIFT = 0.10, 0.30
+
+start_x = robot.x
+t = 0.0
+while t < 6.0:
+    for leg, start in PHASES.items():
+        ph = (t * FREQ + start) % 1.0
+        if ph < SWING:
+            s = ph / SWING
+            thigh = STAND_THIGH - STEP * (s - 0.5) * 2
+            knee = STAND_KNEE
+        else:
+            s = (ph - SWING) / (1 - SWING)
+            thigh = STAND_THIGH - STEP * (0.5 - s) * 2
+            knee = STAND_KNEE - LIFT * math.sin(math.pi * s)
+        robot.target(leg, thigh=thigh, knee=knee)
+    robot.tick(0.02)
+    t += 0.02
+
+print("moved:", round(robot.x - start_x, 3), "m  (negative means backwards)")`,
+      },
+    ],
+    check: "robot.x - start_x < -0.10 and robot.height > 0.18",
+    success: {
+      en: "Negative — it reversed. The lesson is that a walking robot is not a machine with a forward gear and a reverse gear. Which way it goes falls out of which foot is gripping at which moment, and that is easy to get backwards.",
+      fr: "Négatif — il a reculé. La leçon : un robot qui marche n'a pas une marche avant et une marche arrière. Le sens vient de quel pied accroche à quel moment, et c'est facile de se tromper.",
+    },
+    failure: {
+      en: "Still going forwards, or barely moving. Check that exactly one of the two branches has the math.sin line — if both have it, or neither does, the feet never take turns gripping.",
+      fr: "Toujours en avant, ou presque immobile. Vérifie qu'une seule des deux parties contient la ligne math.sin — si les deux l'ont, ou aucune, les pieds ne se relaient jamais pour accrocher.",
+    },
+    realCode: {
+      file: "unitree_mujoco/.../controllers/foot_trajectory.py",
+      code: `# NOTE: backward travels ~2x farther per nominal step_length than
+# forward, because the crawl foothold/stance-sweep geometry was tuned
+# forward and is not fore/aft symmetric.`,
+      note: {
+        en: "The real project hit the same thing. Walking backwards is not the mirror image of walking forwards, and their own comment records it as a measured fact rather than a theory. When your robot behaves differently in reverse, that is not your bug — it is the shape of the problem.",
+        fr: "Le vrai projet a rencontré la même chose. Reculer n'est pas l'image miroir d'avancer, et leur propre commentaire l'enregistre comme un fait mesuré, pas une théorie. Si ton robot se comporte autrement en marche arrière, ce n'est pas ton bug — c'est la forme du problème.",
+      },
+    },
+  },
 ];
 
 export function getSimPart(id: string): SimPart | undefined {
