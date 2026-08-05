@@ -40,6 +40,7 @@ export default async function Go2RlPage({
       <Go2RlLab
         parts={parts}
         locale={locale}
+        trackId={track.id}
         accent={track.color}
         header={
           <>

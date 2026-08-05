@@ -21,6 +21,7 @@ import { RobotViewport } from "@/components/robot-viewport";
 import type { SimPart } from "@/content/sim-parts";
 import { term } from "@/content/robot-glossary";
 import type { Locale } from "@/content/types";
+import { markLabPartDone } from "@/lib/lab-progress";
 import { useT } from "@/i18n/use-t";
 
 type Verdict = "none" | "pass" | "fail";
@@ -29,10 +30,13 @@ export function SimNotebook({
   part,
   locale,
   accent,
+  onSolved,
 }: {
   part: SimPart;
   locale: Locale;
   accent: string;
+  /** Fired the first time this part's check passes. */
+  onSolved?: () => void;
 }) {
   const t = useT();
   const runner = useRef<SimRunner | null>(null);
@@ -93,6 +97,10 @@ export function SimNotebook({
       if (!failed) {
         const v = await runner.current.check(part.check);
         setVerdict(v.pass ? "pass" : "fail");
+        if (v.pass) {
+          markLabPartDone(part.id);
+          onSolved?.();
+        }
       }
     } catch (e) {
       setRunError((e as Error).message);
