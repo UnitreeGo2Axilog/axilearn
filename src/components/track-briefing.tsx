@@ -28,7 +28,7 @@
  */
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Clock, Sparkles, Swords, Users } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock, Sparkles, Swords, Users , Bot} from "lucide-react";
 import type { RoadmapTrack } from "@/content/roadmap-data";
 import { useProgress } from "@/lib/progress-context";
 import { Tabs, type TabItem } from "@/components/tabs";
@@ -40,10 +40,13 @@ export function TrackBriefing({
   track,
   locale,
   challengeCount,
+  simPartCount,
 }: {
   track: RoadmapTrack;
   locale: string;
   challengeCount: number;
+  /** Robot-lab parts for this track. Zero on tracks that have none. */
+  simPartCount: number;
 }) {
   const t = useT();
   const { completedIds } = useProgress();
@@ -62,7 +65,7 @@ export function TrackBriefing({
   return (
     <>
       {/* actions first -- these are things to do, not things to read */}
-      {(overview.primer || challengeCount > 0) && (
+      {(overview.primer || challengeCount > 0 || simPartCount > 0) && (
         <div className="mb-6 grid gap-3 sm:grid-cols-2">
           {overview.primer && (
             <ActionCard
@@ -89,6 +92,20 @@ export function TrackBriefing({
               meta={`${challengeCount}`}
               cta={t("challenges.open")}
               href={`/${locale}/challenges/${track.id}`}
+            />
+          )}
+          {/* The robot lab is deliberately its own destination rather than
+              something embedded in a lesson: it is a project you go and do,
+              which is a different act from reading a chapter. */}
+          {simPartCount > 0 && (
+            <ActionCard
+              icon={<Bot className="h-5 w-5" />}
+              tone={track.color}
+              title={t("go2rl.entryTitle")}
+              body={t("go2rl.entryBody")}
+              meta={`${simPartCount} ${t("go2rl.parts")}`}
+              cta={t("go2rl.open")}
+              href={`/${locale}/go2rl/${track.id}`}
             />
           )}
         </div>

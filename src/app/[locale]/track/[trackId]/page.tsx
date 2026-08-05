@@ -4,6 +4,7 @@ import { ArrowLeft, BookOpen, Clock, Compass, Zap } from "lucide-react";
 import { getT, isLocale } from "@/i18n/messages";
 import { getChallenges, getTrack } from "@/content/store";
 import type { Locale } from "@/content/types";
+import { simPartsForLesson, SIM_PARTS } from "@/content/sim-parts";
 import { AuthGate } from "@/components/auth-gate";
 import { TrackBriefing } from "@/components/track-briefing";
 
@@ -80,7 +81,12 @@ export default async function TrackIntroPage({
         </div>
       </header>
 
-      <TrackBriefing track={track} locale={locale} challengeCount={challengeCount} />
+      <TrackBriefing
+        track={track}
+        locale={locale}
+        challengeCount={challengeCount}
+        simPartCount={SIM_PARTS.filter((p) => track.levels.some((l) => l.id === p.lessonId)).length}
+      />
     </div>
     </AuthGate>
   );
