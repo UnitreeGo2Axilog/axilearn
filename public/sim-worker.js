@@ -289,6 +289,18 @@ self.onmessage = async (ev) => {
       return reply({ ok: true });
     }
 
+    if (kind === "check") {
+      // Never let a broken check look like a failed answer.
+      try {
+        const val = pyodide.runPython(code, { globals: namespace });
+        const pass = Boolean(val && val.valueOf ? val.valueOf() : val);
+        if (val && val.destroy) val.destroy();
+        return reply({ ok: true, pass });
+      } catch (e) {
+        return reply({ ok: true, pass: false, checkError: String((e && e.message) || e) });
+      }
+    }
+
     if (kind === "run") {
       // A cell that starts a part resets the world; later cells in the same
       // part keep both the robot's pose and the learner's variables.

@@ -159,6 +159,22 @@ export class SimRunner {
     );
   }
 
+  /**
+   * Ask a yes/no question of the world the learner's code just made.
+   *
+   * Evaluated in their namespace, so a check can read the robot AND anything
+   * they defined. A check that itself throws returns false rather than
+   * exploding -- a bug in my question must never read as their wrong answer.
+   */
+  async check(expression: string): Promise<{ pass: boolean; checkError?: string }> {
+    await this.warmUp();
+    return this.send<{ pass: boolean; checkError?: string }>(
+      { kind: "check", code: expression },
+      SIM_RUN_TIMEOUT_MS,
+      "checking your answer took too long",
+    );
+  }
+
   /** Put the robot back on the floor and forget every variable. */
   async reset(): Promise<void> {
     await this.warmUp();
