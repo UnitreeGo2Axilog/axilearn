@@ -115,6 +115,10 @@ export const messages = {
     "nav.themeLight": "Light mode",
     "nav.themeDark": "Dark mode",
 
+    "sim.newWords": "New words",
+    "sim.showRealCode": "See the real robot's code",
+    "sim.hideRealCode": "Hide the real code",
+    "sim.realRobot": "The actual robot",
     "sim.yourTurn": "YOUR TURN",
     "sim.hint": "Need a hint?",
     "sim.showSolution": "Show me",
@@ -660,6 +664,10 @@ export const messages = {
     "nav.themeLight": "Mode clair",
     "nav.themeDark": "Mode sombre",
 
+    "sim.newWords": "Nouveaux mots",
+    "sim.showRealCode": "Voir le code du vrai robot",
+    "sim.hideRealCode": "Cacher le vrai code",
+    "sim.realRobot": "Le vrai robot",
     "sim.yourTurn": "À TOI",
     "sim.hint": "Besoin d'un indice ?",
     "sim.showSolution": "Montre-moi",

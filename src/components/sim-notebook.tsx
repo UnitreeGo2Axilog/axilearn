@@ -15,10 +15,11 @@
  * result, which is the first thing a beginner needs to be able to trust.
  */
 import { useEffect, useRef, useState } from "react";
-import { Play, RotateCcw, Loader2, Lightbulb, Eye, Check, X } from "lucide-react";
+import { Play, RotateCcw, Loader2, Lightbulb, Eye, Check, X, Info, FileCode2 } from "lucide-react";
 import { SimRunner, simSupported, type RunResult, type SimInfo } from "@/lib/sim-runner";
 import { RobotViewport } from "@/components/robot-viewport";
 import type { SimPart } from "@/content/sim-parts";
+import { term } from "@/content/robot-glossary";
 import type { Locale } from "@/content/types";
 import { useT } from "@/i18n/use-t";
 
@@ -49,6 +50,8 @@ export function SimNotebook({
   const [runError, setRunError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [verdict, setVerdict] = useState<Verdict>("none");
+  const [openTerm, setOpenTerm] = useState<string | null>(null);
+  const [showReal, setShowReal] = useState(false);
 
   useEffect(() => {
     if (!supported) return;
@@ -140,6 +143,51 @@ export function SimNotebook({
     <section className="rounded-2xl border p-4 sm:p-5" style={{ borderColor: "var(--border)" }}>
       <h3 className="text-lg font-extrabold text-strong">{say(part.title)}</h3>
       <p className="mt-1 text-sm leading-relaxed text-muted">{say(part.intro)}</p>
+
+      {/* New words, up front. A learner who does not know what a joint is
+          cannot read the first cell, and hiding the definition behind a word
+          buried in a paragraph means only the confident ones ever press it. */}
+      {part.terms && part.terms.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          <span className="text-[11px] font-bold uppercase tracking-wide text-faint">
+            {t("sim.newWords")}
+          </span>
+          {part.terms.map((id) => {
+            const g = term(id);
+            if (!g) return null;
+            const open = openTerm === id;
+            return (
+              <span key={id} className="relative">
+                <button
+                  onClick={() => setOpenTerm(open ? null : id)}
+                  aria-expanded={open}
+                  className="inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 text-[12px] font-bold transition hover:opacity-70"
+                  style={{
+                    borderColor: open ? accent : "var(--border)",
+                    color: open ? accent : "var(--text-muted)",
+                  }}
+                >
+                  <Info className="h-3 w-3" />
+                  {say(g.word)}
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      {openTerm && term(openTerm) && (
+        <p
+          className="mt-2 rounded-xl border px-3 py-2 text-[13px] leading-relaxed text-main"
+          style={{
+            borderColor: `color-mix(in srgb, ${accent} 40%, transparent)`,
+            background: `color-mix(in srgb, ${accent} 7%, transparent)`,
+          }}
+        >
+          <strong>{say(term(openTerm)!.word)}</strong> — {say(term(openTerm)!.short)}
+          {term(openTerm)!.more ? ` ${say(term(openTerm)!.more!)}` : ""}
+        </p>
+      )}
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(300px,420px)]">
         {/* the cells */}
@@ -257,6 +305,34 @@ export function SimNotebook({
               {t("sim.reset")}
             </button>
           </div>
+
+          {/* The real thing. Shown AFTER they have made it work, not before:
+              the point is "you did that, and here is the line it came from",
+              which only lands once there is a "that". */}
+          {part.realCode && (
+            <div className="pt-2">
+              <button
+                onClick={() => setShowReal((v) => !v)}
+                className="inline-flex items-center gap-1.5 text-[12px] font-bold underline decoration-dotted"
+                style={{ color: accent }}
+              >
+                <FileCode2 className="h-3.5 w-3.5" />
+                {showReal ? t("sim.hideRealCode") : t("sim.showRealCode")}
+              </button>
+              {showReal && (
+                <div className="mt-2">
+                  <p className="mb-1 font-robot text-[11px] text-faint">{part.realCode.file}</p>
+                  <pre
+                    className="overflow-x-auto rounded-xl border p-3 font-robot text-[12px] leading-relaxed text-main"
+                    style={{ borderColor: "var(--border)", background: "var(--bg-2)" }}
+                  >
+                    {part.realCode.code}
+                  </pre>
+                  <p className="mt-2 text-[13px] leading-relaxed text-muted">{say(part.realCode.note)}</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* the robot */}
@@ -297,6 +373,25 @@ export function SimNotebook({
           )}
 
           {result?.truncated && <p className="mt-2 text-xs text-faint">{t("sim.truncated")}</p>}
+
+          {/* Yours in the simulator, above; the actual machine, here. */}
+          {part.realVideo && (
+            <div className="mt-3">
+              <p className="mb-1 text-[11px] font-bold uppercase tracking-wide text-faint">
+                {t("sim.realRobot")}
+              </p>
+              <video
+                src={part.realVideo}
+                controls
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                className="w-full rounded-xl border"
+                style={{ borderColor: "var(--border)" }}
+              />
+            </div>
+          )}
 
           {(output || runError) && (
             <pre

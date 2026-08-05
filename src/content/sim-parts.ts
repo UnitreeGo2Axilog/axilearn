@@ -35,6 +35,23 @@ export interface SimCell {
   solution?: string;
 }
 
+/**
+ * A quote from the actual research project, shown beside the simplified
+ * version the learner runs.
+ *
+ * This matters more than it looks. The browser cannot run go2_rl -- it needs
+ * MuJoCo, PyTorch and a DDS stack that will never load in a tab -- so the
+ * cells are a faithful port, not the original. Showing the original next to it
+ * keeps that honest: "you wrote the simple version, here is the real line, and
+ * they are the same idea."
+ */
+export interface RealCode {
+  /** Where it lives in the go2_rl project. */
+  file: string;
+  code: string;
+  note: Localized;
+}
+
 export interface SimPart {
   id: string;
   /** The lesson this part belongs to. */
@@ -56,6 +73,10 @@ export interface SimPart {
    * the actual robot."
    */
   realVideo?: string;
+  /** Glossary ids introduced by this part, in the order they come up. */
+  terms?: string[];
+  /** The real project code this part is a simplified version of. */
+  realCode?: RealCode;
 }
 
 export const SIM_PARTS: SimPart[] = [
@@ -64,16 +85,17 @@ export const SIM_PARTS: SimPart[] = [
     lessonId: "ph-2",
     title: { en: "Part 1 — Stand up", fr: "Partie 1 — Se lever" },
     intro: {
-      en: "The robot starts folded on the floor, the way a real Go2 does when you switch it on. Your job is to get it standing on all four legs.",
-      fr: "Le robot commence replié au sol, comme un vrai Go2 quand on l'allume. Ton travail : le faire tenir debout sur ses quatre pattes.",
+      en: "A real Go2 wakes up folded flat on the floor. Before it can walk, or see, or carry anything, it has to push itself up onto four legs. That is the first thing the research project had to solve, and the angles you are about to use are the ones it actually uses.",
+      fr: "Un vrai Go2 se réveille replié à plat sur le sol. Avant de marcher, de voir ou de porter quoi que ce soit, il doit se hisser sur ses quatre pattes. C'est le premier problème qu'a dû résoudre le projet de recherche, et les angles que tu vas utiliser sont ceux qu'il utilise vraiment.",
     },
+    terms: ["joint", "radian", "actuator", "pd-control", "gain"],
     cells: [
       {
         id: "c1",
         kind: "given",
         explain: {
-          en: "First, look at it. This code does not move anything — it just asks the robot two questions and prints the answers. Press Run.",
-          fr: "D'abord, regarde-le. Ce code ne bouge rien : il pose deux questions au robot et affiche les réponses. Appuie sur Lancer.",
+          en: "Start by looking, not moving. This asks the robot two questions and prints the answers. Press Run and read the numbers.",
+          fr: "Commence par regarder, pas par bouger. Ceci pose deux questions au robot et affiche les réponses. Appuie sur Lancer et lis les nombres.",
         },
         code: `print("height:", round(robot.height, 3))
 print("standing?", robot.is_standing)`,
@@ -82,42 +104,87 @@ print("standing?", robot.is_standing)`,
         id: "c2",
         kind: "given",
         explain: {
-          en: "0.09 metres is nine centimetres — it is lying down. A leg has three joints: the hip, the thigh and the knee. This moves just the front left one, so you can see which part is which.",
-          fr: "0,09 mètre, c'est neuf centimètres : il est couché. Une patte a trois articulations : la hanche, la cuisse et le genou. Ceci bouge seulement celle de devant à gauche, pour voir quelle partie est laquelle.",
+          en: "0.09 means nine centimetres — it is lying down. Every leg has three joints: hip, thigh and knee. This moves only the front left leg, so you can see which part is which before moving all of them.",
+          fr: "0,09 veut dire neuf centimètres : il est couché. Chaque patte a trois articulations : hanche, cuisse et genou. Ceci ne bouge que la patte avant gauche, pour voir quelle partie est laquelle avant de toutes les bouger.",
         },
         code: `robot.set_leg("front_left", thigh=0.4, knee=-1.2, seconds=1)
 robot.wait(0.5)`,
       },
       {
         id: "c3",
+        kind: "given",
+        explain: {
+          en: "These three numbers are not made up. In the real project they are one line — LEG_STAND — and every one of the four legs is sent the same three values. Run this to see them written down.",
+          fr: "Ces trois nombres ne sont pas inventés. Dans le vrai projet, c'est une seule ligne — LEG_STAND — et les quatre pattes reçoivent les mêmes trois valeurs. Lance ceci pour les voir écrites.",
+        },
+        code: `# straight from waste_sorting/scene.py in the real Go2 project
+LEG_STAND = (0.0, 0.9, -1.8)   # hip, thigh, knee -- in radians
+
+hip, thigh, knee = LEG_STAND
+print("hip", hip, "| thigh", thigh, "| knee", knee)`,
+      },
+      {
+        id: "c4",
         kind: "todo",
         explain: {
-          en: "Now the real thing. All four legs have to push together — one leg alone cannot lift the body. Set every leg to the standing angles: thigh 0.9 and knee -1.8.",
-          fr: "Maintenant le vrai défi. Les quatre pattes doivent pousser ensemble : une seule patte ne peut pas soulever le corps. Mets chaque patte aux angles debout : cuisse 0.9 et genou -1.8.",
+          en: "Now stand it up. All four legs must push at the same moment — one leg alone cannot lift the body, and three cannot either if the fourth is not helping. Use the LEG_STAND values you just unpacked.",
+          fr: "Maintenant, mets-le debout. Les quatre pattes doivent pousser au même moment : une seule patte ne peut pas soulever le corps, et trois non plus si la quatrième n'aide pas. Utilise les valeurs LEG_STAND que tu viens de séparer.",
         },
-        code: `## TODO: make all four legs push down together.
-## One line. Use robot.set_all_legs(thigh=..., knee=..., seconds=1.5)
+        code: `## TODO: send all four legs to the standing angles.
+## One line. robot.set_all_legs(thigh=..., knee=..., seconds=1.5)
+## You already have the numbers in thigh and knee.
 
 robot.wait(1)
-print("height:", round(robot.height, 3))`,
+print("height:", round(robot.height, 3))
+print("standing?", robot.is_standing)`,
         hint: {
-          en: "set_all_legs takes the same three angles as set_leg, but sends them to every leg at once. You need thigh and knee.",
-          fr: "set_all_legs prend les mêmes angles que set_leg, mais les envoie aux quatre pattes d'un coup. Il te faut cuisse et genou.",
+          en: "set_all_legs takes the same arguments as set_leg but sends them to every leg at once. You can pass the variables thigh and knee straight in.",
+          fr: "set_all_legs prend les mêmes arguments que set_leg mais les envoie à toutes les pattes d'un coup. Tu peux passer directement les variables thigh et knee.",
         },
-        solution: `robot.set_all_legs(thigh=0.9, knee=-1.8, seconds=1.5)
+        solution: `robot.set_all_legs(thigh=thigh, knee=knee, seconds=1.5)
 
 robot.wait(1)
-print("height:", round(robot.height, 3))`,
+print("height:", round(robot.height, 3))
+print("standing?", robot.is_standing)`,
+      },
+      {
+        id: "c5",
+        kind: "given",
+        explain: {
+          en: "One more real number. The project decides the robot has fallen when its body drops below 0.18 m. Your robot should be well above that — run this and check.",
+          fr: "Encore un vrai nombre. Le projet considère que le robot est tombé quand son corps descend sous 0,18 m. Le tien devrait être bien au-dessus — lance ceci pour vérifier.",
+        },
+        code: `# waste_sorting/robot.py:  def is_fallen(self): return self.base_height() < 0.18
+FALLEN_BELOW = 0.18
+
+print("height  ", round(robot.height, 3))
+print("fallen? ", robot.height < FALLEN_BELOW)`,
       },
     ],
-    check: "robot.is_standing",
+    check: "robot.is_standing and robot.height > 0.18",
     success: {
-      en: "It is standing. The body went from 9 cm to about 28 cm off the floor — and the only thing that made that happen was your line of Python.",
-      fr: "Il est debout. Le corps est passé de 9 cm à environ 28 cm du sol, et la seule chose qui a provoqué ça, c'est ta ligne de Python.",
+      en: "It is standing. The body went from 9 cm to about 28 cm, and the only thing that made that happen was your line of Python — using the exact angles the real robot uses.",
+      fr: "Il est debout. Le corps est passé de 9 cm à environ 28 cm, et la seule chose qui a provoqué ça, c'est ta ligne de Python — avec les angles exacts du vrai robot.",
     },
     failure: {
-      en: "Not up yet. Check the robot's height in the output: if it barely moved, the legs probably did not all get the command. All four have to push at the same time.",
-      fr: "Pas encore debout. Regarde la hauteur affichée : si elle a à peine bougé, les pattes n'ont sans doute pas toutes reçu l'ordre. Les quatre doivent pousser en même temps.",
+      en: "Not up yet. Look at the height in the output. If it barely changed, the legs did not all get the command — set_all_legs is the one that sends to all four. If it went up and fell back, check the knee is negative.",
+      fr: "Pas encore debout. Regarde la hauteur affichée. Si elle a à peine bougé, les pattes n'ont pas toutes reçu l'ordre — set_all_legs est celle qui envoie aux quatre. Si elle est montée puis retombée, vérifie que le genou est bien négatif.",
+    },
+    realCode: {
+      file: "waste_sorting/robot.py",
+      code: `_KP, _KD = 200.0, 6.0
+_SUBSTEPS = 10
+
+for _ in range(_SUBSTEPS):
+    q  = self.data.qpos[self.leg_qadr]   # where each joint IS
+    qd = self.data.qvel[self.leg_vadr]   # how fast it is moving
+    tau = _KP * (target - q) - _KD * qd  # push, then brake
+    ...
+    mujoco.mj_step(self.model, self.data)`,
+      note: {
+        en: "This is what robot.set_all_legs does for you. The motor is not teleported to the angle — it is pushed towards it, harder the further away it is (that is the 200), and braked if it is moving fast (the 6). Without the braking the leg overshoots and wobbles forever.",
+        fr: "Voilà ce que robot.set_all_legs fait à ta place. Le moteur n'est pas téléporté à l'angle : il est poussé vers lui, d'autant plus fort qu'il en est loin (c'est le 200), et freiné s'il va vite (le 6). Sans le freinage, la patte dépasse et oscille sans fin.",
+      },
     },
   },
 ];
