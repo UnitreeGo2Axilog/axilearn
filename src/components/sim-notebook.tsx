@@ -382,6 +382,7 @@ export function SimNotebook({
               </p>
               <video
                 src={part.realVideo}
+                poster={part.realVideoPoster}
                 controls
                 muted
                 loop
@@ -390,6 +391,11 @@ export function SimNotebook({
                 className="w-full rounded-xl border"
                 style={{ borderColor: "var(--border)" }}
               />
+              {part.realVideoNote && (
+                <p className="mt-1.5 text-[12px] leading-relaxed text-faint">
+                  {say(part.realVideoNote)}
+                </p>
+              )}
             </div>
           )}
 

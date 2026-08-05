@@ -73,6 +73,17 @@ export interface SimPart {
    * the actual robot."
    */
   realVideo?: string;
+  /**
+   * What the clip shows. Required in spirit: a video with no caption invites
+   * the reader to assume it is real-world hardware footage, and this one is
+   * not -- it is the detailed Go2 model in the same physics engine.
+   */
+  realVideoNote?: Localized;
+  /**
+   * A still to show before it plays. Without one the player is a black
+   * rectangle, which reads as broken rather than as "press play".
+   */
+  realVideoPoster?: string;
   /** Glossary ids introduced by this part, in the order they come up. */
   terms?: string[];
   /** The real project code this part is a simplified version of. */
@@ -169,6 +180,12 @@ print("fallen? ", robot.height < FALLEN_BELOW)`,
     failure: {
       en: "Not up yet. Look at the height in the output. If it barely changed, the legs did not all get the command — set_all_legs is the one that sends to all four. If it went up and fell back, check the knee is negative.",
       fr: "Pas encore debout. Regarde la hauteur affichée. Si elle a à peine bougé, les pattes n'ont pas toutes reçu l'ordre — set_all_legs est celle qui envoie aux quatre. Si elle est montée puis retombée, vérifie que le genou est bien négatif.",
+    },
+    realVideo: "/robot/go2-crawl-10s.mp4",
+    realVideoPoster: "/robot/go2-crawl-poster.jpg",
+    realVideoNote: {
+      en: "The same Go2, with its real shape instead of the simple blocks — walking, from the research project. Your robot is the same machine and the same physics; the blocks just make it easier to see which part is the thigh and which is the knee. Making it walk like this is Part 2.",
+      fr: "Le même Go2, avec sa vraie forme au lieu des blocs simples — en train de marcher, tiré du projet de recherche. Ton robot est la même machine et la même physique ; les blocs servent juste à mieux voir quelle partie est la cuisse et laquelle est le genou. Le faire marcher comme ça, c'est la partie 2.",
     },
     realCode: {
       file: "waste_sorting/robot.py",
