@@ -1993,7 +1993,7 @@ You do not tell a motor "move". You tell it **an angle you want**, and it pushes
 
 Here is the rule those twelve motors follow. This is one real line from the research project:
 
-\`\`\`python
+\`\`\`pyshow
 # waste_sorting/robot.py
 tau = KP * (target - q) - KD * qd
 \`\`\`
@@ -2016,7 +2016,7 @@ That is called **PD control**, and almost every robot in the world uses some ver
 
 ## The angles for standing
 
-\`\`\`python
+\`\`\`pyshow
 # waste_sorting/scene.py
 LEG_STAND = (0.0, 0.9, -1.8)   # hip, thigh, knee -- in radians
 \`\`\`
@@ -2034,7 +2034,7 @@ On ne dit pas à un moteur « bouge ». On lui dit **l'angle qu'on veut**, et il
 
 Voici la règle que suivent ces douze moteurs. C'est une vraie ligne du projet de recherche :
 
-\`\`\`python
+\`\`\`pyshow
 # waste_sorting/robot.py
 tau = KP * (target - q) - KD * qd
 \`\`\`
@@ -2057,7 +2057,7 @@ Lis-la en deux moitiés :
 
 ## Les angles pour se tenir debout
 
-\`\`\`python
+\`\`\`pyshow
 # waste_sorting/scene.py
 LEG_STAND = (0.0, 0.9, -1.8)   # hanche, cuisse, genou -- en radians
 \`\`\`
@@ -2197,7 +2197,7 @@ step: DROP -- open the gripper
 
 In Python it is nothing more exotic than this:
 
-\`\`\`python
+\`\`\`pyshow
 state = "search"
 
 if state == "search":
@@ -2251,7 +2251,7 @@ step: LÂCHER -- ouvrir la pince
 
 En Python, ce n'est rien de plus exotique que ceci :
 
-\`\`\`python
+\`\`\`pyshow
 state = "search"
 
 if state == "search":
@@ -2393,7 +2393,7 @@ In the robot lab, write one program that:
 
 Nothing new is needed. Every piece is something you have already written. What is new is that one program has to hold all of it and know which stage it is in -- which is exactly the state machine from the last lesson.
 
-\`\`\`python
+\`\`\`pyshow
 state = "stand"
 
 while robot.time < 40:
@@ -2452,7 +2452,7 @@ Dans le labo, écris un seul programme qui :
 
 Rien de nouveau n'est nécessaire. Chaque morceau, tu l'as déjà écrit. Ce qui est nouveau, c'est qu'un seul programme doit tout contenir et savoir à quelle étape il en est — c'est exactement la machine à états de la leçon précédente.
 
-\`\`\`python
+\`\`\`pyshow
 state = "stand"
 
 while robot.time < 40:

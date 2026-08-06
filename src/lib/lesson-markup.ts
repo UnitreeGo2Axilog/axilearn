@@ -140,6 +140,11 @@ export function parseLessonBody(body: string): Block[] {
         const output = at >= 0 ? content.slice(content.indexOf("\n", at + 1) + 1) : "";
         blocks.push({ kind: "progout", program: program.trim(), output: output.trim() });
       }
+      // `python` gets a Run button; anything else is shown and not run.
+      // `pyshow` exists for illustrations -- a line of real robot code quoted
+      // to be READ. Those were fenced as `python`, so they got a Run button
+      // and a NameError, which teaches a beginner that the platform is broken
+      // rather than that the line is an example.
       else blocks.push({ kind: "code", code: content, runnable: lang === "python" || lang === "py" });
       continue;
     }

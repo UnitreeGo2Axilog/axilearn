@@ -99,3 +99,32 @@ export function certificateStatus(
     earned: lessonsComplete && (!examRequired || examDone),
   };
 }
+
+/**
+ * A stable id for one learner's certificate on one track.
+ *
+ * Derived from the two things that identify it, never random: a learner who
+ * prints the certificate twice must get the same id both times, or the copy
+ * they handed to a teacher disagrees with the copy on their screen and
+ * neither can be checked against the other.
+ *
+ * FNV-1a, the same small hash the content importer uses. It is not a security
+ * measure and does not pretend to be -- it makes the document referable, and
+ * the record in Firestore is what actually proves anything.
+ */
+export function certificateId(uid: string, trackId: string): string {
+  const seed = `${uid}::${trackId}`;
+  let h = 0x811c9dc5;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  const a = (h >>> 0).toString(36).toUpperCase().padStart(7, "0");
+  let g = 0x9e3779b1;
+  for (let i = seed.length - 1; i >= 0; i--) {
+    g ^= seed.charCodeAt(i);
+    g = Math.imul(g, 0x85ebca6b);
+  }
+  const b = (g >>> 0).toString(36).toUpperCase().padStart(7, "0");
+  return `AXI-${a}-${b}`;
+}
