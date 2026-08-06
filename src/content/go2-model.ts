@@ -44,6 +44,9 @@ export const POSES = {
 /** Trunk height that counts as standing, used by the Part 1 checker. */
 export const STANDING_HEIGHT = 0.25;
 
+/** Where the red box sits. Keep in step with the model below. */
+export const TARGET_XY: [number, number] = [1.4, 0];
+
 export const GO2_MODEL_XML = `<mujoco model="go2-stylised">
   <compiler angle="radian" autolimits="true"/>
   <option timestep="0.002" gravity="0 0 -9.81" iterations="20"/>
@@ -60,6 +63,12 @@ export const GO2_MODEL_XML = `<mujoco model="go2-stylised">
   <worldbody>
     <light pos="0 0 3" dir="0 0 -1" diffuse="0.9 0.9 0.9"/>
     <geom name="floor" type="plane" size="20 20 0.1" rgba="0.92 0.94 0.96 1" friction="0.9"/>
+
+    <!-- Something to find. Static, bright, and a known distance away, so a
+         lesson can ask "walk until you are close to it and then stop". -->
+    <body name="target" pos="1.4 0 0.12">
+      <geom name="target" type="box" size="0.09 0.09 0.12" rgba="0.95 0.35 0.45 1"/>
+    </body>
 
     <body name="trunk" pos="0 0 0.34">
       <freejoint name="root"/>

@@ -461,6 +461,241 @@ print("moved:", round(robot.x - start_x, 3), "m  (negative means backwards)")`,
       },
     },
   },
+  {
+    id: "sp-turn",
+    lessonId: "ph-4",
+    title: { en: "Part 4 — Turn on the spot", fr: "Partie 4 — Tourner sur place" },
+    intro: {
+      en: "Walking forward is not much use if you cannot aim. To turn without moving anywhere, the two sides of the robot have to push in opposite directions — like rowing a boat with one oar forward and one back.",
+      fr: "Marcher tout droit ne sert pas à grand-chose si on ne peut pas viser. Pour tourner sans se déplacer, les deux côtés du robot doivent pousser en sens contraire — comme ramer avec une rame en avant et une en arrière.",
+    },
+    terms: ["gait", "phase"],
+    cells: [
+      {
+        id: "r1",
+        kind: "given",
+        explain: {
+          en: "First, a way to see which way the robot is facing. yaw is that angle in radians: 0 is straight ahead, and about 1.57 is a quarter turn. Run this before it has moved.",
+          fr: "D'abord, un moyen de voir dans quelle direction le robot regarde. yaw est cet angle en radians : 0 c'est droit devant, et environ 1,57 c'est un quart de tour. Lance ceci avant qu'il bouge.",
+        },
+        code: `robot.stand_up()
+robot.wait(0.4)
+print("facing:", round(robot.yaw, 3), "radians")
+print("that is", round(robot.yaw * 57.3, 1), "degrees")`,
+      },
+      {
+        id: "r2",
+        kind: "given",
+        explain: {
+          en: "Each leg needs to know which side it is on. Left legs get +1, right legs get -1. That single number is what will make the two sides push against each other.",
+          fr: "Chaque patte doit savoir de quel côté elle est. Les pattes gauches reçoivent +1, les droites -1. Ce seul nombre est ce qui va faire pousser les deux côtés l'un contre l'autre.",
+        },
+        code: `PHASES = {"front_left": 0.0, "back_right": 0.25,
+          "front_right": 0.5, "back_left": 0.75}
+FREQ, SWING = 0.7, 0.25
+STAND_THIGH, STAND_KNEE = 0.9, -1.8
+SIDE = {"front_left": 1, "back_left": 1,
+        "front_right": -1, "back_right": -1}
+
+for leg in PHASES:
+    print(leg, "is on side", SIDE[leg])`,
+      },
+      {
+        id: "r3",
+        kind: "todo",
+        explain: {
+          en: "Here is the walking loop again, with one change to make. Multiply the sweep by that side number so the left legs sweep one way and the right legs the other. Everything else stays exactly as it was.",
+          fr: "Voici de nouveau la boucle de marche, avec un seul changement à faire. Multiplie le balayage par ce numéro de côté pour que les pattes gauches balaient dans un sens et les droites dans l'autre. Tout le reste ne change pas.",
+        },
+        code: `import math
+SWEEP, LIFT = 0.28, 0.30
+start_yaw = robot.yaw
+
+t = 0.0
+while t < 8.0:
+    for leg, start in PHASES.items():
+        ph = (t * FREQ + start) % 1.0
+        ## TODO: read this leg's side out of SIDE, then multiply
+        ## the two SWEEP terms below by it.
+        d = 1
+        if ph < SWING:
+            s = ph / SWING
+            thigh = STAND_THIGH + SWEEP * (s - 0.5) * 2
+            knee  = STAND_KNEE - LIFT * math.sin(math.pi * s)
+        else:
+            s = (ph - SWING) / (1 - SWING)
+            thigh = STAND_THIGH + SWEEP * (0.5 - s) * 2
+            knee  = STAND_KNEE
+        robot.target(leg, thigh=thigh, knee=knee)
+    robot.tick(0.02)
+    t += 0.02
+
+print("turned:", round((robot.yaw - start_yaw) * 57.3, 1), "degrees")`,
+        hint: {
+          en: "d = SIDE[leg] gives +1 or -1. Then write STAND_THIGH + d * SWEEP * ... in both places.",
+          fr: "d = SIDE[leg] donne +1 ou -1. Ensuite écris STAND_THIGH + d * SWEEP * ... aux deux endroits.",
+        },
+        solution: `import math
+SWEEP, LIFT = 0.28, 0.30
+start_yaw = robot.yaw
+
+t = 0.0
+while t < 8.0:
+    for leg, start in PHASES.items():
+        ph = (t * FREQ + start) % 1.0
+        d = SIDE[leg]
+        if ph < SWING:
+            s = ph / SWING
+            thigh = STAND_THIGH + d * SWEEP * (s - 0.5) * 2
+            knee  = STAND_KNEE - LIFT * math.sin(math.pi * s)
+        else:
+            s = (ph - SWING) / (1 - SWING)
+            thigh = STAND_THIGH + d * SWEEP * (0.5 - s) * 2
+            knee  = STAND_KNEE
+        robot.target(leg, thigh=thigh, knee=knee)
+    robot.tick(0.02)
+    t += 0.02
+
+print("turned:", round((robot.yaw - start_yaw) * 57.3, 1), "degrees")`,
+      },
+    ],
+    check: "robot.yaw - start_yaw > 0.5 and robot.height > 0.18",
+    success: {
+      en: "About seventy degrees, and it barely wandered — roughly ten centimetres of drift over eight seconds. That is a robot turning on the spot, from one extra multiplication.",
+      fr: "Environ soixante-dix degrés, et il a à peine dérivé — une dizaine de centimètres en huit secondes. C'est un robot qui tourne sur place, grâce à une seule multiplication de plus.",
+    },
+    failure: {
+      en: "It went somewhere instead of turning. If d stayed at 1, both sides pushed the same way and you got a walk. Read the side out of SIDE with the leg's name, and use it on BOTH sweep lines — one alone half-cancels the other.",
+      fr: "Il est parti au lieu de tourner. Si d est resté à 1, les deux côtés ont poussé pareil et tu as obtenu une marche. Lis le côté dans SIDE avec le nom de la patte, et utilise-le sur les DEUX lignes de balayage — une seule annule à moitié l'autre.",
+    },
+    realCode: {
+      file: "unitree_mujoco/.../controllers/foot_trajectory.py",
+      code: `# A larger amplitude turns faster (fewer cycles, less accumulated
+# drift) BUT throws the legs into wider tangential arcs -- at 0.7 rad
+# the robot visibly splays low and "crawls" mid-turn (pitch ~0.13).
+# Re-tuned 2026-07-20 to 0.4 rad: legs stay gathered and upright
+# (pitch ~0.077, matching straight walking), at the cost of a slower
+# ~17s half-turn.
+self.turn_step_angle = float(turn_step_angle)`,
+      note: {
+        en: "The real project had the same knob and the same trade-off: turn harder and you turn faster, but the robot starts to sprawl. They measured the pitch, found 0.7 made it crawl, and settled on 0.4 — accepting a slower turn to keep it upright. Choosing the slower, uglier number because the measurement said so is most of engineering.",
+        fr: "Le vrai projet avait le même réglage et le même compromis : tourner plus fort fait tourner plus vite, mais le robot commence à s'affaler. Ils ont mesuré le tangage, vu que 0,7 le faisait ramper, et choisi 0,4 — un demi-tour plus lent, mais droit. Choisir le nombre plus lent et moins joli parce que la mesure le dit, c'est l'essentiel du métier.",
+      },
+    },
+  },
+  {
+    id: "sp-detect",
+    lessonId: "ph-5",
+    title: { en: "Part 5 — Walk up and stop", fr: "Partie 5 — Avancer et s'arrêter" },
+    intro: {
+      en: "There is a red box in front of the robot. Walking to it is easy; knowing when to STOP is the whole job. This is the loop every robot runs: look, decide, move — over and over, many times a second.",
+      fr: "Il y a une boîte rouge devant le robot. Y aller est facile ; savoir quand S'ARRÊTER, c'est tout le travail. C'est la boucle que tout robot exécute : regarder, décider, bouger — encore et encore, plusieurs fois par seconde.",
+    },
+    terms: ["sim-to-real"],
+    cells: [
+      {
+        id: "d1",
+        kind: "given",
+        explain: {
+          en: "robot.distance is how far the box is, in metres. Think of it as what a range sensor on the robot's nose would report. Run this and see how far away it starts.",
+          fr: "robot.distance, c'est à quelle distance se trouve la boîte, en mètres. Imagine ce que dirait un capteur de distance sur le nez du robot. Lance ceci pour voir la distance de départ.",
+        },
+        code: `robot.stand_up()
+robot.wait(0.4)
+print("the box is", round(robot.distance, 2), "metres away")`,
+      },
+      {
+        id: "d2",
+        kind: "todo",
+        explain: {
+          en: "Now the loop. It should keep walking WHILE the box is still far away, and stop as soon as it is close. The safety limit t < 18 is there so a wrong answer ends instead of running forever — real robot code has one of those too.",
+          fr: "Maintenant la boucle. Elle doit continuer à marcher TANT QUE la boîte est loin, et s'arrêter dès qu'elle est proche. La limite de sécurité t < 18 est là pour qu'une mauvaise réponse s'arrête au lieu de tourner sans fin — le vrai code de robot en a une aussi.",
+        },
+        code: `import math
+PHASES = {"front_left": 0.0, "back_right": 0.25,
+          "front_right": 0.5, "back_left": 0.75}
+FREQ, SWING = 0.7, 0.25
+STAND_THIGH, STAND_KNEE = 0.9, -1.8
+STEP, LIFT = 0.10, 0.30
+STOP_AT = 0.75          # metres. Close enough.
+
+t = 0.0
+## TODO: keep walking WHILE the box is further away than STOP_AT.
+## Replace True with the right test on robot.distance.
+while True and t < 18.0:
+    for leg, start in PHASES.items():
+        ph = (t * FREQ + start) % 1.0
+        if ph < SWING:
+            s = ph / SWING
+            thigh = STAND_THIGH + STEP * (s - 0.5) * 2
+            knee  = STAND_KNEE - LIFT * math.sin(math.pi * s)
+        else:
+            s = (ph - SWING) / (1 - SWING)
+            thigh = STAND_THIGH + STEP * (0.5 - s) * 2
+            knee  = STAND_KNEE
+        robot.target(leg, thigh=thigh, knee=knee)
+    robot.tick(0.02)
+    t += 0.02
+
+robot.set_all_legs(thigh=STAND_THIGH, knee=STAND_KNEE, seconds=0.4)
+robot.wait(0.3)
+print("stopped", round(robot.distance, 2), "m away, after", round(t, 1), "s")`,
+        hint: {
+          en: "It should carry on while the distance is still bigger than STOP_AT. That is a > comparison.",
+          fr: "Il doit continuer tant que la distance est encore plus grande que STOP_AT. C'est une comparaison avec >.",
+        },
+        solution: `import math
+PHASES = {"front_left": 0.0, "back_right": 0.25,
+          "front_right": 0.5, "back_left": 0.75}
+FREQ, SWING = 0.7, 0.25
+STAND_THIGH, STAND_KNEE = 0.9, -1.8
+STEP, LIFT = 0.10, 0.30
+STOP_AT = 0.75
+
+t = 0.0
+while robot.distance > STOP_AT and t < 18.0:
+    for leg, start in PHASES.items():
+        ph = (t * FREQ + start) % 1.0
+        if ph < SWING:
+            s = ph / SWING
+            thigh = STAND_THIGH + STEP * (s - 0.5) * 2
+            knee  = STAND_KNEE - LIFT * math.sin(math.pi * s)
+        else:
+            s = (ph - SWING) / (1 - SWING)
+            thigh = STAND_THIGH + STEP * (0.5 - s) * 2
+            knee  = STAND_KNEE
+        robot.target(leg, thigh=thigh, knee=knee)
+    robot.tick(0.02)
+    t += 0.02
+
+robot.set_all_legs(thigh=STAND_THIGH, knee=STAND_KNEE, seconds=0.4)
+robot.wait(0.3)
+print("stopped", round(robot.distance, 2), "m away, after", round(t, 1), "s")`,
+      },
+    ],
+    check: "robot.distance < 0.95 and t < 17.0 and robot.height > 0.18",
+    success: {
+      en: "It walked up and stopped by itself. Nothing told it how many steps to take — it checked the distance fifty times a second and decided each time. That is what makes it a robot rather than a wind-up toy.",
+      fr: "Il s'est avancé et s'est arrêté tout seul. Personne ne lui a dit combien de pas faire : il a vérifié la distance cinquante fois par seconde et décidé à chaque fois. C'est ça qui en fait un robot et pas un jouet mécanique.",
+    },
+    failure: {
+      en: "Look at the seconds in the output. If it says 18, the loop never decided anything — it just ran out of safety time, and walking into the box by accident is not the same as stopping on purpose. The test belongs where True is: keep going while robot.distance is greater than STOP_AT.",
+      fr: "Regarde les secondes affichées. S'il y a 18, la boucle n'a rien décidé : elle a juste épuisé la sécurité, et arriver sur la boîte par hasard n'est pas s'arrêter exprès. Le test va là où se trouve True : continuer tant que robot.distance est plus grand que STOP_AT.",
+    },
+    realCode: {
+      file: "waste_sorting/robot.py",
+      code: `def object_xy(self, category: str):
+    p = self.data.body(f"obj_{category}").xpos
+    return float(p[0]), float(p[1])
+
+def is_fallen(self) -> bool:
+    return self.base_height() < 0.18`,
+      note: {
+        en: "The real project asks the same two kinds of question: where is the thing, and am I still upright. Its waste-sorting robot walks to an object, picks it up and drops it in the right bin — and the whole mission is built from loops exactly like the one you just wrote.",
+        fr: "Le vrai projet pose les deux mêmes sortes de questions : où est l'objet, et est-ce que je suis encore debout. Son robot de tri marche jusqu'à un objet, le ramasse et le dépose dans la bonne poubelle — et toute la mission est faite de boucles exactement comme celle que tu viens d'écrire.",
+      },
+    },
+  },
 ];
 
 export function getSimPart(id: string): SimPart | undefined {

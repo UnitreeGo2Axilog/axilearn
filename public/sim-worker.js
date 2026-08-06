@@ -28,8 +28,6 @@ const PYODIDE_CDN = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
 
 /** dt in the model. Keep in step with go2-model.ts. */
 const DT = 0.002;
-/** One recorded frame per 60th of a second. */
-const STEPS_PER_FRAME = Math.round(1 / 60 / DT);
 /** Hard ceiling on a recording: 20 s. Stops a long loop eating all memory. */
 const MAX_FRAMES = 20 * 60;
 
@@ -45,9 +43,24 @@ let nbody = 0;
 const LYING = [0, 1.25, -2.7];
 const STANDING = [0, 0.9, -1.8];
 const LEGS = { front_left: 0, front_right: 1, back_left: 2, back_right: 3 };
+/** The red box. Keep in step with TARGET_XY in go2-model.ts. */
+const TARGET = [1.4, 0];
 
-/** Recording state for the run in progress. */
+/**
+ * Recording state for the run in progress.
+ *
+ * `sinceFrame` counts SIMULATED seconds since the last recorded pose. An
+ * earlier version recorded on "every Nth physics step within this call",
+ * which is wrong the moment calls are short: robot.tick(0.02) is ten steps,
+ * so a step-index test fired at s=0, again at s=8, and once more at the end
+ * -- three frames per fiftieth of a second instead of one. A six-second walk
+ * fitted under the cap and looked fine; an eighteen-second one hit it after
+ * eight, and because hitting the cap used to return early from the stepping
+ * loop, THE PHYSICS STOPPED. The robot appeared to freeze mid-walk for no
+ * visible reason.
+ */
 let frames = [];
+let sinceFrame = 0;
 let targets = new Array(12).fill(0);
 let simTime = 0;
 let hitLimit = false;
@@ -63,11 +76,13 @@ function resetSim() {
   }
   mujoco.mj_forward(model, data);
   frames = [];
+  sinceFrame = 0;
   simTime = 0;
   hitLimit = false;
   captureFrame();
 }
 
+/** Record a pose if the recording still has room. Never stops the physics. */
 function captureFrame() {
   if (frames.length >= MAX_FRAMES) {
     hitLimit = true;
@@ -88,6 +103,14 @@ function captureFrame() {
   frames.push(f);
 }
 
+function maybeCapture() {
+  sinceFrame += DT;
+  if (sinceFrame >= 1 / 60) {
+    sinceFrame = 0;
+    captureFrame();
+  }
+}
+
 /** Advance the physics by `seconds`, recording as it goes. */
 function advance(seconds) {
   const steps = Math.max(1, Math.round(seconds / DT));
@@ -95,10 +118,8 @@ function advance(seconds) {
     for (let i = 0; i < 12; i++) data.ctrl[i] = targets[i];
     mujoco.mj_step(model, data);
     simTime += DT;
-    if (s % STEPS_PER_FRAME === 0) captureFrame();
-    if (hitLimit) return;
+    maybeCapture();
   }
-  captureFrame();
 }
 
 /**
@@ -119,10 +140,8 @@ function moveTo(next, seconds) {
     }
     mujoco.mj_step(model, data);
     simTime += DT;
-    if (s % STEPS_PER_FRAME === 0) captureFrame();
-    if (hitLimit) return;
+    maybeCapture();
   }
-  captureFrame();
 }
 
 /** The bridge the Python `robot` object calls into. */
@@ -149,6 +168,21 @@ const bridge = {
     const roll = Math.atan2(2 * (w * x + y * z), 1 - 2 * (x * x + y * y));
     const pitch = Math.asin(Math.max(-1, Math.min(1, 2 * (w * y - z * x))));
     return [roll, pitch];
+  },
+  /**
+   * Which way the robot is facing, in radians. Same formula as base_pose()
+   * in waste_sorting/robot.py.
+   */
+  yaw: () => {
+    const q = data.qpos;
+    const w = q[3], x = q[4], y = q[5], z = q[6];
+    return Math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
+  },
+  /** Straight-line distance from the trunk to the red box. */
+  distance: () => {
+    const dx = TARGET[0] - data.qpos[0];
+    const dy = TARGET[1] - data.qpos[1];
+    return Math.sqrt(dx * dx + dy * dy);
   },
   joints: () => Array.from({ length: 12 }, (_, i) => data.qpos[7 + i]),
   targets: () => targets.slice(),
@@ -248,6 +282,16 @@ class _Robot:
     def y(self):
         """How far sideways the robot has drifted, in metres."""
         return float(self._b.y())
+
+    @property
+    def yaw(self):
+        """Which way the robot is facing, in radians. 0 is straight ahead."""
+        return float(self._b.yaw())
+
+    @property
+    def distance(self):
+        """How far the red box is, in metres."""
+        return float(self._b.distance())
 
     @property
     def time(self):
@@ -374,6 +418,8 @@ self.onmessage = async (ev) => {
           height: data.qpos[2],
           x: data.qpos[0],
           y: data.qpos[1],
+          yaw: bridge.yaw(),
+          distance: bridge.distance(),
           time: simTime,
           joints: Array.from({ length: 12 }, (_, i) => data.qpos[7 + i]),
           tilt: bridge.tilt(),

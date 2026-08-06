@@ -38,6 +38,10 @@ export interface SimState {
   x: number;
   /** Metres drifted sideways -- a straight walk keeps this near zero. */
   y: number;
+  /** Facing, in radians. 0 is straight ahead. */
+  yaw: number;
+  /** Metres to the red box. */
+  distance: number;
   time: number;
   joints: number[];
   tilt: [number, number];
