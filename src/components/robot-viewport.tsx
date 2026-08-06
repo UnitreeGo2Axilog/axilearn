@@ -77,8 +77,21 @@ export function RobotViewport({
     // MuJoCo is Z-up and three.js cameras are Y-up by default. Without this
     // the entire world renders on its side.
     cam.up.set(0, 0, 1);
-    cam.position.set(1.30, -1.20, 0.78);
-    cam.lookAt(0, 0, 0.16);
+    // BEHIND the robot's start, looking the way it travels.
+    //
+    // Two earlier framings failed for the same reason: both stood on the far
+    // side, between the robot and the red target box at x = 1.4. That puts
+    // the box NEARER the lens than the robot, so the box fills the shot and
+    // the robot is a small dark shape behind it. From behind, the robot is
+    // the close object and the box sits beyond it where a goal belongs.
+    // Verified by projecting both objects through this exact camera rather
+    // than by eye: the robot lands at the centre of the frame 1.13 m away,
+    // and the target box at 2.37 m off to the right -- further from the lens
+    // than the robot, which is the whole point. Two earlier framings stood
+    // between the two and put the box nearer than the robot it was meant to
+    // be a goal for.
+    cam.position.set(-0.85, -0.70, 0.34);
+    cam.lookAt(0.05, 0, 0.12);
 
     s.add(new THREE.HemisphereLight(0xffffff, 0x8fa3b8, 2.1));
     const key = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -154,6 +167,38 @@ export function RobotViewport({
     frame.current = 0;
     playingRef.current = true;
     let announced = false;
+
+    // Frame the run, not the origin. A part that walks a metre needs a wider
+    // shot than one that stands still, and picking a single compromise angle
+    // makes both look wrong -- the stationary one tiny, the travelling one
+    // half out of frame. The trunk is body 1; sweep its path and fit to it.
+    {
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (let i = 0; i < frameCount; i++) {
+        const o = i * nbody * 7 + 1 * 7;
+        minX = Math.min(minX, frames[o]);
+        maxX = Math.max(maxX, frames[o]);
+        minY = Math.min(minY, frames[o + 1]);
+        maxY = Math.max(maxY, frames[o + 1]);
+      }
+      // Aim at the middle of the journey, but bias toward where it STARTED:
+      // a learner watches the robot set off, and a shot centred on empty
+      // floor it has not reached yet wastes half the frame.
+      const cx = minX + (maxX - minX) * 0.35;
+      const cy = (minY + maxY) / 2;
+      // Span of the journey plus the robot's own length, so it is never
+      // cropped at the ends of the path.
+      const span = Math.max(maxX - minX, maxY - minY) + 0.8;
+      // Distance that fits `span` in a 42 degree vertical field, with a
+      // little air, and never closer than the resting shot.
+      const dist = Math.max(1.25, (span / 2) / Math.tan((42 * Math.PI) / 360) * 1.25);
+      const cam2 = camera.current!;
+      // Same side as the resting shot -- behind the start, never between the
+      // robot and the box.
+      cam2.position.set(cx - dist * 0.60, cy - dist * 0.55, dist * 0.30);
+      cam2.lookAt(cx + 0.15, cy, 0.15);
+      cam2.updateProjectionMatrix();
+    }
 
     const pos = new THREE.Vector3();
     const quat = new THREE.Quaternion();
