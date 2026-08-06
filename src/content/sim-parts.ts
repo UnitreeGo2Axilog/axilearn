@@ -696,6 +696,158 @@ def is_fallen(self) -> bool:
       },
     },
   },
+  {
+    id: "sp-sensor",
+    lessonId: "ph-2",
+    title: { en: "Part 6 — Trust your eyes, but not too much", fr: "Partie 6 — Crois tes yeux, mais pas trop" },
+    intro: {
+      en: "Until now the robot has known exactly how far away the box is. Real robots never do. A real sensor gives you a number that is close to the truth and never quite it — and if you believe every reading, the robot makes bad decisions.",
+      fr: "Jusqu'ici, le robot savait exactement à quelle distance était la boîte. Les vrais robots ne le savent jamais. Un vrai capteur donne un nombre proche de la vérité, jamais tout à fait juste — et si tu crois chaque mesure, le robot prend de mauvaises décisions.",
+    },
+    terms: ["sim-to-real"],
+    cells: [
+      {
+        id: "s1",
+        kind: "given",
+        explain: {
+          en: "robot.distance_noisy is what a range sensor would actually report. The robot has not moved between these five readings — so any difference you see is the sensor being wrong, not the world changing.",
+          fr: "robot.distance_noisy, c'est ce qu'un vrai capteur de distance rapporterait. Le robot ne bouge pas entre ces cinq mesures — donc toute différence vient du capteur qui se trompe, pas du monde qui change.",
+        },
+        code: `robot.stand_up()
+robot.wait(0.4)
+
+print("the truth:", round(robot.distance, 3))
+for i in range(5):
+    print("  sensor says:", round(robot.distance_noisy, 3))`,
+      },
+      {
+        id: "s2",
+        kind: "given",
+        explain: {
+          en: "Now the Part 5 loop again, but reading the sensor instead of the truth. It stops — but look at where. It halted a long way short of the box, because one unlucky low reading made it believe it had arrived.",
+          fr: "Reprenons la boucle de la partie 5, mais en lisant le capteur au lieu de la vérité. Il s'arrête — mais regarde où. Il s'est arrêté bien avant la boîte, parce qu'une mesure malchanceuse lui a fait croire qu'il était arrivé.",
+        },
+        code: `import math
+PHASES = {"front_left": 0.0, "back_right": 0.25,
+          "front_right": 0.5, "back_left": 0.75}
+FREQ, SWING = 0.7, 0.25
+STAND_THIGH, STAND_KNEE = 0.9, -1.8
+STEP, LIFT = 0.10, 0.30
+STOP_AT = 0.75
+
+t = 0.0
+while robot.distance_noisy > STOP_AT and t < 12.0:
+    for leg, start in PHASES.items():
+        ph = (t * FREQ + start) % 1.0
+        if ph < SWING:
+            s = ph / SWING
+            thigh = STAND_THIGH + STEP * (s - 0.5) * 2
+            knee  = STAND_KNEE - LIFT * math.sin(math.pi * s)
+        else:
+            s = (ph - SWING) / (1 - SWING)
+            thigh = STAND_THIGH + STEP * (0.5 - s) * 2
+            knee  = STAND_KNEE
+        robot.target(leg, thigh=thigh, knee=knee)
+    robot.tick(0.02)
+    t += 0.02
+
+print("believed it arrived. really", round(robot.distance, 3), "m away")`,
+      },
+      {
+        id: "s3",
+        kind: "todo",
+        explain: {
+          en: "The fix is one line. Instead of believing each new reading completely, keep most of what you already believed and let the new reading nudge it. Start from the reading, then blend: a fifth of the new number, four fifths of the old belief.",
+          fr: "La solution tient en une ligne. Au lieu de croire complètement chaque nouvelle mesure, garde l'essentiel de ce que tu croyais déjà et laisse la mesure te corriger un peu. Pars de la mesure, puis mélange : un cinquième du nouveau nombre, quatre cinquièmes de l'ancienne croyance.",
+        },
+        code: `import math
+PHASES = {"front_left": 0.0, "back_right": 0.25,
+          "front_right": 0.5, "back_left": 0.75}
+FREQ, SWING = 0.7, 0.25
+STAND_THIGH, STAND_KNEE = 0.9, -1.8
+STEP, LIFT = 0.10, 0.30
+STOP_AT = 0.75
+ALPHA = 0.2                       # how much to trust a new reading
+
+smooth = robot.distance_noisy     # first belief: just the first reading
+
+t = 0.0
+while smooth > STOP_AT and t < 18.0:
+    ## TODO: update smooth from the new reading and the old belief.
+    ## smooth = ALPHA * robot.distance_noisy + (1 - ALPHA) * smooth
+    for leg, start in PHASES.items():
+        ph = (t * FREQ + start) % 1.0
+        if ph < SWING:
+            s = ph / SWING
+            thigh = STAND_THIGH + STEP * (s - 0.5) * 2
+            knee  = STAND_KNEE - LIFT * math.sin(math.pi * s)
+        else:
+            s = (ph - SWING) / (1 - SWING)
+            thigh = STAND_THIGH + STEP * (0.5 - s) * 2
+            knee  = STAND_KNEE
+        robot.target(leg, thigh=thigh, knee=knee)
+    robot.tick(0.02)
+    t += 0.02
+
+robot.set_all_legs(thigh=STAND_THIGH, knee=STAND_KNEE, seconds=0.4)
+robot.wait(0.3)
+print("stopped", round(robot.distance, 3), "m away, after", round(t, 1), "s")`,
+        hint: {
+          en: "Write it exactly as the comment says: smooth = ALPHA * robot.distance_noisy + (1 - ALPHA) * smooth. Every time round the loop it edges towards the truth instead of jumping to it.",
+          fr: "Écris-le exactement comme le commentaire : smooth = ALPHA * robot.distance_noisy + (1 - ALPHA) * smooth. À chaque tour de boucle il se rapproche de la vérité au lieu d'y sauter.",
+        },
+        solution: `import math
+PHASES = {"front_left": 0.0, "back_right": 0.25,
+          "front_right": 0.5, "back_left": 0.75}
+FREQ, SWING = 0.7, 0.25
+STAND_THIGH, STAND_KNEE = 0.9, -1.8
+STEP, LIFT = 0.10, 0.30
+STOP_AT = 0.75
+ALPHA = 0.2
+
+smooth = robot.distance_noisy
+
+t = 0.0
+while smooth > STOP_AT and t < 18.0:
+    smooth = ALPHA * robot.distance_noisy + (1 - ALPHA) * smooth
+    for leg, start in PHASES.items():
+        ph = (t * FREQ + start) % 1.0
+        if ph < SWING:
+            s = ph / SWING
+            thigh = STAND_THIGH + STEP * (s - 0.5) * 2
+            knee  = STAND_KNEE - LIFT * math.sin(math.pi * s)
+        else:
+            s = (ph - SWING) / (1 - SWING)
+            thigh = STAND_THIGH + STEP * (0.5 - s) * 2
+            knee  = STAND_KNEE
+        robot.target(leg, thigh=thigh, knee=knee)
+    robot.tick(0.02)
+    t += 0.02
+
+robot.set_all_legs(thigh=STAND_THIGH, knee=STAND_KNEE, seconds=0.4)
+robot.wait(0.3)
+print("stopped", round(robot.distance, 3), "m away, after", round(t, 1), "s")`,
+      },
+    ],
+    check: "robot.distance < 0.80 and t < 17.0 and abs(smooth - robot.distance) < 0.25 and robot.height > 0.18",
+    success: {
+      en: "About 0.75 m — the same place the robot reached back when it could see perfectly. The sensor is still just as noisy; you simply stopped believing all of it at once. One line turned an unusable sensor into a usable one.",
+      fr: "Environ 0,75 m — exactement là où le robot arrivait quand il voyait parfaitement. Le capteur est toujours aussi bruité ; tu as juste arrêté de tout croire d'un coup. Une ligne a transformé un capteur inutilisable en capteur utilisable.",
+    },
+    failure: {
+      en: "Without the update, smooth keeps its very first value forever, so the loop either never stops or runs to the time limit. The line goes on the first line inside the while, before the legs move.",
+      fr: "Sans la mise à jour, smooth garde à jamais sa toute première valeur : la boucle ne s'arrête jamais ou va jusqu'à la limite de temps. La ligne se met tout au début du while, avant que les pattes bougent.",
+    },
+    realCode: {
+      file: "waste_sorting/robot.py",
+      code: `filt = 0.8 * action + 0.2 * self._prev
+self._prev = filt`,
+      note: {
+        en: "The same shape, in the real project — a bit of the new value, a bit of the old. Note the numbers are the other way round: there it smooths the COMMANDS sent to the legs, where you want to react fast and only take the edge off, so the new value gets 0.8. Smoothing a noisy SENSOR needs the opposite, which is why yours is 0.2. Same tool, different job, and getting the balance wrong is a real way to break a robot.",
+        fr: "La même forme, dans le vrai projet : un peu de nouveau, un peu d'ancien. Remarque que les nombres sont inversés : là, il lisse les COMMANDES envoyées aux pattes, où l'on veut réagir vite et juste adoucir, donc le nouveau vaut 0,8. Lisser un CAPTEUR bruité demande l'inverse, d'où ton 0,2. Même outil, autre usage — et se tromper d'équilibre casse vraiment un robot.",
+      },
+    },
+  },
 ];
 
 export function getSimPart(id: string): SimPart | undefined {
