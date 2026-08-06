@@ -463,4 +463,169 @@ export const lessonQuizzes: Record<string, LessonQuiz> = {
       },
     },
   ],
+  "ph-6": [
+    {
+      question: {
+        en: "Why does the crawl gait keep three feet on the ground?",
+        fr: "Pourquoi l'allure rampante garde-t-elle trois pieds au sol ?",
+      },
+      options: [
+        { en: "It is faster that way", fr: "C'est plus rapide ainsi" },
+        { en: "Three feet hold the robot up without it having to balance", fr: "Trois pieds portent le robot sans qu'il ait à s'équilibrer" },
+        { en: "The motors cannot move four legs at once", fr: "Les moteurs ne peuvent pas bouger quatre pattes à la fois" },
+        { en: "It uses less battery", fr: "Ça consomme moins de batterie" },
+      ],
+      correctIndex: 1,
+      explanation: {
+        en: "Three points of contact are stable on their own. A faster gait lifts two at a time and then the robot has to actively balance -- which is why the project's trot kept falling over.",
+        fr: "Trois points de contact sont stables tout seuls. Une allure plus rapide en lève deux à la fois, et le robot doit alors s'équilibrer activement — c'est pourquoi le trot du projet tombait sans arrêt.",
+      },
+    },
+    {
+      question: {
+        en: "In KP * (target - q) - KD * qd, what does the KD part do?",
+        fr: "Dans KP * (target - q) - KD * qd, que fait la partie KD ?",
+      },
+      options: [
+        { en: "It pushes harder the further away the joint is", fr: "Elle pousse plus fort quand l'articulation est loin" },
+        { en: "It slows the joint down as it moves, so it stops instead of overshooting", fr: "Elle freine l'articulation en mouvement, pour qu'elle s'arrête au lieu de dépasser" },
+        { en: "It measures the distance to the target", fr: "Elle mesure la distance à la cible" },
+        { en: "It switches the motor off", fr: "Elle éteint le moteur" },
+      ],
+      correctIndex: 1,
+      explanation: {
+        en: "KP is the push, KD is the brake. Without the brake the leg races past the target, comes back, overshoots again, and wobbles forever.",
+        fr: "KP pousse, KD freine. Sans le frein, la patte dépasse la cible, revient, dépasse encore, et oscille sans fin.",
+      },
+    },
+    {
+      question: {
+        en: "Why does a robot need a loop rather than a list of instructions?",
+        fr: "Pourquoi un robot a-t-il besoin d'une boucle plutôt que d'une liste d'instructions ?",
+      },
+      options: [
+        { en: "Loops are shorter to write", fr: "Les boucles sont plus courtes à écrire" },
+        { en: "The world keeps changing, so it has to keep looking and deciding", fr: "Le monde change sans arrêt, il doit donc regarder et décider en permanence" },
+        { en: "Python only supports loops", fr: "Python ne gère que les boucles" },
+        { en: "So the code looks professional", fr: "Pour que le code fasse professionnel" },
+      ],
+      correctIndex: 1,
+      explanation: {
+        en: "A list assumes nothing changes. A robot's floor, load and sensors all shift, so it senses, decides and acts about fifty times a second.",
+        fr: "Une liste suppose que rien ne change. Le sol, la charge et les capteurs d'un robot bougent tous : il perçoit, décide et agit environ cinquante fois par seconde.",
+      },
+    },
+  ],
+
+  "ph-7": [
+    {
+      question: {
+        en: "What is a state machine for?",
+        fr: "À quoi sert une machine à états ?",
+      },
+      options: [
+        { en: "Making the robot faster", fr: "Rendre le robot plus rapide" },
+        { en: "Remembering which step of a task the robot is on", fr: "Se souvenir de l'étape où en est le robot" },
+        { en: "Storing sensor readings", fr: "Stocker les mesures des capteurs" },
+        { en: "Training a neural network", fr: "Entraîner un réseau de neurones" },
+      ],
+      correctIndex: 1,
+      explanation: {
+        en: "A task has stages -- search, approach, grab, carry. The state is the robot's memory of which stage it is in, and it is the reason you can say exactly what it was doing when it went wrong.",
+        fr: "Une tâche a des étapes : chercher, approcher, saisir, porter. L'état est la mémoire de l'étape en cours, et c'est ce qui permet de dire exactement ce que faisait le robot quand ça a mal tourné.",
+      },
+    },
+    {
+      question: {
+        en: "When should you write the rule by hand instead of using machine learning?",
+        fr: "Quand faut-il écrire la règle à la main plutôt qu'utiliser l'apprentissage automatique ?",
+      },
+      options: [
+        { en: "Never -- learning is always better", fr: "Jamais : l'apprentissage est toujours mieux" },
+        { en: "Whenever you can, because it is easier to debug and explain", fr: "Chaque fois que c'est possible : c'est plus facile à déboguer et à expliquer" },
+        { en: "Only when there is no computer available", fr: "Seulement s'il n'y a pas d'ordinateur" },
+        { en: "Only for very large robots", fr: "Seulement pour les très gros robots" },
+      ],
+      correctIndex: 1,
+      explanation: {
+        en: "The research project's most reliable walk is a hand-written gait, not a learned one. Learning is for rules too fiddly to write -- not a default.",
+        fr: "La marche la plus fiable du projet est une allure écrite à la main, pas apprise. L'apprentissage sert aux règles trop délicates à écrire — ce n'est pas un réglage par défaut.",
+      },
+    },
+  ],
+
+  "ph-8": [
+    {
+      question: {
+        en: "Why can the real go2_rl code not run in a web browser?",
+        fr: "Pourquoi le vrai code go2_rl ne peut-il pas tourner dans un navigateur ?",
+      },
+      options: [
+        { en: "It is too long", fr: "Il est trop long" },
+        { en: "It needs compiled libraries and a network protocol a web page cannot use", fr: "Il lui faut des bibliothèques compilées et un protocole réseau interdit à une page web" },
+        { en: "It is written in another language", fr: "Il est écrit dans un autre langage" },
+        { en: "Browsers cannot do maths", fr: "Les navigateurs ne savent pas calculer" },
+      ],
+      correctIndex: 1,
+      explanation: {
+        en: "MuJoCo, PyTorch and the DDS stack are native code, and DDS needs raw network access a browser will never grant. Size was never the problem.",
+        fr: "MuJoCo, PyTorch et la pile DDS sont du code natif, et DDS demande un accès réseau brut qu'un navigateur n'accordera jamais. La taille n'a jamais été le problème.",
+      },
+    },
+    {
+      question: {
+        en: "What is the reality gap?",
+        fr: "Qu'est-ce que le fossé de réalité ?",
+      },
+      options: [
+        { en: "The delay between pressing a button and the robot moving", fr: "Le délai entre l'appui sur un bouton et le mouvement du robot" },
+        { en: "The difference between how something behaves in simulation and on the real robot", fr: "La différence entre le comportement en simulation et sur le vrai robot" },
+        { en: "The distance a robot can walk on one battery", fr: "La distance qu'un robot parcourt sur une batterie" },
+        { en: "The gap between two legs", fr: "L'écart entre deux pattes" },
+      ],
+      correctIndex: 1,
+      explanation: {
+        en: "Simulated floors have perfectly predictable friction; real ones have dust, wear and slip. Most robot projects lose their time in that gap.",
+        fr: "Les sols simulés ont un frottement parfaitement prévisible ; les vrais ont de la poussière, de l'usure et du glissement. La plupart des projets perdent leur temps dans cet écart.",
+      },
+    },
+  ],
+
+  "ph-9": [
+    {
+      question: {
+        en: "What is the most useful habit when a robot does something strange?",
+        fr: "Quelle est l'habitude la plus utile quand un robot fait quelque chose d'étrange ?",
+      },
+      options: [
+        { en: "Rewrite the code from scratch", fr: "Réécrire le code de zéro" },
+        { en: "Measure something -- print a number, log what you doubt", fr: "Mesurer quelque chose : afficher un nombre, enregistrer ce dont on doute" },
+        { en: "Turn it off and on again", fr: "L'éteindre et le rallumer" },
+        { en: "Add more machine learning", fr: "Ajouter plus d'apprentissage automatique" },
+      ],
+      correctIndex: 1,
+      explanation: {
+        en: "The turn that looked like a geometry problem was the wrong gains. The trot that should have worked was a foot never leaving the floor. Both were found by measuring, not by staring at code.",
+        fr: "Le demi-tour qui ressemblait à un problème de géométrie venait des mauvais gains. Le trot qui aurait dû marcher venait d'un pied qui ne décollait jamais. Les deux ont été trouvés en mesurant, pas en fixant le code.",
+      },
+    },
+    {
+      question: {
+        en: "How should you build the capstone mission?",
+        fr: "Comment faut-il construire la mission finale ?",
+      },
+      options: [
+        { en: "Write the whole thing, then run it once", fr: "Tout écrire, puis lancer une seule fois" },
+        { en: "One stage at a time, running it after each one", fr: "Une étape à la fois, en lançant après chacune" },
+        { en: "Copy it from the solution", fr: "La copier depuis la solution" },
+        { en: "Start from the last stage", fr: "Commencer par la dernière étape" },
+      ],
+      correctIndex: 1,
+      explanation: {
+        en: "A mission that works up to stage three and then misbehaves is easy to fix. A whole mission written at once that misbehaves is not.",
+        fr: "Une mission qui marche jusqu'à l'étape trois puis déraille est facile à corriger. Une mission entière écrite d'un coup qui déraille ne l'est pas.",
+      },
+    },
+  ],
+
 };

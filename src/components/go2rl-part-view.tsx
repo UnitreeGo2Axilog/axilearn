@@ -12,17 +12,21 @@
  * never requires a detour through the map. Next is only live once this part
  * is done, matching the map's rule rather than quietly disagreeing with it.
  */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, PartyPopper, ChevronDown, Check, Lock } from "lucide-react";
 import { SimNotebook } from "@/components/sim-notebook";
 import type { SimPart } from "@/content/sim-parts";
 import type { Locale } from "@/content/types";
-import { labDone, labStates } from "@/lib/lab-progress";
+import { labStates } from "@/lib/lab-progress";
+import { useProgress } from "@/lib/progress-context";
 
-const PlexusBackground = dynamic(
-  () => import("@/components/plexus-background").then((m) => m.PlexusBackground),
+// The robot track gets a sensor sweep rather than the challenges page's
+// network: this track is about a machine perceiving a room, and it is plain
+// canvas 2D, so it does not fight the robot viewport for a WebGL context.
+const SensorBackground = dynamic(
+  () => import("@/components/sensor-background").then((m) => m.SensorBackground),
   { ssr: false },
 );
 
@@ -50,10 +54,7 @@ export function Go2RlPartView({
 
   const [solved, setSolved] = useState(false);
   const [open, setOpen] = useState(false);
-  // localStorage is not readable on the server; reading it during the first
-  // client render would disagree with the HTML that was sent.
-  const [done, setDone] = useState<ReadonlySet<string>>(() => new Set<string>());
-  useEffect(() => setDone(labDone()), []);
+  const { completedIds: done } = useProgress();
 
   const say = (b: { en: string; fr: string }) => (locale === "fr" ? b.fr : b.en);
   const states = labStates(parts.map((p) => p.id), done);
@@ -62,7 +63,7 @@ export function Go2RlPartView({
 
   return (
     <>
-      <PlexusBackground />
+      <SensorBackground accent={accent} />
       <div className="relative z-10 mx-auto max-w-6xl px-4 py-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <Link
@@ -150,7 +151,13 @@ export function Go2RlPartView({
           ))}
         </div>
 
-        <SimNotebook part={part} locale={locale} accent={accent} onSolved={() => setSolved(true)} />
+        <SimNotebook
+          part={part}
+          locale={locale}
+          accent={accent}
+          trackId={trackId}
+          onSolved={() => setSolved(true)}
+        />
 
         {solved && (
           <div

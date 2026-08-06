@@ -13,8 +13,11 @@ import { Go2RlMap } from "@/components/go2rl-map";
 import type { SimPart } from "@/content/sim-parts";
 import type { Locale } from "@/content/types";
 
-const PlexusBackground = dynamic(
-  () => import("@/components/plexus-background").then((m) => m.PlexusBackground),
+// The robot track gets a sensor sweep rather than the challenges page's
+// network: this track is about a machine perceiving a room, and it is plain
+// canvas 2D, so it does not fight the robot viewport for a WebGL context.
+const SensorBackground = dynamic(
+  () => import("@/components/sensor-background").then((m) => m.SensorBackground),
   { ssr: false },
 );
 
@@ -33,7 +36,7 @@ export function Go2RlLab({
 }) {
   return (
     <>
-      <PlexusBackground />
+      <SensorBackground accent={accent} />
       <div className="relative z-10 mx-auto max-w-3xl px-4 py-8">
         {header}
         <Go2RlMap parts={parts} locale={locale} trackId={trackId} accent={accent} />

@@ -22,6 +22,8 @@ import type { SimPart } from "@/content/sim-parts";
 import { term } from "@/content/robot-glossary";
 import type { Locale } from "@/content/types";
 import { markLabPartDone } from "@/lib/lab-progress";
+import { useAuth } from "@/lib/auth-context";
+import { useProgress } from "@/lib/progress-context";
 
 import { useT } from "@/i18n/use-t";
 
@@ -48,15 +50,19 @@ export function SimNotebook({
   part,
   locale,
   accent,
+  trackId,
   onSolved,
 }: {
   part: SimPart;
   locale: Locale;
   accent: string;
+  trackId: string;
   /** Fired the first time this part's check passes. */
   onSolved?: () => void;
 }) {
   const t = useT();
+  const { user } = useAuth();
+  const { refresh } = useProgress();
   const runner = useRef<SimRunner | null>(null);
   const [info, setInfo] = useState<SimInfo | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -116,7 +122,17 @@ export function SimNotebook({
         const v = await runner.current.check(part.check);
         setVerdict(v.pass ? "pass" : "fail");
         if (v.pass) {
-          markLabPartDone(part.id);
+          // Written to Firestore so it survives a different computer and can
+          // stand behind a certificate. A failed write must not silently
+          // pretend the part was banked.
+          if (user) {
+            try {
+              await markLabPartDone(user.uid, trackId, part.id);
+              await refresh();
+            } catch {
+              setRunError(t("sim.saveFailed"));
+            }
+          }
           onSolved?.();
         }
       }

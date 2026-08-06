@@ -10,12 +10,12 @@
  * hidden: an empty space reads as a broken page, whereas a lock says there is
  * more and tells you how to get it.
  */
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, Lock, Play } from "lucide-react";
 import type { SimPart } from "@/content/sim-parts";
 import type { Locale } from "@/content/types";
-import { labDone, labStates } from "@/lib/lab-progress";
+import { labStates } from "@/lib/lab-progress";
+import { useProgress } from "@/lib/progress-context";
 import { useT } from "@/i18n/use-t";
 
 export function Go2RlMap({
@@ -30,10 +30,7 @@ export function Go2RlMap({
   accent: string;
 }) {
   const t = useT();
-  // localStorage is not available while rendering on the server, and reading
-  // it during the first client render would disagree with the server's HTML.
-  const [done, setDone] = useState<ReadonlySet<string>>(() => new Set<string>());
-  useEffect(() => setDone(labDone()), []);
+  const { completedIds: done } = useProgress();
 
   const states = labStates(parts.map((p) => p.id), done);
   const say = (b: { en: string; fr: string }) => (locale === "fr" ? b.fr : b.en);

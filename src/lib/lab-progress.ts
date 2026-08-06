@@ -3,49 +3,48 @@
 /**
  * Which robot-lab parts this learner has finished.
  *
- * Kept in the browser, not Firestore, and that is a considered choice rather
- * than a shortcut:
+ * Kept in Firestore, in the same `progress` collection as lessons, with the
+ * part id in the lessonId field. That collection's rules already let a signed
+ * -in learner write their own records, so this needs no rules deploy -- which
+ * matters, because the rules written for homework and discussion are still
+ * unpublished and anything depending on them would fail closed.
  *
- *  - The obvious reuse -- markLessonDone with the part id -- would land these
- *    in the same collection as lessons, and two places count that collection
- *    raw (the profile's "lessons done" tile and the roadmap header). Finishing
- *    three robot parts would silently claim three lessons the learner never
- *    read.
- *  - A separate collection needs a firestore.rules change, and the rules
- *    already written are still unpublished. Shipping something that fails
- *    closed until an unrelated deploy happens is worse than shipping
- *    something that works now.
+ * It USED to be localStorage, which was fine while the lab was just practice.
+ * It stopped being fine the moment the certificate depended on it: a
+ * certificate backed by localStorage is forged by opening devtools, and is
+ * lost by opening the site on a different computer. Something a learner shows
+ * a teacher has to survive both.
  *
- * The cost is honest and small: progress does not follow a learner to another
- * device, and clearing site data forgets it. Nothing here is graded, and the
- * lab can be replayed freely, so the only thing lost is which doors are open.
- * Moving it to Firestore later is a swap of these two functions.
+ * The cost of sharing the collection is that anything counting progress
+ * records raw would count these as lessons. Two places did; both now filter
+ * by the track's actual levels, which they arguably should have done anyway
+ * (the roadmap one was already counting other tracks' lessons as its own).
  */
-const KEY = "axi.lab.done";
+import { markLessonDone } from "@/lib/progress";
 
-function read(): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    return new Set(raw ? (JSON.parse(raw) as string[]) : []);
-  } catch {
-    return new Set();
-  }
+/** Part ids all start with this, which is what keeps them apart from lessons. */
+export const LAB_PREFIX = "sp-";
+
+export function isLabPartId(id: string): boolean {
+  return id.startsWith(LAB_PREFIX);
 }
 
-export function labDone(): Set<string> {
-  return read();
+/** Lesson ids only -- what a "lessons done" counter should ever see. */
+export function lessonsOnly(ids: ReadonlySet<string>): Set<string> {
+  return new Set([...ids].filter((id) => !isLabPartId(id)));
 }
 
-export function markLabPartDone(partId: string): Set<string> {
-  const s = read();
-  s.add(partId);
-  try {
-    window.localStorage.setItem(KEY, JSON.stringify([...s]));
-  } catch {
-    /* private mode, quota -- the lab still works, it just forgets */
-  }
-  return s;
+/**
+ * Record a finished part. Idempotent: re-solving simply rewrites the record.
+ * @param xp small on purpose -- the lab is not a way to farm levels.
+ */
+export async function markLabPartDone(
+  uid: string,
+  trackId: string,
+  partId: string,
+  xp = 40,
+): Promise<void> {
+  await markLessonDone(uid, trackId, partId, xp);
 }
 
 /**

@@ -17,6 +17,18 @@
  * one. A track with no exam keeps the old rule exactly.
  */
 import type { RoadmapTrack } from "@/content/roadmap-data";
+import { SIM_PARTS } from "@/content/sim-parts";
+
+/**
+ * The lab parts belonging to a track, found through their lessons.
+ *
+ * Resolved here rather than passed in by nine callers: a certificate that
+ * different screens disagree about is worse than no certificate, and the only
+ * way nine call sites stay in step is by not making them each remember.
+ */
+export function labPartIdsFor(track: Pick<RoadmapTrack, "levels">): string[] {
+  return SIM_PARTS.filter((p) => track.levels.some((l) => l.id === p.lessonId)).map((p) => p.id);
+}
 
 export interface CertificateStatus {
   /** Lessons in the track. Zero means the track has no content yet. */
@@ -42,7 +54,36 @@ export function certificateStatus(
   track: Pick<RoadmapTrack, "levels">,
   completedIds: ReadonlySet<string>,
   exam?: { id: string; solved: boolean } | null,
+  /**
+   * Robot-lab part ids for this track, when it has any.
+   *
+   * A track with a lab has to be finished BOTH ways: every lesson read and
+   * every part of the robot lab solved. The lab alone would certify somebody
+   * who never read a page, and the lessons alone would certify somebody who
+   * never made a robot move; neither is the claim this certificate makes.
+   */
+  labPartIds?: readonly string[],
 ): CertificateStatus {
+  const lab = labPartIds ?? labPartIdsFor(track);
+  if (lab.length > 0) {
+    // Counted together so the progress a learner sees ("7 / 14") is the whole
+    // job, not two separate bars that each claim to be the requirement.
+    const lessons = track.levels.length;
+    const lessonsDone = track.levels.filter((l) => completedIds.has(l.id)).length;
+    const labDone = lab.filter((id) => completedIds.has(id)).length;
+    const total = lessons + lab.length;
+    const done = lessonsDone + labDone;
+    return {
+      total,
+      done,
+      remaining: total - done,
+      lessonsComplete: lessonsDone === lessons,
+      examRequired: false,
+      examDone: false,
+      earned: lessonsDone === lessons && labDone === lab.length,
+    };
+  }
+
   const total = track.levels.length;
   const done = track.levels.filter((l) => completedIds.has(l.id)).length;
   const lessonsComplete = total > 0 && done === total;

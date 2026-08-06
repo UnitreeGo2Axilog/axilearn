@@ -35,6 +35,7 @@ import { certificateStatus } from "@/lib/certificate";
 import { useAuth } from "@/lib/auth-context";
 import { useLocale, useT } from "@/i18n/use-t";
 import type { Profile } from "@/lib/auth-context";
+import { lessonsOnly } from "@/lib/lab-progress";
 
 export function ProfileView({ tracks }: { tracks: RoadmapTrack[] }) {
   const t = useT();
@@ -301,7 +302,9 @@ function LearnerProfile({
 
   const stats = [
     { icon: Zap, label: t("profile.xp"), value: `${xp}`, color: "var(--neon)" },
-    { icon: Trophy, label: t("profile.done"), value: `${completedIds.size}`, color: "var(--cleared)" },
+    // Lab parts live in the same collection as lessons, so this counts
+    // lesson ids only -- finishing the robot lab is not five lessons read.
+    { icon: Trophy, label: t("profile.done"), value: `${lessonsOnly(completedIds).size}`, color: "var(--cleared)" },
     { icon: Flame, label: t("profile.streak"), value: `${streak}`, color: "var(--reward)" },
     { icon: Swords, label: t("profile.challengesSolved"), value: `${solvedChallengeIds.size}`, color: "var(--advanced)" },
     { icon: Award, label: t("profile.badges"), value: `${badges.length}`, color: "var(--advanced)" },

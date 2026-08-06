@@ -74,7 +74,9 @@ export function RoadmapView({
         currentXp={into}
         nextLevelXp={span}
         streakDays={streak}
-        done={completedIds.size}
+        // was completedIds.size, which counted other tracks' lessons -- and
+          // would now count lab parts too
+          done={track.levels.filter((l) => completedIds.has(l.id)).length}
         trackShort={track.short}
         accent={track.color}
         homeHref={`/${locale}`}

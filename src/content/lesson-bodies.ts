@@ -2095,4 +2095,404 @@ There's a second, quieter problem underneath all of this: a camera reports a 2D 
 
 This is the lesson where the sense-think-act loop from before finally gets something worth reacting to: instead of a fixed rule like "if the sensor reads less than 20cm, stop," the robot can now ask "what am I looking at, and where is it?" -- and that answer is what makes everything from here on feel less like a machine following a script and more like a robot that's actually paying attention to the world around it.`,
   },
+  "ph-6": {
+    en: `## What you can do now
+
+Stop and take stock. You can make a robot stand, walk in both directions, turn on the spot, and stop in front of something. That is a working machine.
+
+Everything you wrote fits one pattern, and it is worth naming because every robot in the world runs it:
+
+\`\`\`flow
+step: SENSE -- read the world
+ask: is something different?
+yes: DECIDE -- pick what to do
+no: keep going
+step: ACT -- move the motors
+step: repeat, 50 times a second
+\`\`\`
+
+## The loop is the whole trick
+
+Your walking code did not plan a route. It never worked out how many steps to take. Fifty times a second it asked *where am I in the cycle*, chose angles, and sent them. The walk was what came out.
+
+> tip: This is called a **control loop**, and its speed matters more than its cleverness. A brilliant decision that arrives too late is worse than an average one on time -- the robot has already fallen.
+
+## Three things that will bite you
+
+- **Fast wrong beats slow right.** If your loop takes 300 ms, the robot has moved 20 cm before you react.
+- **The world pushes back.** Commanding an angle does not mean the joint reaches it. The floor, the weight and the motor's limits all get a vote.
+- **Small mistakes compound.** A gait 2° off does not stay 2° off. Fifty steps later the robot is facing the wrong way.
+
+> warn: You saw the third one for real. The turn drifted about ten centimetres in eight seconds -- and the research project spent days getting a half-turn's drift down from 39 cm to 19 cm.
+
+## Check yourself
+
+Before the next section, you should be able to answer these without looking:
+
+- Why does the crawl gait keep three feet on the ground?
+- What do the two halves of \`KP * (target - q) - KD * qd\` each do?
+- Why does a robot need a control loop instead of a list of instructions?
+
+If any of those is fuzzy, go back. The next lessons build straight on top of them.`,
+    fr: `## Ce que tu sais faire maintenant
+
+Fais le point. Tu sais faire tenir un robot debout, marcher dans les deux sens, tourner sur place et s'arrêter devant quelque chose. C'est une machine qui fonctionne.
+
+Tout ce que tu as écrit suit un seul motif, et il vaut la peine de le nommer parce que tous les robots du monde le font tourner :
+
+\`\`\`flow
+step: PERCEVOIR -- lire le monde
+ask: quelque chose a changé ?
+yes: DÉCIDER -- choisir quoi faire
+no: continuer
+step: AGIR -- commander les moteurs
+step: recommencer, 50 fois par seconde
+\`\`\`
+
+## La boucle, c'est toute l'astuce
+
+Ton code de marche n'a pas planifié de trajet. Il n'a jamais calculé combien de pas faire. Cinquante fois par seconde, il a demandé *où en suis-je dans le cycle*, choisi des angles et les a envoyés. La marche en est sortie.
+
+> tip: Ça s'appelle une **boucle de commande**, et sa vitesse compte plus que son intelligence. Une décision brillante qui arrive trop tard vaut moins qu'une décision moyenne à l'heure : le robot est déjà tombé.
+
+## Trois choses qui vont te piéger
+
+- **Vite et faux bat lent et juste.** Si ta boucle met 300 ms, le robot a bougé de 20 cm avant que tu réagisses.
+- **Le monde résiste.** Commander un angle ne veut pas dire que l'articulation l'atteint. Le sol, le poids et les limites du moteur ont leur mot à dire.
+- **Les petites erreurs s'accumulent.** Une allure décalée de 2° ne reste pas à 2°. Cinquante pas plus tard, le robot regarde ailleurs.
+
+> warn: Tu as vu la troisième pour de vrai. Le demi-tour a dérivé d'une dizaine de centimètres en huit secondes — et le projet de recherche a passé des jours à faire descendre la dérive d'un demi-tour de 39 cm à 19 cm.
+
+## Vérifie-toi
+
+Avant la suite, tu devrais pouvoir répondre à ceci sans regarder :
+
+- Pourquoi l'allure rampante garde-t-elle trois pieds au sol ?
+- Que fait chacune des deux moitiés de \`KP * (target - q) - KD * qd\` ?
+- Pourquoi un robot a-t-il besoin d'une boucle plutôt que d'une liste d'instructions ?
+
+Si l'une est floue, reviens en arrière. Les leçons suivantes s'appuient dessus.`,
+  },
+
+  "ph-7": {
+    en: `## From reflexes to choices
+
+So far the robot has had reflexes. Walk while far, stop when close. That is one decision, made the same way every time.
+
+A real task needs a sequence of decisions: go to the object, pick it up, carry it, put it down, go back. Something has to remember which step you are on.
+
+## The state machine
+
+The simplest tool that does this, and by far the most used in real robots, is a **state machine**. The robot is always in exactly one state, and each state knows what to do and when to hand over.
+
+\`\`\`flow
+step: SEARCH -- turn until you see it
+ask: object in view?
+yes: APPROACH -- walk towards it
+no: keep turning
+step: GRAB -- close the gripper
+step: CARRY -- walk to the bin
+step: DROP -- open the gripper
+\`\`\`
+
+In Python it is nothing more exotic than this:
+
+\`\`\`python
+state = "search"
+
+if state == "search":
+    turn()
+    if robot.sees_object:
+        state = "approach"
+elif state == "approach":
+    walk()
+    if robot.distance < 0.75:
+        state = "grab"
+\`\`\`
+
+> tip: Notice there is no cleverness here at all. A state machine is boring on purpose -- when a robot misbehaves you can point at exactly which state it was in and what it thought it saw.
+
+## Where learning comes in
+
+Some decisions are too fiddly to write by hand. Nobody can write the twelve joint angles that keep a robot upright on gravel.
+
+That is what **reinforcement learning** is for: instead of writing the rule, you let the robot try, score how it did, and let it adjust. The research project you are learning from used PPO, a standard algorithm, to train walking policies -- and then discovered a hand-written crawl gait was steadier than what it had learned.
+
+> do: Write the rule by hand when you can. It is easier to debug, easier to explain, and it does not need a GPU.
+
+> don't: Do not reach for machine learning because it sounds impressive. The project's most reliable walk is the one somebody wrote out as maths.
+
+## Where these ideas come from
+
+None of this is invented for this course. If you want the real thing:
+
+- **Sutton & Barto, "Reinforcement Learning: An Introduction"** -- the standard textbook, free online, and the source for how PPO-style methods are set up.
+- **ROS (Robot Operating System) documentation** -- how professional robots are actually structured into parts that talk to each other.
+- **MuJoCo documentation, Google DeepMind** -- the physics engine running in your browser right now.`,
+    fr: `## Des réflexes aux choix
+
+Jusqu'ici, le robot avait des réflexes. Marcher tant que c'est loin, s'arrêter quand c'est proche. C'est une seule décision, prise de la même façon à chaque fois.
+
+Une vraie tâche demande une suite de décisions : aller vers l'objet, le prendre, le porter, le poser, revenir. Il faut bien que quelque chose se souvienne où on en est.
+
+## La machine à états
+
+L'outil le plus simple pour ça, et de loin le plus utilisé dans les vrais robots, c'est la **machine à états**. Le robot est toujours dans exactement un état, et chaque état sait quoi faire et quand passer la main.
+
+\`\`\`flow
+step: CHERCHER -- tourner jusqu'à le voir
+ask: objet en vue ?
+yes: APPROCHER -- marcher vers lui
+no: continuer à tourner
+step: SAISIR -- fermer la pince
+step: PORTER -- aller à la poubelle
+step: LÂCHER -- ouvrir la pince
+\`\`\`
+
+En Python, ce n'est rien de plus exotique que ceci :
+
+\`\`\`python
+state = "search"
+
+if state == "search":
+    turn()
+    if robot.sees_object:
+        state = "approach"
+elif state == "approach":
+    walk()
+    if robot.distance < 0.75:
+        state = "grab"
+\`\`\`
+
+> tip: Remarque qu'il n'y a aucune intelligence là-dedans. Une machine à états est ennuyeuse exprès : quand un robot se comporte mal, tu peux montrer exactement dans quel état il était et ce qu'il croyait voir.
+
+## Où l'apprentissage intervient
+
+Certaines décisions sont trop délicates à écrire à la main. Personne ne sait écrire les douze angles qui gardent un robot debout sur du gravier.
+
+C'est à ça que sert l'**apprentissage par renforcement** : au lieu d'écrire la règle, on laisse le robot essayer, on note sa performance et il s'ajuste. Le projet de recherche dont tu apprends a utilisé PPO, un algorithme standard, pour entraîner des politiques de marche — puis a découvert qu'une allure rampante écrite à la main était plus stable que ce qu'il avait appris.
+
+> do: Écris la règle à la main quand tu peux. C'est plus facile à déboguer, plus facile à expliquer, et ça ne demande pas de carte graphique.
+
+> don't: Ne va pas chercher l'apprentissage automatique parce que ça fait impressionnant. La marche la plus fiable du projet est celle que quelqu'un a écrite en maths.
+
+## D'où viennent ces idées
+
+Rien de tout cela n'est inventé pour ce cours. Si tu veux la vraie source :
+
+- **Sutton & Barto, « Reinforcement Learning: An Introduction »** — le manuel de référence, gratuit en ligne, et la source de la façon dont les méthodes type PPO sont posées.
+- **La documentation de ROS (Robot Operating System)** — comment les robots professionnels sont réellement découpés en morceaux qui se parlent.
+- **La documentation MuJoCo, Google DeepMind** — le moteur physique qui tourne dans ton navigateur en ce moment.`,
+  },
+
+  "ph-8": {
+    en: `## How a real robot project is built
+
+The robot you drove in the lab is one small piece of a much larger machine. Here is the shape of the whole thing, using the actual project.
+
+## Four layers
+
+- **Hardware** -- the Go2 itself: twelve motors, an inertial sensor that knows which way is up, a camera, and a small computer on its back.
+- **Communication** -- how the computer talks to the motors. The project uses DDS, a networking system that broadcasts messages many times a second. This is why the code cannot run in your browser: a web page is not allowed to speak that protocol.
+- **Control** -- the part you have been writing. Turning intentions into joint angles.
+- **Mission** -- the state machine on top, deciding what the robot should be doing at all.
+
+\`\`\`flow
+step: MISSION -- what should I be doing?
+step: CONTROL -- what angles does that need?
+step: COMMUNICATION -- send them to the motors
+step: HARDWARE -- the legs actually move
+\`\`\`
+
+## Simulate, then deploy
+
+Nobody writes robot code straight onto the robot. The order is always:
+
+- Write it in simulation, where mistakes are free and you can try a hundred times an hour.
+- Check it in simulation with harder conditions -- more weight, a slippery floor, a sensor that lies.
+- Only then run it on hardware, slowly, with somebody's hand on the stop button.
+
+> warn: The gap between the two is called the **reality gap**, and it is where most robot projects lose their time. Simulated floors have perfectly predictable friction. Real ones have dust.
+
+## What actually went wrong in the real project
+
+These are the recorded findings, not invented examples:
+
+- A **trot** gait worked in theory and fell over in practice. Contact-force logging showed one foot never left the ground even though it was told to.
+- Walking **backward** covered about twice the distance per step as forward, because the geometry was tuned for forward and is not symmetric.
+- A turn looked like it was **dragging its feet**. Days went into the geometry. The cause was that it was running on the wrong PD gains.
+
+> tip: Notice that two of those three were found by MEASURING, not by staring at the code. Log the thing you doubt.
+
+## Where these ideas come from
+
+- **Unitree Go2 documentation** -- the robot's real joint limits, weights and interfaces.
+- **NVIDIA Isaac Sim / Isaac Lab** -- the industry-standard simulator for robot learning, and what "professional simulation" looks like.
+- **MuJoCo, Google DeepMind** -- the engine used both by the research project and by the lab in your browser.`,
+    fr: `## Comment se construit un vrai projet de robot
+
+Le robot que tu as piloté dans le labo n'est qu'une petite pièce d'une machine bien plus grande. Voici la forme de l'ensemble, d'après le vrai projet.
+
+## Quatre couches
+
+- **Le matériel** — le Go2 lui-même : douze moteurs, une centrale inertielle qui sait où est le haut, une caméra, et un petit ordinateur sur son dos.
+- **La communication** — comment l'ordinateur parle aux moteurs. Le projet utilise DDS, un système réseau qui diffuse des messages plusieurs fois par seconde. C'est pour ça que ce code ne peut pas tourner dans ton navigateur : une page web n'a pas le droit de parler ce protocole.
+- **La commande** — la partie que tu as écrite. Transformer des intentions en angles d'articulations.
+- **La mission** — la machine à états au-dessus, qui décide ce que le robot doit faire.
+
+\`\`\`flow
+step: MISSION -- que dois-je faire ?
+step: COMMANDE -- quels angles cela demande-t-il ?
+step: COMMUNICATION -- les envoyer aux moteurs
+step: MATÉRIEL -- les pattes bougent vraiment
+\`\`\`
+
+## Simuler, puis déployer
+
+Personne n'écrit du code de robot directement sur le robot. L'ordre est toujours :
+
+- L'écrire en simulation, où les erreurs sont gratuites et où l'on peut essayer cent fois par heure.
+- Le vérifier en simulation dans des conditions plus dures : plus de poids, un sol glissant, un capteur qui ment.
+- Seulement ensuite, le lancer sur le matériel, lentement, avec quelqu'un la main sur l'arrêt d'urgence.
+
+> warn: L'écart entre les deux s'appelle le **fossé de réalité**, et c'est là que la plupart des projets de robotique perdent leur temps. Les sols simulés ont un frottement parfaitement prévisible. Les vrais ont de la poussière.
+
+## Ce qui a vraiment mal tourné dans le projet
+
+Ce sont des constats enregistrés, pas des exemples inventés :
+
+- Une allure de **trot** marchait en théorie et tombait en pratique. La mesure des forces de contact a montré qu'un pied ne décollait jamais alors qu'on le lui demandait.
+- La marche **arrière** parcourait environ deux fois plus de distance par pas que la marche avant, parce que la géométrie était réglée pour l'avant et n'est pas symétrique.
+- Un demi-tour avait l'air de **traîner les pieds**. Des jours sont passés sur la géométrie. La cause : il tournait avec les mauvais gains PD.
+
+> tip: Remarque que deux de ces trois-là ont été trouvés en MESURANT, pas en fixant le code. Enregistre ce dont tu doutes.
+
+## D'où viennent ces idées
+
+- **La documentation Unitree Go2** — les vraies limites d'articulations, les masses et les interfaces du robot.
+- **NVIDIA Isaac Sim / Isaac Lab** — le simulateur standard de l'industrie pour l'apprentissage robotique, et à quoi ressemble une « simulation professionnelle ».
+- **MuJoCo, Google DeepMind** — le moteur utilisé à la fois par le projet de recherche et par le labo dans ton navigateur.`,
+  },
+
+  "ph-9": {
+    en: `## The capstone
+
+You have made a robot stand, walk forward and backward, turn on the spot, and stop in front of something. Each of those was one idea at a time.
+
+The capstone is to put them together into a **mission**: a robot that decides for itself what to do next.
+
+## What to build
+
+In the robot lab, write one program that:
+
+- stands the robot up
+- walks it towards the box
+- stops before hitting it
+- turns away
+- walks back where it came from
+
+Nothing new is needed. Every piece is something you have already written. What is new is that one program has to hold all of it and know which stage it is in -- which is exactly the state machine from the last lesson.
+
+\`\`\`python
+state = "stand"
+
+while robot.time < 40:
+    if state == "stand":
+        robot.stand_up()
+        state = "approach"
+    elif state == "approach":
+        walk_one_tick()
+        if robot.distance < 0.8:
+            state = "turn"
+    elif state == "turn":
+        turn_one_tick()
+        if robot.yaw > 3.0:
+            state = "return"
+    ...
+\`\`\`
+
+> tip: Build it one stage at a time and run it after each. A mission that works up to stage three and then does something strange is easy to fix. A whole mission written at once, that does something strange, is not.
+
+## How to know it worked
+
+Judge it the way the project judges its own runs -- with numbers, not impressions:
+
+- \`robot.height\` never drops below 0.18, so it never fell
+- \`robot.distance\` gets below 0.8, so it really did reach the box
+- \`robot.yaw\` changes by about 3 radians, so it really did turn round
+- it comes back: \`robot.x\` returns near where it started
+
+## What you have actually learned
+
+Not "how to use a robot library". You have written a control loop, a gait, a turn and a decision, and watched real physics disagree with you and be right.
+
+> tip: The single most useful habit in this whole track is the one that fixed the walking, the turning and the stopping: **when the robot does something strange, measure something.** Print a number. Log the thing you doubt. The answer is nearly always in a value you had not looked at yet.
+
+## Where to go next
+
+- **MuJoCo** -- the engine here. It runs on a normal laptop, in Python, for free.
+- **NVIDIA Isaac Sim / Isaac Lab** -- what professional robot learning uses. Needs a strong GPU.
+- **Unitree** -- the Go2's own documentation and SDK, if you ever get near one.
+- **Sutton & Barto** -- when you want the robot to learn the rule instead of you writing it.`,
+    fr: `## Le projet final
+
+Tu as fait tenir un robot debout, marcher en avant et en arrière, tourner sur place et s'arrêter devant quelque chose. Chacune de ces étapes était une idée à la fois.
+
+Le projet final consiste à tout assembler en une **mission** : un robot qui décide lui-même de la suite.
+
+## Ce qu'il faut construire
+
+Dans le labo, écris un seul programme qui :
+
+- met le robot debout
+- le fait marcher vers la boîte
+- l'arrête avant de la heurter
+- le fait se détourner
+- le ramène d'où il vient
+
+Rien de nouveau n'est nécessaire. Chaque morceau, tu l'as déjà écrit. Ce qui est nouveau, c'est qu'un seul programme doit tout contenir et savoir à quelle étape il en est — c'est exactement la machine à états de la leçon précédente.
+
+\`\`\`python
+state = "stand"
+
+while robot.time < 40:
+    if state == "stand":
+        robot.stand_up()
+        state = "approach"
+    elif state == "approach":
+        walk_one_tick()
+        if robot.distance < 0.8:
+            state = "turn"
+    elif state == "turn":
+        turn_one_tick()
+        if robot.yaw > 3.0:
+            state = "return"
+    ...
+\`\`\`
+
+> tip: Construis-le une étape à la fois et lance-le après chacune. Une mission qui marche jusqu'à l'étape trois puis fait n'importe quoi est facile à corriger. Une mission entière écrite d'un coup, qui fait n'importe quoi, ne l'est pas.
+
+## Comment savoir que ça a marché
+
+Juge-le comme le projet juge ses propres essais : avec des nombres, pas des impressions.
+
+- \`robot.height\` ne descend jamais sous 0,18 : il n'est jamais tombé
+- \`robot.distance\` passe sous 0,8 : il a vraiment atteint la boîte
+- \`robot.yaw\` change d'environ 3 radians : il a vraiment fait demi-tour
+- il revient : \`robot.x\` retrouve à peu près son point de départ
+
+## Ce que tu as vraiment appris
+
+Pas « comment utiliser une bibliothèque de robot ». Tu as écrit une boucle de commande, une allure, un demi-tour et une décision, et tu as vu la vraie physique te contredire et avoir raison.
+
+> tip: L'habitude la plus utile de tout ce parcours est celle qui a réparé la marche, le demi-tour et l'arrêt : **quand le robot fait quelque chose d'étrange, mesure quelque chose.** Affiche un nombre. Enregistre ce dont tu doutes. La réponse est presque toujours dans une valeur que tu n'avais pas encore regardée.
+
+## Où aller ensuite
+
+- **MuJoCo** — le moteur d'ici. Il tourne sur un portable normal, en Python, gratuitement.
+- **NVIDIA Isaac Sim / Isaac Lab** — ce qu'utilise l'apprentissage robotique professionnel. Demande une bonne carte graphique.
+- **Unitree** — la documentation et le SDK du Go2, si tu en croises un un jour.
+- **Sutton & Barto** — quand tu voudras que le robot apprenne la règle au lieu de l'écrire toi-même.`,
+  },
+
 };
