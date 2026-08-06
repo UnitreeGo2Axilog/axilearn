@@ -83,10 +83,29 @@ export function SimNotebook({
 
   useEffect(() => {
     if (!supported) return;
+    // React mounts effects twice in development, and the first runner is
+    // disposed -- which rejects its in-flight init. Without this flag that
+    // rejection set loadError on a component whose SECOND runner then
+    // succeeded, so the page showed "this device cannot run the simulator"
+    // AND a working simulator at the same time, each with its own copy of the
+    // video. Any transient failure followed by a success did the same thing.
+    let cancelled = false;
     const r = new SimRunner();
     runner.current = r;
-    r.warmUp().then(setInfo).catch((e: Error) => setLoadError(e.message));
-    return () => r.dispose();
+    r.warmUp()
+      .then((i) => {
+        if (cancelled) return;
+        setInfo(i);
+        setLoadError(null);
+      })
+      .catch((e: Error) => {
+        if (cancelled) return;
+        setLoadError(e.message);
+      });
+    return () => {
+      cancelled = true;
+      r.dispose();
+    };
   }, [supported]);
 
   const say = (b: { en: string; fr: string }) => (locale === "fr" ? b.fr : b.en);
@@ -414,7 +433,7 @@ export function SimNotebook({
               <p className="mt-1 max-w-[15rem] text-xs text-faint">{t("sim.loadingHint")}</p>
             </div>
           )}
-          {loadError && (
+          {loadError && !info && (
             <div className="rounded-2xl border p-4 text-sm text-muted" style={{ borderColor: "var(--border)" }}>
               {t("sim.unsupported")}
               {part.realVideo && <video src={part.realVideo} controls playsInline className="mt-3 w-full rounded-xl" />}
