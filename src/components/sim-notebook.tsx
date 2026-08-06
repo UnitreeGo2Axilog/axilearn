@@ -23,6 +23,8 @@ import { term } from "@/content/robot-glossary";
 import type { Locale } from "@/content/types";
 import { markLabPartDone } from "@/lib/lab-progress";
 
+import { useT } from "@/i18n/use-t";
+
 /**
  * Pull the ## TODO lines out of a cell so they can be shown properly.
  *
@@ -39,7 +41,6 @@ function todoLines(code: string): string[] {
     .map((l) => l.trim().replace(/^##\s?/, "").replace(/^TODO:\s*/i, ""))
     .filter(Boolean);
 }
-import { useT } from "@/i18n/use-t";
 
 type Verdict = "none" | "pass" | "fail";
 

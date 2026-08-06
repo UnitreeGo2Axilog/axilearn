@@ -115,6 +115,8 @@ export const messages = {
     "nav.themeLight": "Light mode",
     "nav.themeDark": "Dark mode",
 
+    "go2rl.prev": "Previous part",
+    "go2rl.contents": "All parts",
     "go2rl.locked": "Finish the part before this one first.",
     "go2rl.start": "Start",
     "go2rl.again": "Do it again",
@@ -681,6 +683,8 @@ export const messages = {
     "nav.themeLight": "Mode clair",
     "nav.themeDark": "Mode sombre",
 
+    "go2rl.prev": "Partie précédente",
+    "go2rl.contents": "Toutes les parties",
     "go2rl.locked": "Termine d'abord la partie précédente.",
     "go2rl.start": "Commencer",
     "go2rl.again": "Refaire",

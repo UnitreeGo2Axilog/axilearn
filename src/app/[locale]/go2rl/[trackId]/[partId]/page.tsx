@@ -32,10 +32,8 @@ export default async function Go2RlPartPage({
   return (
     <AuthGate>
       <Go2RlPartView
-        part={parts[index]}
-        next={parts[index + 1] ?? null}
+        parts={parts}
         index={index}
-        total={parts.length}
         locale={locale}
         trackId={track.id}
         accent={track.color}
@@ -45,6 +43,9 @@ export default async function Go2RlPartPage({
           next: t("go2rl.next"),
           finished: t("go2rl.finished"),
           finishedBody: t("go2rl.finishedBody"),
+          prev: t("go2rl.prev"),
+          contents: t("go2rl.contents"),
+          locked: t("go2rl.locked"),
         }}
       />
     </AuthGate>
