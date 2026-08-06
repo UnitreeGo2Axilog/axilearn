@@ -172,6 +172,12 @@ print("height  ", round(robot.height, 3))
 print("fallen? ", robot.height < FALLEN_BELOW)`,
       },
     ],
+    realVideo: "/robot/go2-stand.mp4",
+    realVideoPoster: "/robot/go2-stand.jpg",
+    realVideoNote: {
+      en: "The real Go2 holding exactly the pose you just commanded — four feet down, body about 28 cm up. Nothing is moving because nothing needs to: the motors are pushing constantly to keep it there.",
+      fr: "Le vrai Go2 tenant exactement la posture que tu viens de commander — quatre pieds au sol, corps à environ 28 cm. Rien ne bouge parce que rien n'a besoin de bouger : les moteurs poussent en permanence pour l'y maintenir.",
+    },
     check: "robot.is_standing and robot.height > 0.18",
     success: {
       en: "It is standing. The body went from 9 cm to about 28 cm, and the only thing that made that happen was your line of Python — using the exact angles the real robot uses.",
@@ -180,12 +186,6 @@ print("fallen? ", robot.height < FALLEN_BELOW)`,
     failure: {
       en: "Not up yet. Look at the height in the output. If it barely changed, the legs did not all get the command — set_all_legs is the one that sends to all four. If it went up and fell back, check the knee is negative.",
       fr: "Pas encore debout. Regarde la hauteur affichée. Si elle a à peine bougé, les pattes n'ont pas toutes reçu l'ordre — set_all_legs est celle qui envoie aux quatre. Si elle est montée puis retombée, vérifie que le genou est bien négatif.",
-    },
-    realVideo: "/robot/go2-crawl-10s.mp4",
-    realVideoPoster: "/robot/go2-crawl-poster.jpg",
-    realVideoNote: {
-      en: "The same Go2, with its real shape instead of the simple blocks — walking, from the research project. Your robot is the same machine and the same physics; the blocks just make it easier to see which part is the thigh and which is the knee. Making it walk like this is Part 2.",
-      fr: "Le même Go2, avec sa vraie forme au lieu des blocs simples — en train de marcher, tiré du projet de recherche. Ton robot est la même machine et la même physique ; les blocs servent juste à mieux voir quelle partie est la cuisse et laquelle est le genou. Le faire marcher comme ça, c'est la partie 2.",
     },
     realCode: {
       file: "waste_sorting/robot.py",
@@ -303,6 +303,12 @@ while t < 6.0:
 print("travelled:", round(robot.x, 3), "m")`,
       },
     ],
+    realVideo: "/robot/go2-walk.mp4",
+    realVideoPoster: "/robot/go2-walk.jpg",
+    realVideoNote: {
+      en: "The crawl gait from the research project, with the four phases you just used. Watch one foot at a time leave the ground — three always stay down.",
+      fr: "L'allure rampante du projet de recherche, avec les quatre phases que tu viens d'utiliser. Regarde : un seul pied quitte le sol à la fois, trois restent toujours posés.",
+    },
     check: "robot.x > 0.15 and robot.height > 0.18",
     success: {
       en: "It walked. About 40 cm in six seconds, one foot at a time, and it never came close to falling. Try changing LIFT to 0 and running again: with the foot never leaving the ground, it drags itself BACKWARDS.",
@@ -311,12 +317,6 @@ print("travelled:", round(robot.x, 3), "m")`,
     failure: {
       en: "It stayed roughly where it was. Without the lift, the foot never leaves the ground, so the leg drags on its way forward and undoes the push. Look at the printed distance: near zero, or negative, means dragging.",
       fr: "Il est resté à peu près sur place. Sans le lever, le pied ne quitte jamais le sol : la patte traîne en avançant et annule la poussée. Regarde la distance affichée : proche de zéro, ou négative, veut dire qu'elle traîne.",
-    },
-    realVideo: "/robot/go2-crawl-10s.mp4",
-    realVideoPoster: "/robot/go2-crawl-poster.jpg",
-    realVideoNote: {
-      en: "The real project's crawl gait, with the same four phases you just used. Watch one foot at a time leave the ground.",
-      fr: "L'allure rampante du vrai projet, avec les quatre mêmes phases que tu viens d'utiliser. Regarde : un seul pied quitte le sol à la fois.",
     },
     realCode: {
       file: "unitree_mujoco/.../controllers/foot_trajectory.py",
@@ -441,6 +441,12 @@ while t < 6.0:
 print("moved:", round(robot.x - start_x, 3), "m  (negative means backwards)")`,
       },
     ],
+    realVideo: "/robot/go2-backward.mp4",
+    realVideoPoster: "/robot/go2-backward.jpg",
+    realVideoNote: {
+      en: "The same robot walking in reverse. It looks like the forward gait played backwards, and it is not — the project measured it travelling about twice as far per step this way.",
+      fr: "Le même robot en marche arrière. On dirait la marche avant à l'envers, et ce n'en est pas une : le projet a mesuré qu'il parcourt environ deux fois plus de distance par pas dans ce sens.",
+    },
     check: "robot.x - start_x < -0.10 and robot.height > 0.18",
     success: {
       en: "Negative — it reversed. The lesson is that a walking robot is not a machine with a forward gear and a reverse gear. Which way it goes falls out of which foot is gripping at which moment, and that is easy to get backwards.",
@@ -559,6 +565,12 @@ while t < 8.0:
 print("turned:", round((robot.yaw - start_yaw) * 57.3, 1), "degrees")`,
       },
     ],
+    realVideo: "/robot/go2-turn.mp4",
+    realVideoPoster: "/robot/go2-turn.jpg",
+    realVideoNote: {
+      en: "Turning on the spot. The legs on the two sides are doing opposite things, which is exactly the +1 and -1 you multiplied in.",
+      fr: "Un demi-tour sur place. Les pattes des deux côtés font des choses opposées — c'est exactement le +1 et le -1 que tu as multipliés.",
+    },
     check: "robot.yaw - start_yaw > 0.5 and robot.height > 0.18",
     success: {
       en: "About seventy degrees, and it barely wandered — roughly ten centimetres of drift over eight seconds. That is a robot turning on the spot, from one extra multiplication.",
@@ -673,6 +685,12 @@ robot.wait(0.3)
 print("stopped", round(robot.distance, 2), "m away, after", round(t, 1), "s")`,
       },
     ],
+    realVideo: "/robot/go2-mission.mp4",
+    realVideoPoster: "/robot/go2-mission.jpg",
+    realVideoNote: {
+      en: "The whole point of all this: the robot walks to an object, picks it up and drops it in the right bin. Every step of that mission is a loop like the one you just wrote.",
+      fr: "Le but de tout ceci : le robot marche jusqu'à un objet, le ramasse et le dépose dans la bonne poubelle. Chaque étape de cette mission est une boucle comme celle que tu viens d'écrire.",
+    },
     check: "robot.distance < 0.95 and t < 17.0 and robot.height > 0.18",
     success: {
       en: "It walked up and stopped by itself. Nothing told it how many steps to take — it checked the distance fifty times a second and decided each time. That is what makes it a robot rather than a wind-up toy.",
@@ -693,158 +711,6 @@ def is_fallen(self) -> bool:
       note: {
         en: "The real project asks the same two kinds of question: where is the thing, and am I still upright. Its waste-sorting robot walks to an object, picks it up and drops it in the right bin — and the whole mission is built from loops exactly like the one you just wrote.",
         fr: "Le vrai projet pose les deux mêmes sortes de questions : où est l'objet, et est-ce que je suis encore debout. Son robot de tri marche jusqu'à un objet, le ramasse et le dépose dans la bonne poubelle — et toute la mission est faite de boucles exactement comme celle que tu viens d'écrire.",
-      },
-    },
-  },
-  {
-    id: "sp-sensor",
-    lessonId: "ph-2",
-    title: { en: "Part 6 — Trust your eyes, but not too much", fr: "Partie 6 — Crois tes yeux, mais pas trop" },
-    intro: {
-      en: "Until now the robot has known exactly how far away the box is. Real robots never do. A real sensor gives you a number that is close to the truth and never quite it — and if you believe every reading, the robot makes bad decisions.",
-      fr: "Jusqu'ici, le robot savait exactement à quelle distance était la boîte. Les vrais robots ne le savent jamais. Un vrai capteur donne un nombre proche de la vérité, jamais tout à fait juste — et si tu crois chaque mesure, le robot prend de mauvaises décisions.",
-    },
-    terms: ["sim-to-real"],
-    cells: [
-      {
-        id: "s1",
-        kind: "given",
-        explain: {
-          en: "robot.distance_noisy is what a range sensor would actually report. The robot has not moved between these five readings — so any difference you see is the sensor being wrong, not the world changing.",
-          fr: "robot.distance_noisy, c'est ce qu'un vrai capteur de distance rapporterait. Le robot ne bouge pas entre ces cinq mesures — donc toute différence vient du capteur qui se trompe, pas du monde qui change.",
-        },
-        code: `robot.stand_up()
-robot.wait(0.4)
-
-print("the truth:", round(robot.distance, 3))
-for i in range(5):
-    print("  sensor says:", round(robot.distance_noisy, 3))`,
-      },
-      {
-        id: "s2",
-        kind: "given",
-        explain: {
-          en: "Now the Part 5 loop again, but reading the sensor instead of the truth. It stops — but look at where. It halted a long way short of the box, because one unlucky low reading made it believe it had arrived.",
-          fr: "Reprenons la boucle de la partie 5, mais en lisant le capteur au lieu de la vérité. Il s'arrête — mais regarde où. Il s'est arrêté bien avant la boîte, parce qu'une mesure malchanceuse lui a fait croire qu'il était arrivé.",
-        },
-        code: `import math
-PHASES = {"front_left": 0.0, "back_right": 0.25,
-          "front_right": 0.5, "back_left": 0.75}
-FREQ, SWING = 0.7, 0.25
-STAND_THIGH, STAND_KNEE = 0.9, -1.8
-STEP, LIFT = 0.10, 0.30
-STOP_AT = 0.75
-
-t = 0.0
-while robot.distance_noisy > STOP_AT and t < 12.0:
-    for leg, start in PHASES.items():
-        ph = (t * FREQ + start) % 1.0
-        if ph < SWING:
-            s = ph / SWING
-            thigh = STAND_THIGH + STEP * (s - 0.5) * 2
-            knee  = STAND_KNEE - LIFT * math.sin(math.pi * s)
-        else:
-            s = (ph - SWING) / (1 - SWING)
-            thigh = STAND_THIGH + STEP * (0.5 - s) * 2
-            knee  = STAND_KNEE
-        robot.target(leg, thigh=thigh, knee=knee)
-    robot.tick(0.02)
-    t += 0.02
-
-print("believed it arrived. really", round(robot.distance, 3), "m away")`,
-      },
-      {
-        id: "s3",
-        kind: "todo",
-        explain: {
-          en: "The fix is one line. Instead of believing each new reading completely, keep most of what you already believed and let the new reading nudge it. Start from the reading, then blend: a fifth of the new number, four fifths of the old belief.",
-          fr: "La solution tient en une ligne. Au lieu de croire complètement chaque nouvelle mesure, garde l'essentiel de ce que tu croyais déjà et laisse la mesure te corriger un peu. Pars de la mesure, puis mélange : un cinquième du nouveau nombre, quatre cinquièmes de l'ancienne croyance.",
-        },
-        code: `import math
-PHASES = {"front_left": 0.0, "back_right": 0.25,
-          "front_right": 0.5, "back_left": 0.75}
-FREQ, SWING = 0.7, 0.25
-STAND_THIGH, STAND_KNEE = 0.9, -1.8
-STEP, LIFT = 0.10, 0.30
-STOP_AT = 0.75
-ALPHA = 0.2                       # how much to trust a new reading
-
-smooth = robot.distance_noisy     # first belief: just the first reading
-
-t = 0.0
-while smooth > STOP_AT and t < 18.0:
-    ## TODO: update smooth from the new reading and the old belief.
-    ## smooth = ALPHA * robot.distance_noisy + (1 - ALPHA) * smooth
-    for leg, start in PHASES.items():
-        ph = (t * FREQ + start) % 1.0
-        if ph < SWING:
-            s = ph / SWING
-            thigh = STAND_THIGH + STEP * (s - 0.5) * 2
-            knee  = STAND_KNEE - LIFT * math.sin(math.pi * s)
-        else:
-            s = (ph - SWING) / (1 - SWING)
-            thigh = STAND_THIGH + STEP * (0.5 - s) * 2
-            knee  = STAND_KNEE
-        robot.target(leg, thigh=thigh, knee=knee)
-    robot.tick(0.02)
-    t += 0.02
-
-robot.set_all_legs(thigh=STAND_THIGH, knee=STAND_KNEE, seconds=0.4)
-robot.wait(0.3)
-print("stopped", round(robot.distance, 3), "m away, after", round(t, 1), "s")`,
-        hint: {
-          en: "Write it exactly as the comment says: smooth = ALPHA * robot.distance_noisy + (1 - ALPHA) * smooth. Every time round the loop it edges towards the truth instead of jumping to it.",
-          fr: "Écris-le exactement comme le commentaire : smooth = ALPHA * robot.distance_noisy + (1 - ALPHA) * smooth. À chaque tour de boucle il se rapproche de la vérité au lieu d'y sauter.",
-        },
-        solution: `import math
-PHASES = {"front_left": 0.0, "back_right": 0.25,
-          "front_right": 0.5, "back_left": 0.75}
-FREQ, SWING = 0.7, 0.25
-STAND_THIGH, STAND_KNEE = 0.9, -1.8
-STEP, LIFT = 0.10, 0.30
-STOP_AT = 0.75
-ALPHA = 0.2
-
-smooth = robot.distance_noisy
-
-t = 0.0
-while smooth > STOP_AT and t < 18.0:
-    smooth = ALPHA * robot.distance_noisy + (1 - ALPHA) * smooth
-    for leg, start in PHASES.items():
-        ph = (t * FREQ + start) % 1.0
-        if ph < SWING:
-            s = ph / SWING
-            thigh = STAND_THIGH + STEP * (s - 0.5) * 2
-            knee  = STAND_KNEE - LIFT * math.sin(math.pi * s)
-        else:
-            s = (ph - SWING) / (1 - SWING)
-            thigh = STAND_THIGH + STEP * (0.5 - s) * 2
-            knee  = STAND_KNEE
-        robot.target(leg, thigh=thigh, knee=knee)
-    robot.tick(0.02)
-    t += 0.02
-
-robot.set_all_legs(thigh=STAND_THIGH, knee=STAND_KNEE, seconds=0.4)
-robot.wait(0.3)
-print("stopped", round(robot.distance, 3), "m away, after", round(t, 1), "s")`,
-      },
-    ],
-    check: "robot.distance < 0.80 and t < 17.0 and abs(smooth - robot.distance) < 0.25 and robot.height > 0.18",
-    success: {
-      en: "About 0.75 m — the same place the robot reached back when it could see perfectly. The sensor is still just as noisy; you simply stopped believing all of it at once. One line turned an unusable sensor into a usable one.",
-      fr: "Environ 0,75 m — exactement là où le robot arrivait quand il voyait parfaitement. Le capteur est toujours aussi bruité ; tu as juste arrêté de tout croire d'un coup. Une ligne a transformé un capteur inutilisable en capteur utilisable.",
-    },
-    failure: {
-      en: "Without the update, smooth keeps its very first value forever, so the loop either never stops or runs to the time limit. The line goes on the first line inside the while, before the legs move.",
-      fr: "Sans la mise à jour, smooth garde à jamais sa toute première valeur : la boucle ne s'arrête jamais ou va jusqu'à la limite de temps. La ligne se met tout au début du while, avant que les pattes bougent.",
-    },
-    realCode: {
-      file: "waste_sorting/robot.py",
-      code: `filt = 0.8 * action + 0.2 * self._prev
-self._prev = filt`,
-      note: {
-        en: "The same shape, in the real project — a bit of the new value, a bit of the old. Note the numbers are the other way round: there it smooths the COMMANDS sent to the legs, where you want to react fast and only take the edge off, so the new value gets 0.8. Smoothing a noisy SENSOR needs the opposite, which is why yours is 0.2. Same tool, different job, and getting the balance wrong is a real way to break a robot.",
-        fr: "La même forme, dans le vrai projet : un peu de nouveau, un peu d'ancien. Remarque que les nombres sont inversés : là, il lisse les COMMANDES envoyées aux pattes, où l'on veut réagir vite et juste adoucir, donc le nouveau vaut 0,8. Lisser un CAPTEUR bruité demande l'inverse, d'où ton 0,2. Même outil, autre usage — et se tromper d'équilibre casse vraiment un robot.",
       },
     },
   },

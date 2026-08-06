@@ -62,24 +62,6 @@ const TARGET = [1.4, 0];
 let frames = [];
 let sinceFrame = 0;
 
-/**
- * The noisy range sensor.
- *
- * Pseudo-random, NOT Math.random: a lesson that grades an answer cannot have
- * the same code give a different verdict twice. This is a plain linear
- * congruential generator reseeded on every reset, so a learner who runs the
- * same cell twice sees the same jitter and can actually reason about it.
- *
- * +-0.15 m of noise on a 1.4 m approach is deliberately large enough to be a
- * problem: it straddles a 0.75 m stopping threshold, so a raw reading trips
- * the stop early and the robot halts short of the box.
- */
-let noiseSeed = 0;
-const NOISE_M = 0.15;
-function nextNoise() {
-  noiseSeed = (noiseSeed * 1664525 + 1013904223) >>> 0;
-  return (noiseSeed / 4294967296) * 2 - 1;
-}
 let targets = new Array(12).fill(0);
 let simTime = 0;
 let hitLimit = false;
@@ -96,7 +78,6 @@ function resetSim() {
   mujoco.mj_forward(model, data);
   frames = [];
   sinceFrame = 0;
-  noiseSeed = 20260806;
   simTime = 0;
   hitLimit = false;
   captureFrame();
@@ -197,12 +178,6 @@ const bridge = {
     const q = data.qpos;
     const w = q[3], x = q[4], y = q[5], z = q[6];
     return Math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
-  },
-  /** What a real range sensor would report: the truth, plus jitter. */
-  distance_noisy: () => {
-    const dx = TARGET[0] - data.qpos[0];
-    const dy = TARGET[1] - data.qpos[1];
-    return Math.sqrt(dx * dx + dy * dy) + nextNoise() * NOISE_M;
   },
   /** Straight-line distance from the trunk to the red box. */
   distance: () => {
@@ -313,11 +288,6 @@ class _Robot:
     def yaw(self):
         """Which way the robot is facing, in radians. 0 is straight ahead."""
         return float(self._b.yaw())
-
-    @property
-    def distance_noisy(self):
-        """What the range sensor says. Close to the truth, never exactly it."""
-        return float(self._b.distance_noisy())
 
     @property
     def distance(self):

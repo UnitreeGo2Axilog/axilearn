@@ -22,6 +22,23 @@ import type { SimPart } from "@/content/sim-parts";
 import { term } from "@/content/robot-glossary";
 import type { Locale } from "@/content/types";
 import { markLabPartDone } from "@/lib/lab-progress";
+
+/**
+ * Pull the ## TODO lines out of a cell so they can be shown properly.
+ *
+ * They were buried in the middle of a grey code block looking exactly like
+ * every other comment, which is a poor way to mark the one thing the learner
+ * is supposed to do. A textarea cannot colour individual lines, so instead
+ * the instruction is lifted out and shown above the editor in the track's
+ * colour -- while staying in the code, where it marks the spot.
+ */
+function todoLines(code: string): string[] {
+  return code
+    .split("\n")
+    .filter((l) => l.trim().startsWith("##"))
+    .map((l) => l.trim().replace(/^##\s?/, "").replace(/^TODO:\s*/i, ""))
+    .filter(Boolean);
+}
 import { useT } from "@/i18n/use-t";
 
 type Verdict = "none" | "pass" | "fail";
@@ -212,15 +229,40 @@ export function SimNotebook({
                 <p className="text-sm leading-relaxed text-muted">{say(cell.explain)}</p>
               </div>
 
+              {cell.kind === "todo" && todoLines(code[cell.id] ?? cell.code).length > 0 && (
+                <div
+                  className="mb-1.5 rounded-xl border-l-4 px-3 py-2"
+                  style={{
+                    borderColor: accent,
+                    background: `color-mix(in srgb, ${accent} 12%, transparent)`,
+                  }}
+                >
+                  {todoLines(code[cell.id] ?? cell.code).map((line, k) => (
+                    <p
+                      key={k}
+                      className="font-robot text-[12.5px] font-bold leading-relaxed"
+                      style={{ color: accent }}
+                    >
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              )}
+
               <textarea
                 value={code[cell.id] ?? cell.code}
                 onChange={(e) => setCode((c) => ({ ...c, [cell.id]: e.target.value }))}
                 spellCheck={false}
                 rows={Math.min(12, (code[cell.id] ?? cell.code).split("\n").length + 1)}
-                className="w-full resize-y rounded-xl border p-3 font-robot text-[13px] leading-relaxed text-main"
+                className={`w-full resize-y rounded-xl p-3 font-robot text-[13px] leading-relaxed text-main ${
+                  cell.kind === "todo" ? "border-2" : "border"
+                }`}
                 style={{
                   borderColor: cell.kind === "todo" ? accent : "var(--border)",
-                  background: "var(--bg-2)",
+                  background:
+                    cell.kind === "todo"
+                      ? `color-mix(in srgb, ${accent} 5%, var(--bg-2))`
+                      : "var(--bg-2)",
                 }}
               />
 
