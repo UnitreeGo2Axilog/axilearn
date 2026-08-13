@@ -1,5 +1,8 @@
 # AxiLearn
 
+> **New here?** Read [ARCHITECTURE.md](ARCHITECTURE.md) — how it is built, what is
+> load-bearing, and the mistakes already made so you do not repeat them.
+
 A step-by-step learning platform for teenagers and beginners, in English and
 French. Three tracks — **Physical AI** (robotics), **AI & Machine Learning**,
 **Game Development** — presented as a game-style mission map rather than a list
